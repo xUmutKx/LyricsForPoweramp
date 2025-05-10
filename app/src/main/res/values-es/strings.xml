@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Lyrics for Poweramp</string>
     <!--    general-->
     <string name="plain_lyrics">Letras Planas</string>
     <string name="synced_lyrics">Letras Sincronizadas</string>
@@ -37,6 +36,12 @@
     <string name="result_change_type_button_label">Cambiar tipo de letras</string>
     <string name="result_type_synced_description">Letras sincronizadas de esta pista</string>
     <string name="result_type_plain_description">Letras planas de esta pista</string>
+    <!--    editor activity-->
+    <string name="title_activity_editor">Editora</string>
+    <string name="undo">Deshacer</string>
+    <string name="redo">Rehacer</string>
+    <string name="save">ahorrar</string>
+    <string name="editor_placeholder">Entrar Letra</string>
     <!--    about activity-->
     <string name="about">Acerca de</string>
     <string name="version">Versión</string>

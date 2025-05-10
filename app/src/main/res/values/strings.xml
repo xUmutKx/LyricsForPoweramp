@@ -36,6 +36,12 @@
     <string name="result_change_type_button_label">Change lyrics type</string>
     <string name="result_type_synced_description">Synced lyrics of this track</string>
     <string name="result_type_plain_description">Plain lyrics of this track</string>
+    <!--    editor activity-->
+    <string name="title_activity_editor">Editor</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
+    <string name="save">Save</string>
+    <string name="editor_placeholder">Enter lyrics</string>
     <!--    about activity-->
     <string name="about">About</string>
     <string name="version">Version</string>
@@ -116,6 +122,5 @@
     <string name="lyrics_write_invalid_path">Failed to determine the file path.</string>
     <string name="lyrics_write_invalid_lyrics">Failed to parse lyrics for saving.</string>
     <string name="lyrics_write_unknown_error">An unknown error occurred while saving the file.</string>
-
 
 </resources>
