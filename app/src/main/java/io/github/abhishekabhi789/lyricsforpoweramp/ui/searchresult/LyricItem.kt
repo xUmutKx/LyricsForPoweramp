@@ -29,11 +29,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.InterpreterMode
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -74,13 +76,14 @@ import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun LyricItem(
     modifier: Modifier = Modifier,
     lyrics: Lyrics,
     isLaunchedFromPowerAmp: Boolean,
-    onLyricChosen: (Lyrics, preferredLyricsType: LyricsType) -> Unit
+    onLyricChosen: (preferredLyricsType: LyricsType) -> Unit,
+    onEditLyrics: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -180,7 +183,7 @@ fun LyricItem(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                FlowRow {
+                FlowRow(modifier = Modifier.weight(1f)) {
                     if (lyrics.plainLyrics != null) {
                         CustomChip(
                             label = stringResource(R.string.plain_lyrics_short),
@@ -198,8 +201,16 @@ fun LyricItem(
                         ) { scope.launch { pagerState.animateScrollToPage(lyricPages.lastIndex) } }
                     }
                 }
-                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.weight(1f)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.weight(1f)
+                ) {
                     if (isLaunchedFromPowerAmp) {
+                        AssistChip(
+                            label = { Text(stringResource(R.string.edit_lyrics)) },
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                            onClick = onEditLyrics
+                        )
                         val preferredLyricsType =
                             remember { AppPreference.getPreferredLyricsType(context) }
                         val availableLyrics = buildList {
@@ -217,7 +228,7 @@ fun LyricItem(
                             availableLyricsTypes = availableLyrics,
                             preferredLyricsType = chosenType,
                             onTypeChanged = { chosenType = it },
-                        ) { onLyricChosen(lyrics, chosenType) }
+                        ) { onLyricChosen(chosenType) }
                     }
                 }
             }
@@ -370,5 +381,5 @@ fun PreviewLyricItem() {
         plainLyrics = "1 Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n Nunc sit amet turpis et odio egestas finibus vel quis nisi.\n Duis aliquam tortor non dui tempor, et sodales orci tempus.\n Mauris fermentum mauris quis commodo viverra.\n Suspendisse scelerisque lorem eu dolor fringilla ultrices.\n Suspendisse scelerisque lorem eu dolor fringilla ultrices.\n Suspendisse scelerisque lorem eu dolor fringilla ultrices.",
         syncedLyrics = "[00:10.00] 1 Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n [00:20.10] Nunc sit amet turpis et odio egestas finibus vel quis nisi.\n [00:30.20] Duis aliquam tortor non dui tempor, et sodales orci tempus.\n [00:40.30] Mauris fermentum mauris quis commodo viverra.\n [00:50.40] Suspendisse scelerisque lorem eu dolor fringilla ultrices.\n [01:00.50] Suspendisse scelerisque lorem eu dolor fringilla ultrices.\n [01:10.00] Suspendisse scelerisque lorem eu dolor fringilla ultrices."
     )
-    LyricItem(lyrics = data, isLaunchedFromPowerAmp = true, onLyricChosen = { _, _ -> })
+    LyricItem(lyrics = data, isLaunchedFromPowerAmp = true, onLyricChosen = { }, onEditLyrics = {})
 }

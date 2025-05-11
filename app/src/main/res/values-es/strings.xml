@@ -30,6 +30,7 @@
     <string name="result_topbar_title">Resultados</string>
     <string name="send_lyrics_button">Enviar estas letras</string>
     <string name="change_preferred_lyrics_type">Cambiar tipo de letras</string>
+    <string name="edit_lyrics">Editar</string>
     <string name="sending_lyrics">Enviando letras</string>
     <string name="lyrics_sent_successfully">Letras enviadas</string>
     <string name="lyrics_save_to_storage">Guardar letras en almacenamiento</string>

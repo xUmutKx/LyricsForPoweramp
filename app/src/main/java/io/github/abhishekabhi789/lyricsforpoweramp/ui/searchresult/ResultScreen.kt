@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SearchResultViewmodel
 import kotlinx.coroutines.launch
@@ -95,7 +96,7 @@ fun ResultScreen(
                 LyricItem(
                     lyrics = lyrics,
                     isLaunchedFromPowerAmp = isLaunchedFromPoweramp,
-                    onLyricChosen = { lyrics, lyricsType ->
+                    onLyricChosen = { lyricsType ->
                         showBottomSheet = true
                         scope.launch {
                             viewmodel.sendLyricsToPoweramp(
@@ -105,10 +106,28 @@ fun ResultScreen(
                                 onComplete = { if (showBottomSheet) onFinish() }
                             )
                         }
+                    },
+                    onEditLyrics = {
+                        try {
+                            Intent(context, EditorActivity::class.java).apply {
+                                putExtra(EditorActivity.KEY_REAL_ID, viewmodel.powerampId)
+                                putExtra(EditorActivity.KEY_FILE_PATH, viewmodel.filePath)
+                                putParcelableArrayListExtra(
+                                    EditorActivity.KEY_LYRICS,
+                                    arrayListOf(lyrics)
+                                )
+                                putExtra(EditorActivity.KEY_EXIT_AFTER_FINISH, true)
+                            }.also {
+                                context.startActivity(it)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 )
             }
         }
+
         if (showBottomSheet) {
             ResultBottomSheet(
                 sendToPowerampState,

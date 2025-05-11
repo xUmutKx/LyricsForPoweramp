@@ -30,6 +30,7 @@
     <string name="result_topbar_title">Results</string>
     <string name="send_lyrics_button">Send this lyrics</string>
     <string name="change_preferred_lyrics_type">Change lyrics type</string>
+    <string name="edit_lyrics">Edit</string>
     <string name="sending_lyrics">Sending lyrics result</string>
     <string name="lyrics_sent_successfully">Lyrics Sent</string>
     <string name="lyrics_save_to_storage">Save lyrics to storage</string>

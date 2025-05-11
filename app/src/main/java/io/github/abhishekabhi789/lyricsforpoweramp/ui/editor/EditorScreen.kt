@@ -1,5 +1,7 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
+import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -23,8 +25,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -37,24 +44,31 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun EditorScreen(
     modifier: Modifier = Modifier,
     viewmodel: EditorViewmodel,
-    onNavBack: () -> Unit
+    onFinish: () -> Unit
 ) {
-    val viewModelLyrics by viewmodel.lyrics.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val viewModelLyrics by viewmodel.lyricsContent.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
-
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sendToPowerampState by viewmodel.sendToPowerampState.collectAsStateWithLifecycle()
+    val saveToStorageState by viewmodel.saveToStorageState.collectAsStateWithLifecycle()
+    BackHandler { onFinish() }
     Scaffold(
         topBar = {
             TopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = onNavBack) {
+                    IconButton(onClick = onFinish) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.navigate_back_action)
@@ -81,7 +95,10 @@ fun EditorScreen(
                     }
                 },
                 floatingActionButton = {
-                    FloatingActionButton(onClick = { }) {
+                    FloatingActionButton(onClick = {
+                        showBottomSheet = true
+                        viewmodel.sendLyricsToPoweramp(context) { showBottomSheet = false }
+                    }) {
                         Icon(Icons.Default.Save, contentDescription = stringResource(R.string.save))
                     }
                 },
@@ -124,9 +141,25 @@ fun EditorScreen(
                         OffsetMapping.Identity
                     )
                 },
+                cursorBrush = SolidColor(Color.Gray),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 12.dp)
+            )
+        }
+        if (showBottomSheet) {
+            ResultBottomSheet(
+                sendToPowerampState,
+                saveToStorageState,
+                onDismiss = { showBottomSheet = false },
+                grantAccess = {
+                    showBottomSheet = false
+                    val path = viewmodel.filePath.substringBeforeLast(File.separatorChar)
+                    Intent(context, SettingsActivity::class.java).apply {
+                        setAction(SettingsActivity.Companion.OPEN_SETTINGS_ACTION)
+                        putExtra(SettingsActivity.EXTRA_REQUIRED_PATH, path)
+                    }.let { context.startActivity(it) }
+                }
             )
         }
     }
