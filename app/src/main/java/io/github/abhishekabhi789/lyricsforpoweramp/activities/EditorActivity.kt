@@ -22,7 +22,6 @@ class EditorActivity : ComponentActivity() {
         }
         val powerampId = intent.getLongExtra(KEY_REAL_ID, 0L)
         val filePath = intent.getStringExtra(KEY_FILE_PATH)
-        val exitAfterFinish = intent.getBooleanExtra(KEY_EXIT_AFTER_FINISH, false)
         if (powerampId == 0L || filePath == null || lyrics == null) {
             Log.i(TAG, "onCreate: realId = $powerampId || path = $filePath || lyrics == $lyrics")
             Log.e(TAG, "onCreate: failed to get required parameters, returning")
@@ -37,7 +36,7 @@ class EditorActivity : ComponentActivity() {
             LyricsForPowerAmpTheme {
                 EditorScreen(
                     viewmodel = viewmodel,
-                    onFinish = { if (exitAfterFinish == true) finishAffinity() else finish() }
+                    onFinish = { finish() }
                 )
             }
         }
@@ -48,6 +47,5 @@ class EditorActivity : ComponentActivity() {
         const val KEY_LYRICS = "lyrics"
         const val KEY_REAL_ID = "poweramp_id"
         const val KEY_FILE_PATH = "file_path"
-        const val KEY_EXIT_AFTER_FINISH = "exit_after_editing_finished"
     }
 }

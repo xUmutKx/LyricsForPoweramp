@@ -34,14 +34,19 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
@@ -184,16 +189,30 @@ fun transformLyrics(
             }
             val timestamp = match.value
             val isValid = isValidTimestamp(timestamp)
+            val contentStart = match.range.last + 1
+            val nextMatchStart =
+                timeStampRegex.find(text, contentStart)?.range?.first ?: text.length
+            val lyricsText = text.substring(contentStart, nextMatchStart)
             withStyle(
-                SpanStyle(
-                    fontWeight = FontWeight.Bold,
-                    background = if (isValid) primaryContainerColor else errorContainerColor,
-                    color = if (isValid) onPrimaryContainerColor else errorColor
+                ParagraphStyle(
+                    textIndent = TextIndent(restLine = 95.sp),
+                    lineHeight = TextUnit(1f, TextUnitType.Em)
                 )
             ) {
-                append(timestamp)
+                withStyle(
+                    SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                        background = if (isValid) primaryContainerColor else errorContainerColor,
+                        color = if (isValid) onPrimaryContainerColor else errorColor
+                    )
+                ) {
+                    append(timestamp)
+                }
+                withStyle(SpanStyle(color = textColor)) {
+                    append(lyricsText)
+                }
             }
-            lastIndex = match.range.last + 1
+            lastIndex = nextMatchStart
         }
         if (lastIndex < text.length) {
             withStyle(SpanStyle(color = textColor)) {

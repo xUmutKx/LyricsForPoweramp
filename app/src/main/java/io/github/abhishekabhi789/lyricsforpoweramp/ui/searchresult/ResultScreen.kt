@@ -116,7 +116,6 @@ fun ResultScreen(
                                     EditorActivity.KEY_LYRICS,
                                     arrayListOf(lyrics)
                                 )
-                                putExtra(EditorActivity.KEY_EXIT_AFTER_FINISH, true)
                             }.also {
                                 context.startActivity(it)
                             }
