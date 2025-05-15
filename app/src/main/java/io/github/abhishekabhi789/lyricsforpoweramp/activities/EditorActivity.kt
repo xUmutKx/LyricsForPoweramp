@@ -8,9 +8,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.os.BundleCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.abhishekabhi789.lyricsforpoweramp.activities.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.editor.EditorScreen
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
 class EditorActivity : ComponentActivity() {
@@ -29,7 +29,7 @@ class EditorActivity : ComponentActivity() {
             return
         }
         setContent {
-            val viewmodel: EditorViewmodel = viewModel()
+            val viewmodel: EditorViewmodel = viewModel(factory = EditorViewmodel.FACTORY)
             LaunchedEffect(Unit) {
                 viewmodel.initialize(powerampId, filePath, lyrics)
             }

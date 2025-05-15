@@ -12,6 +12,8 @@
     <string name="enable">Habilitar</string>
     <string name="disable">Deshabilitar</string>
     <string name="done">Listo</string>
+    <string name="loading">Cargando</string>
+    <string name="change">Cambiar</string>
     <string name="response_footer_text">Ofrecido por Lyrics for Poweramp</string>
     <string name="toast_failed_to_browse_link">No se pudo abrir el enlace</string>
     <!--    top bar-->
@@ -43,6 +45,11 @@
     <string name="redo">Rehacer</string>
     <string name="save">ahorrar</string>
     <string name="editor_placeholder">Entrar Letra</string>
+    <string name="ai_gemini_name">Google Gemini</string>
+    <string name="translation_button_description">Traducción de letras</string>
+    <string name="supported_language_choose_title">Selecciona el idioma de destino</string>
+    <string name="translation_button_label">Traducir</string>
+    <string name="translation_failed">Traducción fallida</string>
     <!--    about activity-->
     <string name="about">Acerca de</string>
     <string name="version">Versión</string>
@@ -91,6 +98,8 @@
     <string name="settings_save_as_file_button_remove_folder">Eliminar</string>
     <string name="settings_save_as_file_no_folders">No se seleccionaron carpetas</string>
     <string name="settings_save_as_file_permission_explanation">Necesitas conceder permiso para acceder a %1$s y guardar archivos de letras.</string>
+    <string name="settings_editor_label">Editor de letras</string>
+    <string name="settings_editor_api_keys_list">Llaves de API</string>
     <string name="settings_filter_label">Filtros</string>
     <string name="settings_filter_description">Estas palabras se eliminarán de los campos respectivos durante el procesamiento. No distingue mayúsculas/minúsculas. Soporta expresiones regulares.</string>
     <string name="settings_filter_title_label">Filtro de Título</string>

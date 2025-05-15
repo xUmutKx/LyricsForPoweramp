@@ -13,10 +13,10 @@ import androidx.work.WorkerParameters
 import com.maxmpz.poweramp.player.PowerampAPI
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.HttpClient
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LrclibApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.NotificationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper.sendLyricResponse
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
@@ -34,7 +34,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     private val mContext = applicationContext
-    private var mLrclibApiHelper = LrclibApiHelper(HttpClient.okHttpClient)
+    private var mLrclibApiHelper = LrclibApiHelper(RequestHelper.okHttpClient, RequestHelper.gson)
     private lateinit var mNotificationHelper: NotificationHelper
     private lateinit var mTrack: Track
     private var powerampTrackId = PowerampAPI.NO_ID

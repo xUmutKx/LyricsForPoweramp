@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -65,7 +66,8 @@ fun EditorScreen(
     val viewModelLyrics by viewmodel.lyricsContent.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showSaveStatus by remember { mutableStateOf(false) }
+    var showTranslator by remember { mutableStateOf(false) }
     val sendToPowerampState by viewmodel.sendToPowerampState.collectAsStateWithLifecycle()
     val saveToStorageState by viewmodel.saveToStorageState.collectAsStateWithLifecycle()
     BackHandler { onFinish() }
@@ -98,11 +100,17 @@ fun EditorScreen(
                             contentDescription = stringResource(R.string.redo)
                         )
                     }
+                    IconButton(onClick = { showTranslator = true }) {
+                        Icon(
+                            Icons.Default.Translate,
+                            contentDescription = stringResource(R.string.translation_button_description)
+                        )
+                    }
                 },
                 floatingActionButton = {
                     FloatingActionButton(onClick = {
-                        showBottomSheet = true
-                        viewmodel.sendLyricsToPoweramp(context) { showBottomSheet = false }
+                        showSaveStatus = true
+                        viewmodel.sendLyricsToPoweramp(context) { showSaveStatus = false }
                     }) {
                         Icon(Icons.Default.Save, contentDescription = stringResource(R.string.save))
                     }
@@ -152,13 +160,13 @@ fun EditorScreen(
                     .padding(horizontal = 12.dp)
             )
         }
-        if (showBottomSheet) {
+        if (showSaveStatus) {
             ResultBottomSheet(
                 sendToPowerampState,
                 saveToStorageState,
-                onDismiss = { showBottomSheet = false },
+                onDismiss = { showSaveStatus = false },
                 grantAccess = {
-                    showBottomSheet = false
+                    showSaveStatus = false
                     val path = viewmodel.filePath.substringBeforeLast(File.separatorChar)
                     Intent(context, SettingsActivity::class.java).apply {
                         setAction(SettingsActivity.Companion.OPEN_SETTINGS_ACTION)
@@ -166,6 +174,11 @@ fun EditorScreen(
                     }.let { context.startActivity(it) }
                 }
             )
+        }
+        if (showTranslator) {
+            TranslationBottomSheet(
+                viewmodel = viewmodel,
+                onDismiss = { showTranslator = false })
         }
     }
 }

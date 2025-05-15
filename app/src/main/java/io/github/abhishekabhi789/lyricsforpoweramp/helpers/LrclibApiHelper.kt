@@ -24,7 +24,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 
 /**Helper to interacts with LRCLIB*/
-class LrclibApiHelper(private val client: OkHttpClient) {
+class LrclibApiHelper(private val client: OkHttpClient, private val gson: Gson) {
 
     sealed class ApiResult {
         data class Success(val data: String) : ApiResult()
@@ -160,7 +160,7 @@ class LrclibApiHelper(private val client: OkHttpClient) {
                 }
 
                 is ApiResult.Success -> {
-                    val result = Gson().fromJson(output.data, Lyrics::class.java)
+                    val result = gson.fromJson(output.data, Lyrics::class.java)
                     Log.d(TAG, "getLyricsForTracks: search result ${result.trackName}")
                     onResult(result)
                 }

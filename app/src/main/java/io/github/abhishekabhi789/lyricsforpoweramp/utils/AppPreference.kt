@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
+import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 
 object AppPreference {
     private const val FILTER_PREF_NAME = "filter_preference"
@@ -24,6 +25,7 @@ object AppPreference {
     private const val SAVE_LYRICS_IN_FILE = "save_lyrics_in_file"
     private const val FOLDER_URIS = "folder_uri_list"
     private const val MARK_INSTRUMENTAL_LYRICS = "mark_instrumental_lyrics"
+    private const val GEMINI_API_KEY = "ai_key_gemini"
 
     private fun getSharedPreference(context: Context, prefName: String): SharedPreferences? {
         return context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
@@ -152,6 +154,22 @@ object AppPreference {
             sharedPreferences?.edit()?.putStringSet(FOLDER_URIS, it.toSet())?.apply()
         }
         return success
+    }
+
+    fun setTranslatorApiKey(context: Context, apiKey: String, translator: Translator) {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        val prefKey = when (translator) {
+            Translator.GEMINI -> GEMINI_API_KEY
+        }
+        sharedPreferences?.edit()?.putString(prefKey, apiKey)?.apply()
+    }
+
+    fun getTranslationApiKey(context: Context, translator: Translator): String {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        val prefKey = when (translator) {
+            Translator.GEMINI -> GEMINI_API_KEY
+        }
+        return sharedPreferences?.getString(prefKey, null) ?: ""
     }
 
     @Composable

@@ -3,8 +3,8 @@ package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.HttpClient
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LrclibApiHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
 class MainActivityViewModel : ViewModel() {
-    private val lrclibApiHelper = LrclibApiHelper(HttpClient.okHttpClient)
+    private val lrclibApiHelper = LrclibApiHelper(RequestHelper.okHttpClient, RequestHelper.gson)
 
     private val _appTheme = MutableStateFlow(AppPreference.AppTheme.Auto)
 
