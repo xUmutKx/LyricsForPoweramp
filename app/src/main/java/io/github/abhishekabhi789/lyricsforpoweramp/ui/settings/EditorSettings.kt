@@ -1,6 +1,7 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,9 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -30,8 +35,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +61,16 @@ fun EditorSettings(modifier: Modifier = Modifier) {
             }
         }
         AnimatedVisibility(showApiKeySection) {
-            TranslatorApiKey(translator = Translator.GEMINI)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Disclaimer(
+                    textContent = stringResource(R.string.settings_editor_api_keys_disclaimer),
+                    icon = Icons.Default.Info
+                )
+                TranslatorApiKey(translator = Translator.GEMINI)
+            }
         }
     }
 }
@@ -63,20 +79,29 @@ fun EditorSettings(modifier: Modifier = Modifier) {
 fun TranslatorApiKey(modifier: Modifier = Modifier, translator: Translator) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-    var key by remember {
+    var savedApiKey by remember {
         mutableStateOf(AppPreference.getTranslationApiKey(context, translator))
     }
+    var inputValue by rememberSaveable { mutableStateOf(savedApiKey) }
     var showPassword by rememberSaveable { mutableStateOf(false) }
-    val onKeyChange = { newKey: String ->
-        key = newKey
-        AppPreference.setTranslatorApiKey(context, key, translator)
+    val saveInput = {
+        AppPreference.setTranslatorApiKey(context, inputValue, translator)
+        focusManager.clearFocus()
+        savedApiKey = inputValue
     }
     Column(modifier = modifier.fillMaxWidth()) {
         OutlinedTextField(
-            value = key,
-            onValueChange = onKeyChange,
+            value = inputValue,
+            onValueChange = { inputValue = it },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions { focusManager.clearFocus() },
+            keyboardActions = KeyboardActions { saveInput() },
+            trailingIcon = {
+                if (inputValue != savedApiKey) {
+                    IconButton(onClick = saveInput) {
+                        Icon(Icons.Default.Done, stringResource(R.string.save))
+                    }
+                }
+            },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             label = { Text(stringResource(translator.nameRes)) },
             modifier = Modifier

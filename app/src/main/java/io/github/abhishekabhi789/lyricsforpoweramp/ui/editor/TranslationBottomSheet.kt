@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,6 +51,7 @@ fun TranslationBottomSheet(
     viewmodel: EditorViewmodel,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     val services by remember { mutableStateOf(viewmodel.translators) }
     val chosenTranslator by viewmodel.chosenTranslator.collectAsStateWithLifecycle()
     val languages by viewmodel.supportedLanguages.collectAsStateWithLifecycle()
@@ -63,7 +65,9 @@ fun TranslationBottomSheet(
             Text(stringResource(R.string.translation_button_label))
             LazyRow(modifier = Modifier.fillMaxWidth()) {
                 items(items = services, key = { it.nameRes }) {
+                    val isConfigured = remember { it.isConfigured(context) }
                     AssistChip(
+                        enabled = isConfigured,
                         onClick = { viewmodel.setChosenTranslator(it) },
                         leadingIcon = {
                             if (chosenTranslator == it) Icon(Icons.Default.Check, null)

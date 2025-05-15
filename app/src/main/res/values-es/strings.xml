@@ -100,6 +100,7 @@
     <string name="settings_save_as_file_permission_explanation">Necesitas conceder permiso para acceder a %1$s y guardar archivos de letras.</string>
     <string name="settings_editor_label">Editor de letras</string>
     <string name="settings_editor_api_keys_list">Llaves de API</string>
+    <string name="settings_editor_api_keys_disclaimer">Debes añadir tu propia clave API para habilitar la traducción. Esto permite que la app siga siendo gratuita y evita límites de uso de pago. Tu clave se guarda solo en tu dispositivo — nunca se recopila ni se comparte</string>
     <string name="settings_filter_label">Filtros</string>
     <string name="settings_filter_description">Estas palabras se eliminarán de los campos respectivos durante el procesamiento. No distingue mayúsculas/minúsculas. Soporta expresiones regulares.</string>
     <string name="settings_filter_title_label">Filtro de Título</string>

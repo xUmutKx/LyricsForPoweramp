@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -82,7 +83,15 @@ fun EditorScreen(
                         )
                     }
                 },
-                title = { Text(stringResource(R.string.title_activity_editor)) }
+                title = { Text(stringResource(R.string.title_activity_editor)) },
+                actions = {
+                    val launchSettings = {
+                        context.startActivity(Intent(context, SettingsActivity::class.java))
+                    }
+                    IconButton(onClick = launchSettings) {
+                        Icon(Icons.Default.Settings, stringResource(R.string.top_bar_settings))
+                    }
+                }
             )
         },
         bottomBar = {

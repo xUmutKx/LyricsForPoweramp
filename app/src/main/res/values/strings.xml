@@ -100,6 +100,7 @@
     <string name="settings_save_as_file_permission_explanation">"You need to grant permission to access %1$s to save lyrics files.</string>
     <string name="settings_editor_label">Lyrics Editor</string>
     <string name="settings_editor_api_keys_list">API Keys</string>
+    <string name="settings_editor_api_keys_disclaimer">You need to add your own API key to enable translation. This keeps the app free and avoids paid usage limits. Your key is stored only on your device — it’s never collected or shared.</string>
     <string name="settings_filter_label">Filters</string>
     <string name="settings_filter_description">These words will be removed from respective fields while processing. Case insensitive. Supports regex.</string>
     <string name="settings_filter_title_label">Title Filter</string>
