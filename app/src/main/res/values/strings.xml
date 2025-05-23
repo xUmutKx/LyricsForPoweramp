@@ -7,12 +7,14 @@
     <string name="synced_lyrics_short">Synced</string>
     <string name="track">Track</string>
     <string name="navigate_back_action">Go Back</string>
+    <string name="close">Close</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
     <string name="done">Done</string>
     <string name="loading">Loading</string>
+    <string name="error">Error</string>
     <string name="change">Change</string>
     <string name="response_footer_text">Powered by Lyrics for PowerAmp</string>
     <string name="toast_failed_to_browse_link">Unable to open link</string>

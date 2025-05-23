@@ -13,17 +13,35 @@ class TranslationHelper(context: Context, client: OkHttpClient, gson: Gson) {
 
     fun getAvailableTranslators(): List<Translator> = Translator.entries
 
-    suspend fun getSupportedLanguages(translator: Translator, lyrics: String): List<String> {
-        return when (translator) {
-            Translator.GEMINI -> gemini.getSupportedLanguages(lyrics) ?: emptyList()
+    suspend fun getSupportedLanguages(translator: Translator, lyrics: String): RequestState {
+        val result = when (translator) {
+            Translator.GEMINI -> gemini.getSupportedLanguages(lyrics)
+        }
+        return when (result) {
+            is Result.Success -> {
+                val list = result.response.split(",")
+                    .map { it.trim().replaceFirstChar { c -> c.uppercaseChar() } }
+                    .filter { it.isNotEmpty() && it.matches(Regex("^[A-Za-z ]+$")) }
+                RequestState.Success(list)
+            }
+
+            Result.Cancelled -> RequestState.Idle
+            is Result.Failure -> RequestState.Failure(result.error)
         }
     }
 
-    suspend fun translate(lyrics: String, targetLanguage: String, translator: Translator): Result? {
-        return when (translator) {
-            Translator.GEMINI -> {
-                return gemini.translateLyrics(lyrics, targetLanguage)
-            }
+    suspend fun translate(
+        lyrics: String,
+        targetLanguage: String,
+        translator: Translator
+    ): RequestState {
+        val result = when (translator) {
+            Translator.GEMINI -> gemini.translateLyrics(lyrics, targetLanguage)
+        }
+        return when (result) {
+            Result.Cancelled -> RequestState.Idle
+            is Result.Failure -> RequestState.Failure(result.error)
+            is Result.Success -> RequestState.Success(result.response)
         }
     }
 }

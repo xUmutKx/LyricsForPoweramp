@@ -14,7 +14,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
-import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
+import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import kotlinx.coroutines.delay
@@ -46,9 +46,6 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     private val _saveToStorageState = MutableStateFlow<StorageHelper.Result?>(null)
     val saveToStorageState = _saveToStorageState.asStateFlow()
 
-    private val _supportedLanguages = MutableStateFlow<List<String>?>(null)
-    val supportedLanguages = _supportedLanguages.asStateFlow()
-
     private val _targetLanguage: MutableStateFlow<String?> = MutableStateFlow(null)
     val targetLanguage = _targetLanguage.asStateFlow()
 
@@ -56,8 +53,13 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         MutableStateFlow(Translator.getDefault())
     val chosenTranslator = _chosenTranslator.asStateFlow()
 
-    private val _translatorRunning = MutableStateFlow(false)
-    val translatorRunning = _translatorRunning.asStateFlow()
+    private val _supportedLanguageState: MutableStateFlow<RequestState> =
+        MutableStateFlow(RequestState.Idle)
+    val supportedLanguageState = _supportedLanguageState.asStateFlow()
+
+    private val _translatorState: MutableStateFlow<RequestState> =
+        MutableStateFlow(RequestState.Idle)
+    val translatorState = _translatorState.asStateFlow()
 
     val translators = translationHelper.getAvailableTranslators()
 
@@ -125,48 +127,53 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     }
 
     fun fetchSupportedLanguages() {
+        _supportedLanguageState.value = RequestState.Processing
         viewModelScope.launch {
-            _supportedLanguages.value =
-                translationHelper.getSupportedLanguages(
-                    _chosenTranslator.value,
-                    _lyricsContent.value
-                )
+            val result = translationHelper.getSupportedLanguages(
+                translator = _chosenTranslator.value,
+                lyrics = _lyricsContent.value
+            )
+            Log.d(TAG, "fetchSupportedLanguages: result- $result")
+            _supportedLanguageState.value = result
         }
     }
 
     fun setTargetLanguage(lang: String) {
-        _targetLanguage.value = lang
+        viewModelScope.launch {
+            _targetLanguage.value = lang
+            _translatorState.value = RequestState.Idle
+        }
     }
 
     fun translate() {
-        _translatorRunning.value = true
+        _translatorState.value = RequestState.Processing
         val lyricsContent = _lyricsContent.value
         val targetLang = _targetLanguage.value
         val selectedTranslator = _chosenTranslator.value
         if (lyricsContent.isBlank() || targetLang.isNullOrBlank()) {
+            "lyrics blank ${lyricsContent.isBlank()} || targetLang blank ${targetLang.isNullOrBlank()}".let {
+                Log.w(TAG, "translate: $it")
+            }
             return
         }
         viewModelScope.launch {
-            translationHelper.translate(
+            val result = translationHelper.translate(
                 lyrics = lyricsContent,
                 targetLanguage = targetLang,
                 translator = selectedTranslator
-            )?.let { translationResponse ->
-                when (translationResponse) {
-                    Result.Cancelled -> {
-                        Log.i(TAG, "translate: cancelled")
-                    }
-
-                    is Result.Failure -> {
-                        Log.w(TAG, "translate: failed ${translationResponse.error}")
-                    }
-
-                    is Result.Success -> {
-                        _lyricsContent.value = translationResponse.response
-                    }
-                }
-                _translatorRunning.value = false
+            )
+            Log.d(TAG, "translate: result- $result")
+            _translatorState.value = result
+            if (result is RequestState.Success<*>) {
+                val lyrics = (result.response) as String
+                setLyrics(lyrics)
             }
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            setChosenTranslator(Translator.getDefault())
         }
     }
 
