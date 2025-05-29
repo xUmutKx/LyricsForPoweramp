@@ -2,7 +2,6 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.about
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -22,6 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpCenter
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.BuildConfig
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -70,7 +72,8 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
     val guideUrl = "https://abhishekabhi789.github.io/LyricsForPoweramp/guide"
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.about)) },
+            TopAppBar(
+                title = { Text(stringResource(R.string.about)) },
                 navigationIcon = {
                     IconButton(onClick = onFinish) {
                         Icon(
@@ -175,6 +178,16 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
                             label = { Text(stringResource(R.string.link_to_guide)) },
                             leadingIcon = { Icon(Icons.AutoMirrored.Filled.HelpCenter, null) }
                         )
+                        AssistChip(
+                            onClick = { browseUrl(context, "mailto:${BuildConfig.EMAIL}") },
+                            label = { Text(stringResource(R.string.link_to_feedback)) },
+                            leadingIcon = { Icon(Icons.Default.Mail, null) }
+                        )
+                        AssistChip(
+                            onClick = { browseUrl(context, BuildConfig.WEBSITE) },
+                            label = { Text(stringResource(R.string.link_to_more_projects)) },
+                            leadingIcon = { Icon(Icons.Default.Link, null) }
+                        )
                     }
                     TextButton(onClick = {
                         context.startActivity(Intent(context, OssLicensesMenuActivity::class.java))
@@ -189,7 +202,7 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
 
 fun browseUrl(context: Context, url: String) {
     try {
-        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
     } catch (e: Exception) {
         Log.e(TAG, "browseUrl: unable to open link $url")
         Toast.makeText(context, R.string.toast_failed_to_browse_link, Toast.LENGTH_SHORT).show()

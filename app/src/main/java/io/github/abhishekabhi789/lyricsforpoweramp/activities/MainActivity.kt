@@ -32,6 +32,7 @@ import com.maxmpz.poweramp.player.PowerampAPI
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.FirstTimeInfoDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.main.AppMain
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
@@ -110,6 +111,16 @@ class MainActivity : ComponentActivity() {
                             showPermissionDialog = false
                         }
                     )
+                } else {
+                    var firstTimeInfoShown by rememberSaveable {
+                        mutableStateOf(AppPreference.getFirstTimeInfoShown(this@MainActivity))
+                    }
+                    if (!firstTimeInfoShown) {
+                        FirstTimeInfoDialog {
+                            AppPreference.setFirstTimeInfoShown(this@MainActivity, true)
+                            firstTimeInfoShown = true
+                        }
+                    }
                 }
                 Surface(
                     modifier = Modifier.fillMaxSize(),

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name" translatable="false">Lyrics for Poweramp</string>
     <!--    general-->
     <string name="plain_lyrics">Letras Planas</string>
     <string name="synced_lyrics">Letras Sincronizadas</string>
@@ -18,6 +19,9 @@
     <string name="change">Cambiar</string>
     <string name="response_footer_text">Ofrecido por Lyrics for Poweramp</string>
     <string name="toast_failed_to_browse_link">No se pudo abrir el enlace</string>
+    <string name="first_time_info_dialog_title">Información importante</string>
+    <string name="first_time_info_dialog_content">Esta aplicación depende de metadatos precisos de la pista (título, artista, etc.) para encontrar las letras.\n Si los metadatos están incompletos o son incorrectos, la búsqueda puede fallar — esto no es un error.\n\n En esos casos, deberás ajustar manualmente la consulta de búsqueda.\n Las letras se obtienen de un servidor de terceros y pueden no estar disponibles, incluso con metadatos correctos.\n\n¿Necesitas ayuda? Contacta con soporte: %1$s</string>
+    <string name="got_it">Entendido</string>
     <!--    top bar-->
     <string name="top_bar_menu_descriptions">Más Opciones</string>
     <!--    search ui-->
@@ -60,6 +64,8 @@
     <string name="link_to_playstore">Obtener desde Play Store</string>
     <string name="link_to_ko_fi">Donar vía Ko-Fi</string>
     <string name="link_to_guide">Leer Guía</string>
+    <string name="link_to_feedback">Comentario</string>
+    <string name="link_to_more_projects">Más proyectos</string>
     <!-- Settings -->
     <string name="top_bar_settings">Configuración</string>
     <string name="settings_app_theme_label">Tema</string>

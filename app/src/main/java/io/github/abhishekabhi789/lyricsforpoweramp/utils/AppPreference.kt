@@ -16,6 +16,7 @@ object AppPreference {
     private const val FILTER_PREF_NAME = "filter_preference"
     private const val UI_PREF_NAME = "ui_preference"
     private const val OTHER_PREF = "other_preference"
+    private const val FIRST_TIME_INFO_SHOWN = "first_time_info_shown"
     private const val UI_THEME_KEY = "app_theme"
     private const val SEARCH_IF_GET_FAILED = "perform_search_if_get_failed"
     private const val SHOW_LYRICS_REQUEST_NOTIFICATION = "lyrics_requests_show_notification"
@@ -39,6 +40,16 @@ object AppPreference {
     fun setFilter(context: Context, filter: FILTER, value: String?) {
         val sharedPreferences = getSharedPreference(context, FILTER_PREF_NAME)
         sharedPreferences?.edit()?.putString(filter.key, value)?.apply()
+    }
+
+    fun getFirstTimeInfoShown(context: Context): Boolean {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        return sharedPreferences?.getBoolean(FIRST_TIME_INFO_SHOWN, false) == true
+    }
+
+    fun setFirstTimeInfoShown(context: Context, value: Boolean) {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        sharedPreferences?.edit()?.putBoolean(FIRST_TIME_INFO_SHOWN, value)?.apply()
     }
 
     fun getTheme(context: Context): AppTheme {

@@ -35,6 +35,16 @@ android {
             name = "KO_FI_URL",
             value = "\"https://ko-fi.com/abhishekabhi789\""
         )
+        buildConfigField(
+            type = "String",
+            name = "EMAIL",
+            value = "\"justsomerandomapps@gmail.com\""
+        )
+        buildConfigField(
+            type = "String",
+            name = "WEBSITE",
+            value = "\"https://abhishekabhi789.github.io/\""
+        )
     }
 
     buildTypes {
