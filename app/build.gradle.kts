@@ -32,11 +32,6 @@ android {
         )
         buildConfigField(
             type = "String",
-            name = "KO_FI_URL",
-            value = "\"https://ko-fi.com/abhishekabhi789\""
-        )
-        buildConfigField(
-            type = "String",
             name = "EMAIL",
             value = "\"justsomerandomapps@gmail.com\""
         )

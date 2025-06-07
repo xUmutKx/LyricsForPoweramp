@@ -58,10 +58,6 @@ Read the Privacy Policy [Here](docs/privacy-policy.md)
 1. [Poweramp API](https://github.com/maxmpz/powerampapi)
 2. [LRCLib](https://lrclib.net/) - Lyrics Source
 
-### :gift_heart: Support
-
-<a href='https://ko-fi.com/X8X1V9VTH' target='_blank'><img style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com'/></a>
-
 ### :running: Check Out Other Projects
 
 Visit [Website](https://abhishekabhi789.github.io/)

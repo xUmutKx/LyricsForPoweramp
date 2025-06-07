@@ -14,6 +14,9 @@ class TranslationHelper(context: Context, client: OkHttpClient, gson: Gson) {
     fun getAvailableTranslators(): List<Translator> = Translator.entries
 
     suspend fun getSupportedLanguages(translator: Translator, lyrics: String): RequestState {
+        if (geminiApiKey.isBlank()) {
+            return RequestState.Failure("No API Key")
+        }
         val result = when (translator) {
             Translator.GEMINI -> gemini.getSupportedLanguages(lyrics)
         }
@@ -35,6 +38,9 @@ class TranslationHelper(context: Context, client: OkHttpClient, gson: Gson) {
         targetLanguage: String,
         translator: Translator
     ): RequestState {
+        if (geminiApiKey.isBlank()) {
+            return RequestState.Failure("No API Key")
+        }
         val result = when (translator) {
             Translator.GEMINI -> gemini.translateLyrics(lyrics, targetLanguage)
         }

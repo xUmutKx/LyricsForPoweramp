@@ -169,11 +169,6 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
                             leadingIcon = { Icon(painterResource(R.drawable.ic_playstore), null) }
                         )
                         AssistChip(
-                            onClick = { browseUrl(context, BuildConfig.KO_FI_URL) },
-                            label = { Text(stringResource(R.string.link_to_ko_fi)) },
-                            leadingIcon = { Icon(painterResource(R.drawable.ic_kofi), null) }
-                        )
-                        AssistChip(
                             onClick = { browseUrl(context, guideUrl) },
                             label = { Text(stringResource(R.string.link_to_guide)) },
                             leadingIcon = { Icon(Icons.AutoMirrored.Filled.HelpCenter, null) }
