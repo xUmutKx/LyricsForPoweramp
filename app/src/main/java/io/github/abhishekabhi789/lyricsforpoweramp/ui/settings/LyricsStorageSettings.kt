@@ -142,7 +142,7 @@ fun LyricsStorageSettings(
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
-                            if (!hasAccess) TextButton(onClick = { uri }) {
+                            if (!hasAccess) TextButton(onClick = { pickFolderLauncher.launch(uri) }) {
                                 Text(stringResource(R.string.settings_save_as_file_button_grant_access))
                             }
                             IconButton(onClick = {
