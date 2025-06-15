@@ -21,6 +21,8 @@
     <string name="first_time_info_dialog_title">Important Info</string>
     <string name="first_time_info_dialog_content">\nThis app depends on accurate track metadata (title, artist, etc.) to find lyrics.\nIf the metadata is missing or incorrect, the search may fail — this is not a bug.\n\nIn such cases, you’ll need to manually adjust the search query.\nLyrics are fetched from a third-party server and may not always be available, even with correct metadata.\n\nNeed help? Contact support: %1$s\n</string>
     <string name="got_it">Got it</string>
+    <string name="cancel">Cancel</string>
+    <string name="closing_with_timeout">Closing in %1$ss</string>
     <!--    top bar-->
     <string name="top_bar_menu_descriptions">More Options</string>
     <!--    search ui-->
@@ -38,9 +40,12 @@
     <string name="send_lyrics_button">Send this lyrics</string>
     <string name="change_preferred_lyrics_type">Change lyrics type</string>
     <string name="edit_lyrics">Edit</string>
-    <string name="sending_lyrics">Sending lyrics result</string>
-    <string name="lyrics_sent_successfully">Lyrics Sent</string>
-    <string name="lyrics_save_to_storage">Save lyrics to storage</string>
+    <string name="lyrics_save_search_result">Saving Lyrics</string>
+    <string name="lyrics_send_to_pa">Sending lyrics to Poweramp</string>
+    <string name="lyrics_sent_to_pa">Lyrics sent to Poweramp</string>
+    <string name="lyrics_save_to_storage">Saving lyrics as storage</string>
+    <string name="lyrics_saved_to_storage">Saved as lyrics file</string>
+    <string name="lyrics_save_to_storage_failed">Failed to save as file</string>
     <string name="result_change_type_button_label">Change lyrics type</string>
     <string name="result_type_synced_description">Synced lyrics of this track</string>
     <string name="result_type_plain_description">Plain lyrics of this track</string>
@@ -140,60 +145,4 @@
     <string name="lyrics_write_invalid_path">Failed to determine the file path.</string>
     <string name="lyrics_write_invalid_lyrics">Failed to parse lyrics for saving.</string>
     <string name="lyrics_write_unknown_error">An unknown error occurred while saving the file.</string>
-    <!--    library-->
-    <string name="navigation_library">Library</string>
-    <string name="no_lyrics">No Lyrics</string>
-    <string name="no_lyrics_description">Without any lyrics</string>
-    <string name="cached">Cached</string>
-    <string name="cached_description">Lyrics cached in Poweramp</string>
-    <string name="file">File</string>
-    <string name="file_description">Lyrics from file</string>
-    <string name="all">All</string>
-    <string name="all_description">All tracks</string>
-    <string name="completed">Completed</string>
-    <string name="failed">Failed</string>
-    <string name="no_result">No result</string>
-    <string name="failed_to_send_to_poweramp">Failed to send to Poweramp</string>
-    <string name="failed_to_save_into_files">Failed to save as file</string>
-    <string name="downloading">Downloading</string>
-    <string name="pending">Pending</string>
-    <string name="total_tracks_count">Total tracks: %1$s</string>
-    <string name="cancel">Cancel</string>
-    <string name="cancelled">Cancelled</string>
-    <string name="back">Back</string>
-    <string name="download_button_disabled">Check Lyrics Storage Settings</string>
-    <string name="download_button_disabled_popup_title">Update Lyrics Storage Settings</string>
-    <string name="download_button_disabled_popup_message">Both lyrics storage methods are disabled, so the download cannot proceed. Do you want to go to Settings now to enable one?</string>
-    <string name="download_manager">Download Manager</string>
-    <string name="download">Download</string>
-    <string name="cached_count">Cached: %1$s</string>
-    <string name="file_count">File: %1$s</string>
-    <string name="no_lyrics_count">No Lyrics: %1$s</string>
-    <string name="total_count">Total: %1$s</string>
-    <string name="toggle_list_view">Toggle list view</string>
-    <string name="search_library_track">Search track</string>
-    <string name="library_empty">No track found!</string>
-    <string name="library_search_field_hint">Search using song info</string>
-    <string name="no_tracks_for_type">No tracks found for \"%1$s\" type</string>
-    <string name="fab_now_playing">Go to now playing</string>
-    <!--    premium-->
-    <string name="premium_needed_dialog_title">Premium Required</string>
-    <string name="premium_needed_dialog_description">Purchase premium to unlock this feature</string>
-    <string name="premium_button_buy_premium">Purchase Premium</string>
-    <!--    billing-->
-    <string name="billing_response_purchase_started">Processing your purchase…</string>
-    <string name="billing_response_user_cancelled">Purchase canceled.</string>
-    <string name="billing_response_already_purchased">You\'ve already purchased this. Please restart the app and check again.</string>
-    <string name="billing_response_not_purchased">No purchase found.</string>
-    <string name="billing_response_billing_unavailable">Error processing payment.</string>
-    <string name="billing_response_service_disconnected">Couldn\'t connect to the Play Store. Please try again.</string>
-    <string name="billing_response_feature_not_supported">This billing feature isn\'t supported on your device.</string>
-    <string name="billing_response_item_unavailable">This item is currently unavailable for purchase.</string>
-    <string name="billing_response_network_error">Check your internet connection and try again.</string>
-    <string name="billing_response_developer_error">Something went wrong. Please contact the app developer.</string>
-    <string name="billing_response_error">An error occurred with Google Play. Please try again later.</string>
-    <string name="billing_response_awaiting_confirmation">Purchase in progress. This may take a moment.</string>
-    <string name="billing_response_purchase_confirmed">Purchase confirmed! Enjoy your premium features.</string>
-    <string name="billing_response_unknown_error">An unknown error occurred. Please try again or contact support.</string>
-
 </resources>

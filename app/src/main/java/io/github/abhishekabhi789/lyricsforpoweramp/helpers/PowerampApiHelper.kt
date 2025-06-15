@@ -11,6 +11,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.FILTER
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 /**
  * Contains functions helping to send and receive data with PowerAmp
@@ -94,22 +98,34 @@ object PowerampApiHelper {
      * @return [Pair]<Boolean, StorageHelper.Result> where [Boolean] represents success status for sending to Poweramp.
      * and [StorageHelper.Result] represents success status for saving to storage.
      */
-    suspend fun sendLyricResponse(
+    fun sendLyrics(
         context: Context,
         filePath: String,
         powerampId: Long?,
         lyrics: Lyrics,
         lyricsType: LyricsType,
         markInstrumental: Boolean = false
-    ): Pair<Boolean, StorageHelper.Result> {
-        val sendToPoweramp = AppPreference.getSendLyricsToPoweramp(context)
-        val saveToFile = AppPreference.getSaveAsFile(context)
+    ): Flow<SendLyricsState> = flow {
+        var progress = 0.1f
+        val shouldSendToPA = AppPreference.getSendLyricsToPoweramp(context)
+        val shouldSaveAsFile = AppPreference.getSaveAsFile(context)
+
+        var state = SendLyricsState(
+            progress = progress,
+            sendToPoweramp = SendLyricsState.Operation(shouldPerform = shouldSendToPA),
+            saveAsFile = SendLyricsState.Operation(shouldPerform = shouldSaveAsFile)
+        )
+        emit(state)
+
+        val totalSteps = listOf(shouldSendToPA, shouldSaveAsFile).count { it }
+        val stepSize = 0.5f / totalSteps
+
         val lyricsText = when (lyricsType) {
             LyricsType.PLAIN -> (lyrics.plainLyrics ?: lyrics.syncedLyrics)!!
             LyricsType.SYNCED -> (lyrics.syncedLyrics ?: lyrics.plainLyrics)!!
             LyricsType.INSTRUMENTAL -> if (markInstrumental) INSTRUMENTAL_MARKING else null
         }
-        val sentToPoweramp: Boolean = if (sendToPoweramp) {
+        if (shouldSendToPA) {
             val infoLine = makeInfoLine(context, lyrics)
             val intent = Intent(PowerampAPI.Lyrics.ACTION_UPDATE_LYRICS).apply {
                 putExtra(PowerampAPI.EXTRA_ID, powerampId)
@@ -127,15 +143,20 @@ object PowerampApiHelper {
             }
 
             try {
-                val status = PowerampAPIHelper.sendPAIntent(context, intent)
-                Log.i(TAG, "sendLyricResponse: Success $status")
-                status
+                val sent = PowerampAPIHelper.sendPAIntent(context, intent)
+                Log.i(TAG, "sendLyricResponse: Success $sent")
+                progress += stepSize
+                val sentToPa = state.sendToPoweramp.copy(result = sent)
+                state = state.copy(progress = progress, sendToPoweramp = sentToPa)
+                emit(state)
             } catch (e: Throwable) {
                 e.printStackTrace()
-                false
+                val sentToPa = state.sendToPoweramp.copy(result = false)
+                state = state.copy(progress = progress, sendToPoweramp = sentToPa)
+                emit(state)
             }
-        } else true //not attempted
-        val result = if (saveToFile) {
+        }
+        if (shouldSaveAsFile) {
             if (lyricsText != null) {
                 val lyricsContent = if (lyricsType == LyricsType.SYNCED) {
                     buildString {
@@ -149,21 +170,33 @@ object PowerampApiHelper {
                         appendLine(lyricsText)
                     }
                 } else lyricsText
-                StorageHelper.writeLyricsFile(
+                val saveResult = StorageHelper.writeLyricsFile(
                     context = context,
                     filePath = filePath,
                     lyricsContent = lyricsContent,
                     lyricsType = lyricsType,
-                ).also {
-                    Log.i(TAG, "sendLyricResponse: save to storage $it")
-                }
+                )
+                Log.i(TAG, "sendLyricResponse: save to storage $saveResult")
+                progress += stepSize
+                val savedToFile = state.saveAsFile.copy(result = saveResult)
+                state = state.copy(progress = progress, saveAsFile = savedToFile)
+                emit(state)
             } else {
                 Log.w(TAG, "sendLyricResponse: lyrics is null")
-                StorageHelper.Result.INVALID_LYRICS
+                val savedToFile =
+                    state.saveAsFile.copy(result = StorageHelper.Result.INVALID_LYRICS)
+                state = state.copy(progress = progress, saveAsFile = savedToFile)
+                emit(state)
             }
-        } else StorageHelper.Result.SUCCESS //not attempted
-        return Pair(sentToPoweramp, result)
-    }
+        }
+        val sent = !state.sendToPoweramp.shouldPerform || state.sendToPoweramp.result == true
+        val saved =
+            !state.saveAsFile.shouldPerform || state.saveAsFile.result == StorageHelper.Result.SUCCESS
+        if (sent && saved) {
+            state = state.copy(progress = 1f)
+            emit(state)
+        }
+    }.flowOn(Dispatchers.IO)
 
     private fun makeInfoLine(context: Context, lyrics: Lyrics?): String {
         return buildString {
@@ -180,4 +213,12 @@ object PowerampApiHelper {
             appendLine(context.getString(R.string.response_footer_text))
         }
     }
+}
+
+data class SendLyricsState(
+    val progress: Float = 0f,
+    val sendToPoweramp: Operation<Boolean?> = Operation(shouldPerform = false),
+    val saveAsFile: Operation<StorageHelper.Result?> = Operation(shouldPerform = false)
+) {
+    data class Operation<T>(val shouldPerform: Boolean = false, val result: T? = null)
 }

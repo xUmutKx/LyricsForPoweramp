@@ -22,6 +22,9 @@
     <string name="first_time_info_dialog_title">Información importante</string>
     <string name="first_time_info_dialog_content">Esta aplicación depende de metadatos precisos de la pista (título, artista, etc.) para encontrar las letras.\n Si los metadatos están incompletos o son incorrectos, la búsqueda puede fallar — esto no es un error.\n\n En esos casos, deberás ajustar manualmente la consulta de búsqueda.\n Las letras se obtienen de un servidor de terceros y pueden no estar disponibles, incluso con metadatos correctos.\n\n¿Necesitas ayuda? Contacta con soporte: %1$s</string>
     <string name="got_it">Entendido</string>
+    <string name="cancel">Cancelar</string>
+    <string name="closing_with_timeout">Cerrando en %1$ss</string>
+
     <!--    top bar-->
     <string name="top_bar_menu_descriptions">Más Opciones</string>
     <!--    search ui-->
@@ -39,9 +42,12 @@
     <string name="send_lyrics_button">Enviar estas letras</string>
     <string name="change_preferred_lyrics_type">Cambiar tipo de letras</string>
     <string name="edit_lyrics">Editar</string>
-    <string name="sending_lyrics">Enviando letras</string>
-    <string name="lyrics_sent_successfully">Letras enviadas</string>
-    <string name="lyrics_save_to_storage">Guardar letras en almacenamiento</string>
+    <string name="lyrics_save_search_result">Letras de guardado</string>
+    <string name="lyrics_send_to_pa">Enviar letras a Poweramp</string>
+    <string name="lyrics_sent_to_pa">Letras enviadas a Poweramp</string>
+    <string name="lyrics_save_to_storage">Guardar letras como almacenamiento</string>
+    <string name="lyrics_saved_to_storage">Guardado como archivo</string>
+    <string name="lyrics_save_to_storage_failed">No se pudo guardar como archivo</string>
     <string name="result_change_type_button_label">Cambiar tipo de letras</string>
     <string name="result_type_synced_description">Letras sincronizadas de esta pista</string>
     <string name="result_type_plain_description">Letras planas de esta pista</string>

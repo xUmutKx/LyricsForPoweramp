@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,10 +67,8 @@ fun EditorScreen(
     val viewModelLyrics by viewmodel.lyricsContent.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
-    var showSaveStatus by remember { mutableStateOf(false) }
+    val sendLyricsState by viewmodel.sendLyricsState.collectAsState()
     var showTranslator by remember { mutableStateOf(false) }
-    val sendToPowerampState by viewmodel.sendToPowerampState.collectAsStateWithLifecycle()
-    val saveToStorageState by viewmodel.saveToStorageState.collectAsStateWithLifecycle()
     BackHandler { onFinish() }
     Scaffold(
         topBar = {
@@ -109,8 +108,7 @@ fun EditorScreen(
                 },
                 floatingActionButton = {
                     FloatingActionButton(onClick = {
-                        showSaveStatus = true
-                        viewmodel.sendLyricsToPoweramp(context) { showSaveStatus = false }
+                        viewmodel.sendLyricsToPoweramp(context)
                     }) {
                         Icon(Icons.Default.Save, contentDescription = stringResource(R.string.save))
                     }
@@ -160,19 +158,19 @@ fun EditorScreen(
                     .padding(horizontal = 12.dp)
             )
         }
-        if (showSaveStatus) {
+        if (sendLyricsState.progress != 0f) {
             ResultBottomSheet(
-                sendToPowerampState,
-                saveToStorageState,
-                onDismiss = { showSaveStatus = false },
+                sendLyricsState = sendLyricsState,
+                onDismiss = viewmodel::resetSendLyricsState,
                 grantAccess = {
-                    showSaveStatus = false
+                    viewmodel.resetSendLyricsState()
                     val path = viewmodel.filePath.substringBeforeLast(File.separatorChar)
                     Intent(context, SettingsActivity::class.java).apply {
                         setAction(SettingsActivity.Companion.OPEN_SETTINGS_ACTION)
                         putExtra(SettingsActivity.EXTRA_REQUIRED_PATH, path)
                     }.let { context.startActivity(it) }
-                }
+                },
+                onFinish = onFinish
             )
         }
         if (showTranslator) {

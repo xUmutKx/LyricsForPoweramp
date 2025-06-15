@@ -28,92 +28,126 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import kotlinx.coroutines.delay
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultBottomSheet(
-    sentToPoweramp: Boolean?,
-    saveToStorage: StorageHelper.Result?,
+    sendLyricsState: SendLyricsState,
     grantAccess: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onFinish: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val showSendToPoweramp = remember { AppPreference.getSendLyricsToPoweramp(context) }
-    val showSaveToStorage = remember { AppPreference.getSaveAsFile(context) }
-    val savedToStorage by remember(saveToStorage) {
-        derivedStateOf {
-            if (saveToStorage != null) (saveToStorage == StorageHelper.Result.SUCCESS) else null
-        }
-    }
+    val timeout = remember { 3.seconds }
+    val sendToPoweramp by remember(sendLyricsState) { derivedStateOf { sendLyricsState.sendToPoweramp } }
+    val saveToStorage by remember(sendLyricsState) { derivedStateOf { sendLyricsState.saveAsFile } }
+
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Row(
             modifier = Modifier
                 .padding(16.dp)
                 .height(IntrinsicSize.Min)
         ) {
-            val progress by animateFloatAsState(
-                targetValue = when {
-                    showSendToPoweramp && showSaveToStorage -> {
-                        when {
-                            sentToPoweramp == true && savedToStorage == true -> 1f
-                            sentToPoweramp == true || savedToStorage == true -> 0.5f
-                            else -> 0f
-                        }
-                    }
-
-                    showSendToPoweramp || showSaveToStorage -> {
-                        when {
-                            sentToPoweramp == true -> 1f
-                            savedToStorage == true -> 1f
-                            else -> 0.5f
-                        }
-                    }
-
-                    else -> 1f
-                },
+            val animatedProgress by animateFloatAsState(
+                targetValue = sendLyricsState.progress,
                 animationSpec = tween(1000)
             )
-            VerticalProgressBar(progress = progress)
+            VerticalProgressBar(progress = animatedProgress)
             Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
-                StepIndicator(stringResource(R.string.sending_lyrics), true)
-                if (showSendToPoweramp) {
-                    StepIndicator(stringResource(R.string.lyrics_sent_successfully), sentToPoweramp)
-                }
-                if (showSaveToStorage) {
+                StepIndicator(stringResource(R.string.lyrics_save_search_result), true)
+                if (!sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform) {
                     StepIndicator(
-                        text = stringResource(
-                            saveToStorage?.message ?: R.string.lyrics_save_to_storage
-                        ),
-                        isCompleted = savedToStorage,
-                        actionLabel = if (savedToStorage == false)
-                            stringResource(R.string.settings_save_as_file_button_grant_access) else null,
-                        onAction = if (savedToStorage == false) grantAccess else null
+                        stringResource(R.string.notification_no_saving_method_description),
+                        false
                     )
                 }
-                StepIndicator(
-                    stringResource(R.string.done),
-                    if (sentToPoweramp == true && savedToStorage == true) true else null
+                if (sendToPoweramp.shouldPerform) {
+                    when (sendToPoweramp.result) {
+                        true, false -> StepIndicator(
+                            text = stringResource(R.string.lyrics_sent_to_pa),
+                            isCompleted = sendToPoweramp.result
+                        )
+
+                        null -> StepIndicator(
+                            text = stringResource(R.string.lyrics_send_to_pa), false
+                        )
+                    }
+                }
+                if (saveToStorage.shouldPerform) {
+                    val label = saveToStorage.result?.message?.let { stringResource(it) }
+                    StepIndicator(
+                        text = label ?: stringResource(R.string.lyrics_save_to_storage_failed),
+                        isCompleted = saveToStorage.result?.let { it == StorageHelper.Result.SUCCESS },
+                        actionLabel = if (saveToStorage.result == StorageHelper.Result.NO_PERMISSION)
+                            stringResource(R.string.settings_save_as_file_button_grant_access) else null,
+                        onAction = if (saveToStorage.result == StorageHelper.Result.NO_PERMISSION)
+                            grantAccess else null
+                    )
+                }
+                val completed: Boolean? by remember(sendLyricsState) {
+                    derivedStateOf {
+                        if (!sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform) false
+                        else sendLyricsState.progress == 1f
+                    }
+                }
+                StepIndicator(stringResource(R.string.done), completed)
+            }
+        }
+        if (sendLyricsState.progress == 1f) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 16.dp)
+                    .padding(horizontal = 24.dp)
+            ) {
+                val durationSaver = Saver<Duration, Long>(
+                    save = { it.inWholeSeconds },
+                    restore = { it.seconds }
                 )
+                var exitTimeout by rememberSaveable(stateSaver = durationSaver) {
+                    mutableStateOf(timeout)
+                }
+                LaunchedEffect(Unit) {
+                    while (exitTimeout > Duration.ZERO) {
+                        delay(1.seconds)
+                        exitTimeout = exitTimeout.minus(1.seconds)
+                    }
+                    onFinish()
+                }
+                Text(
+                    stringResource(R.string.closing_with_timeout, exitTimeout.inWholeSeconds),
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel))
+                }
             }
         }
     }
@@ -156,7 +190,7 @@ fun StepIndicator(
         when (isCompleted) {
             true -> MaterialTheme.colorScheme.primary
             false -> MaterialTheme.colorScheme.error
-            else -> Color.Gray
+            null -> Color.Gray
         }
     )
     Row(
@@ -169,7 +203,7 @@ fun StepIndicator(
             imageVector = when (isCompleted) {
                 true -> Icons.Default.CheckCircle
                 false -> Icons.Default.Error
-                else -> ImageVector.vectorResource(R.drawable.ic_loading_circle)
+                null -> ImageVector.vectorResource(R.drawable.ic_loading_circle)
             },
             contentDescription = null,
             tint = color,

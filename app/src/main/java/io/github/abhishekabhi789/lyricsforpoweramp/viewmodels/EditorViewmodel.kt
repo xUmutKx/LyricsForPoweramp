@@ -11,19 +11,16 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.seconds
 
 class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewModel() {
 
@@ -39,12 +36,6 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     private var powerampId: Long = 0L
     private lateinit var lyrics: Lyrics
     lateinit var filePath: String
-
-    private val _sendToPowerampState = MutableStateFlow<Boolean?>(null)
-    val sendToPowerampState = _sendToPowerampState.asStateFlow()
-
-    private val _saveToStorageState = MutableStateFlow<StorageHelper.Result?>(null)
-    val saveToStorageState = _saveToStorageState.asStateFlow()
 
     private val _targetLanguage: MutableStateFlow<String?> = MutableStateFlow(null)
     val targetLanguage = _targetLanguage.asStateFlow()
@@ -62,6 +53,9 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     val translatorState = _translatorState.asStateFlow()
 
     val translators = translationHelper.getAvailableTranslators()
+
+    private val _sendLyricsState = MutableStateFlow(SendLyricsState())
+    val sendLyricsState = _sendLyricsState.asStateFlow()
 
     fun undo() {
         if (canUndo.value) {
@@ -94,26 +88,21 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         _lyricsContent.value = (lyrics.syncedLyrics ?: lyrics.plainLyrics ?: "")
     }
 
-    fun sendLyricsToPoweramp(context: Context, onComplete: () -> Unit) {
+    fun sendLyricsToPoweramp(context: Context) {
+        resetSendLyricsState()
         viewModelScope.launch {
-            val (sentToPoweramp, writingResult) =
-                PowerampApiHelper.sendLyricResponse(
-                    context = context,
-                    filePath = filePath,
-                    powerampId = powerampId,
-                    lyrics = lyrics.copy(syncedLyrics = lyricsContent.value),
-                    lyricsType = LyricsType.SYNCED,
-                )
-            "sentToPoweramp $sentToPoweramp result $writingResult".let {
-                Log.d(TAG, "sendLyricsToPoweramp: $it")
-            }
-            _sendToPowerampState.update { sentToPoweramp }
-            _saveToStorageState.update { writingResult }
-            if (sentToPoweramp && writingResult == StorageHelper.Result.SUCCESS) {
-                delay(3.seconds)
-                onComplete()
-            }
+            PowerampApiHelper.sendLyrics(
+                context = context,
+                filePath = filePath,
+                powerampId = powerampId,
+                lyrics = lyrics.copy(syncedLyrics = lyricsContent.value),
+                lyricsType = LyricsType.SYNCED,
+            ).collect { state -> _sendLyricsState.value = state }
         }
+    }
+
+    fun resetSendLyricsState() {
+        _sendLyricsState.value = SendLyricsState()
     }
 
     fun updateStackState() {

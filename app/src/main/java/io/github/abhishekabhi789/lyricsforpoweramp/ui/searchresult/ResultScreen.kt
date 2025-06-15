@@ -54,8 +54,7 @@ fun ResultScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val result by viewmodel.searchResults.collectAsState()
     val isLaunchedFromPoweramp by remember { derivedStateOf { viewmodel.powerampId != null } }
-    val sendToPowerampState by viewmodel.sendToPowerampState.collectAsState()
-    val saveToStorageState by viewmodel.saveToStorageState.collectAsState()
+    val sendLyricsState by viewmodel.sendLyricsState.collectAsState()
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
@@ -103,7 +102,6 @@ fun ResultScreen(
                                 context = context,
                                 lyrics = lyrics,
                                 lyricsType = lyricsType,
-                                onComplete = { if (showBottomSheet) onFinish() }
                             )
                         }
                     },
@@ -129,8 +127,7 @@ fun ResultScreen(
 
         if (showBottomSheet) {
             ResultBottomSheet(
-                sendToPowerampState,
-                saveToStorageState,
+                sendLyricsState = sendLyricsState,
                 onDismiss = {
                     showBottomSheet = false
                     viewmodel.clearResultState()
@@ -143,7 +140,8 @@ fun ResultScreen(
                         setAction(SettingsActivity.Companion.OPEN_SETTINGS_ACTION)
                         putExtra(SettingsActivity.EXTRA_REQUIRED_PATH, path)
                     }.let { context.startActivity(it) }
-                }
+                },
+                onFinish = onFinish
             )
         }
     }

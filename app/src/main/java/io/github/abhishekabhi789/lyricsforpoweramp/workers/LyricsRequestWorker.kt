@@ -15,7 +15,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LrclibApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.NotificationHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper.sendLyricResponse
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper.sendLyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
@@ -146,31 +146,37 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
 
     private suspend fun sendLyrics(lyrics: Lyrics, lyricsType: LyricsType) {
         val markInstrumental = AppPreference.getMarkInstrumental(mContext)
-        val (sentToPoweramp, lyricsFileWritingResult) = sendLyricResponse(
+        sendLyrics(
             context = mContext,
             filePath = mTrack.filePath,
             powerampId = mTrack.realId,
             lyrics = lyrics,
             lyricsType = lyricsType,
             markInstrumental = markInstrumental
-        )
-        val path = mTrack.filePath.substringBeforeLast(File.separatorChar)
-        val notificationText = when (lyricsFileWritingResult) {
-            StorageHelper.Result.NO_PERMISSION -> mContext.getString(
-                R.string.notification_storage_missing_access_to_path, path
-            )
+        ).collect { state ->
+            val path = mTrack.filePath.substringBeforeLast(File.separatorChar)
+            val notificationText = when (state.saveAsFile.result) {
+                StorageHelper.Result.NO_PERMISSION -> mContext.getString(
+                    R.string.notification_storage_missing_access_to_path, path
+                )
 
-            else -> null
+                else -> null
+            }
+            notificationText?.let {
+                mNotificationHelper.launchSettings(
+                    title = mContext.getString(R.string.notification_storage_access_needed_title),
+                    text = it,
+                    extras = mapOf(SettingsActivity.EXTRA_REQUIRED_PATH to path)
+                )
+            }
+            val completed: Boolean? =
+                if (!state.sendToPoweramp.shouldPerform && !state.saveAsFile.shouldPerform) null
+                else state.progress == 1f
+
+            if (completed == true) {
+                mNotificationHelper.cancelRequestNotification()
+            }
         }
-        notificationText?.let {
-            mNotificationHelper.launchSettings(
-                title = mContext.getString(R.string.notification_storage_access_needed_title),
-                text = it,
-                extras = mapOf(SettingsActivity.EXTRA_REQUIRED_PATH to path)
-            )
-        }
-        if (sentToPoweramp && lyricsFileWritingResult == StorageHelper.Result.SUCCESS)
-            mNotificationHelper.cancelRequestNotification()
     }
 
 

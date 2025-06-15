@@ -150,7 +150,7 @@ object StorageHelper {
 
     enum class Result(@StringRes val message: Int) {
         /** Successfully wrote the lyrics file. */
-        SUCCESS(R.string.lyrics_write_success),
+        SUCCESS(R.string.lyrics_saved_to_storage),
 
         /** Missing permission to access the selected folder. */
         NO_PERMISSION(R.string.lyrics_write_no_permission),
