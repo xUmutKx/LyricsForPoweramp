@@ -120,10 +120,10 @@ object PowerampApiHelper {
         val totalSteps = listOf(shouldSendToPA, shouldSaveAsFile).count { it }
         val stepSize = 0.5f / totalSteps
 
-        val lyricsText = when (lyricsType) {
-            LyricsType.PLAIN -> (lyrics.plainLyrics ?: lyrics.syncedLyrics)!!
-            LyricsType.SYNCED -> (lyrics.syncedLyrics ?: lyrics.plainLyrics)!!
-            LyricsType.INSTRUMENTAL -> if (markInstrumental) INSTRUMENTAL_MARKING else null
+        val lyricsText: String? = when (lyricsType) {
+            LyricsType.PLAIN -> (lyrics.plainLyrics ?: lyrics.syncedLyrics)
+            LyricsType.SYNCED -> (lyrics.syncedLyrics ?: lyrics.plainLyrics)
+            LyricsType.INSTRUMENTAL -> return@flow //no-op
         }
         if (shouldSendToPA) {
             val infoLine = makeInfoLine(context, lyrics)
@@ -150,6 +150,7 @@ object PowerampApiHelper {
                 state = state.copy(progress = progress, sendToPoweramp = sentToPa)
                 emit(state)
             } catch (e: Throwable) {
+                Log.e(TAG, "sendLyrics: failed to send to PA", e)
                 e.printStackTrace()
                 val sentToPa = state.sendToPoweramp.copy(result = false)
                 state = state.copy(progress = progress, sendToPoweramp = sentToPa)
@@ -183,8 +184,10 @@ object PowerampApiHelper {
                 emit(state)
             } else {
                 Log.w(TAG, "sendLyricResponse: lyrics is null")
+                val result = if (lyrics.instrumental == true)
+                    StorageHelper.Result.SUCCESS else StorageHelper.Result.INVALID_LYRICS
                 val savedToFile =
-                    state.saveAsFile.copy(result = StorageHelper.Result.INVALID_LYRICS)
+                    state.saveAsFile.copy(result = result)
                 state = state.copy(progress = progress, saveAsFile = savedToFile)
                 emit(state)
             }
