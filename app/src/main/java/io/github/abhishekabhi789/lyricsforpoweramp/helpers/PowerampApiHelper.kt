@@ -10,7 +10,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.FILTER
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.FilterType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -59,11 +59,11 @@ object PowerampApiHelper {
         val durationMs = intent.getIntExtra(PowerampAPI.Track.DURATION, 0)
         val filePath = intent.getStringExtra(PowerampAPI.Track.PATH)
         val duration: Int? = (durationMs / 1000).let { if (it == 0) null else it }
-        return processField(context, FILTER.TITLE_FILTER, title)?.let {
+        return processField(context, FilterType.TITLE_FILTER, title)?.let {
             Track(
                 trackName = it,
-                artistName = processField(context, FILTER.ARTISTS_FILTER, artist),
-                albumName = processField(context, FILTER.ALBUM_FILTER, album),
+                artistName = processField(context, FilterType.ARTISTS_FILTER, artist),
+                albumName = processField(context, FilterType.ALBUM_FILTER, album),
                 duration = duration,
                 filePath = filePath ?: "",
                 realId = realId,
@@ -75,7 +75,7 @@ object PowerampApiHelper {
     /**
      * Corresponding filter words will be removed from the value.
      */
-    private fun processField(context: Context, field: FILTER, value: String?): String? {
+    fun processField(context: Context, field: FilterType, value: String?): String? {
         val filter = AppPreference.getFilter(context, field)?.lines()
         return filter?.fold(value) { cleanedValue, filterItem ->
             try {

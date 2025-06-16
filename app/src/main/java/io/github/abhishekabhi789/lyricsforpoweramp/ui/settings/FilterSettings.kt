@@ -15,7 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.FILTER
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.FilterType
 
 @Composable
 fun FilterSettings(modifier: Modifier = Modifier) {
@@ -29,9 +29,12 @@ fun FilterSettings(modifier: Modifier = Modifier) {
             icon = Icons.Default.Info
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)) {
-            FilterField(filter = FILTER.TITLE_FILTER, icon = Icons.Default.MusicNote)
-            FilterField(filter = FILTER.ARTISTS_FILTER, icon = Icons.Default.InterpreterMode)
-            FilterField(filter = FILTER.ALBUM_FILTER, icon = Icons.Default.Album)
+            FilterField(filterType = FilterType.TITLE_FILTER, icon = Icons.Default.MusicNote)
+            FilterField(
+                filterType = FilterType.ARTISTS_FILTER,
+                icon = Icons.Default.InterpreterMode
+            )
+            FilterField(filterType = FilterType.ALBUM_FILTER, icon = Icons.Default.Album)
         }
     }
 }

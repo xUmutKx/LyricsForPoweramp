@@ -32,14 +32,14 @@ object AppPreference {
         return context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
     }
 
-    fun getFilter(context: Context, filter: FILTER): String? {
+    fun getFilter(context: Context, filterType: FilterType): String? {
         val sharedPreferences = getSharedPreference(context, FILTER_PREF_NAME)
-        return sharedPreferences?.getString(filter.key, null)
+        return sharedPreferences?.getString(filterType.key, null)
     }
 
-    fun setFilter(context: Context, filter: FILTER, value: String?) {
+    fun setFilter(context: Context, filterType: FilterType, value: String?) {
         val sharedPreferences = getSharedPreference(context, FILTER_PREF_NAME)
-        sharedPreferences?.edit()?.putString(filter.key, value)?.apply()
+        sharedPreferences?.edit()?.putString(filterType.key, value)?.apply()
     }
 
     fun getFirstTimeInfoShown(context: Context): Boolean {
@@ -198,7 +198,7 @@ object AppPreference {
         Dark(R.string.settings_theme_dark_label)
     }
 
-    enum class FILTER(val key: String, @StringRes val label: Int) {
+    enum class FilterType(val key: String, @StringRes val label: Int) {
         TITLE_FILTER("title_filter", R.string.settings_filter_title_label),
         ARTISTS_FILTER("artists_filter", R.string.settings_filter_artists_label),
         ALBUM_FILTER("album_filter", R.string.settings_filter_album_label),
