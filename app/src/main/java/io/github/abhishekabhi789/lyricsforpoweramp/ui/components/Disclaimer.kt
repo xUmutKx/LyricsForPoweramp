@@ -14,15 +14,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Disclaimer(textContent: String, icon: ImageVector, modifier: Modifier = Modifier) {
+fun Disclaimer(
+    textContent: String,
+    icon: ImageVector,
+    foregroundColor: Color = MaterialTheme.colorScheme.onTertiaryContainer,
+    backgroundColor: Color = MaterialTheme.colorScheme.tertiaryContainer,
+    modifier: Modifier = Modifier
+) {
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.tertiaryContainer,
+        color = backgroundColor,
         modifier = modifier
     ) {
         Row(
@@ -34,12 +41,12 @@ fun Disclaimer(textContent: String, icon: ImageVector, modifier: Modifier = Modi
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onTertiaryContainer
+                tint = foregroundColor
             )
             Spacer(modifier = Modifier.padding(4.dp))
             Text(
                 text = textContent,
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                color = foregroundColor,
                 style = MaterialTheme.typography.bodyMedium,
 
                 )

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,7 +40,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -48,6 +48,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity.Companion.TAG
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getCleanedPath
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.hasAccess
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
@@ -159,15 +160,12 @@ fun LyricsStorageSettings(
                         }
                     }
                 } else {
-                    Text(
-                        text = stringResource(R.string.settings_save_as_file_no_folders),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        textAlign = TextAlign.Center
+                    Disclaimer(
+                        textContent = stringResource(R.string.settings_save_as_file_no_folders),
+                        icon = Icons.Default.Error,
+                        foregroundColor = MaterialTheme.colorScheme.onErrorContainer,
+                        backgroundColor = MaterialTheme.colorScheme.errorContainer
                     )
-
                 }
             }
             accessRequestedPath?.let { pathUri ->
