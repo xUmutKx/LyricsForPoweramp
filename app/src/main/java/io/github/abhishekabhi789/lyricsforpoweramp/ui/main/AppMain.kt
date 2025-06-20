@@ -5,19 +5,30 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
+import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SearchResultActivity
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -31,10 +42,24 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
     val focusRemoverModifier = Modifier.clickable(
-        interactionSource = interactionSource,
-        indication = null
+        interactionSource = interactionSource, indication = null
     ) {
         focusManager.clearFocus()
+    }
+    val inputState by viewModel.inputState.collectAsState()
+    val hasRealId by remember { derivedStateOf { inputState.queryTrack.realId != null } }
+    val launchedEditor = {
+        val intent = Intent(context, EditorActivity::class.java).apply {
+            putExtra(EditorActivity.KEY_REAL_ID, inputState.queryTrack.realId)
+            putExtra(
+                EditorActivity.KEY_FILE_PATH, inputState.queryTrack.filePath
+            )
+            putParcelableArrayListExtra(
+                EditorActivity.KEY_LYRICS,
+                arrayListOf(Lyrics.makeDummyLyricsForTrack(inputState.queryTrack))
+            )
+        }
+        context.startActivity(intent)
     }
     LaunchedEffect(snackbarHostState) {
         keyboardController.let { keyboard ->
@@ -77,8 +102,17 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
     Scaffold(
         topBar = { TopBar() },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        modifier = modifier
-            .then(focusRemoverModifier)
+        floatingActionButton = {
+            if (hasRealId) {
+                FloatingActionButton(onClick = launchedEditor) {
+                    Icon(
+                        Icons.Default.EditNote,
+                        contentDescription = stringResource(R.string.add_custom_lyrics)
+                    )
+                }
+            }
+        },
+        modifier = modifier.then(focusRemoverModifier)
     ) { paddingValues ->
         SearchUi(
             viewModel = viewModel,

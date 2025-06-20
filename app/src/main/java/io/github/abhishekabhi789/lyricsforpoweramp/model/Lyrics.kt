@@ -33,4 +33,18 @@ data class Lyrics(
         val seconds = duration.toInt() % 60
         return String.format(Locale.US, "%02d:%02d", minutes, seconds)
     }
+
+    companion object {
+        fun makeDummyLyricsForTrack(track: Track): Lyrics {
+            return Lyrics(
+                trackName = track.trackName,
+                artistName = track.artistName,
+                albumName = track.albumName,
+                plainLyrics = null,
+                syncedLyrics = null,
+                duration = (track.duration ?: 0).toDouble(),
+                instrumental = false
+            )
+        }
+    }
 }

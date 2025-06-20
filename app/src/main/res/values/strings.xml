@@ -35,6 +35,7 @@
     <string name="input_track_artists_label">Artists</string>
     <string name="input_track_album_label">Album</string>
     <string name="search">Search</string>
+    <string name="add_custom_lyrics">Write lyrics</string>
     <!--    lyrics result-->
     <string name="result_topbar_title">Results</string>
     <string name="send_lyrics_button">Send this lyrics</string>
