@@ -81,11 +81,15 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         _lyricsContent.value = lyrics
     }
 
-    fun initialize(powerampId: Long, filePath: String, lyrics: Lyrics) {
+    fun initialize(
+        powerampId: Long, filePath: String, lyrics: Lyrics, preferredLyricsType: LyricsType
+    ) {
         this.lyrics = lyrics
         this.filePath = filePath
         this.powerampId = powerampId
-        _lyricsContent.value = (lyrics.syncedLyrics ?: lyrics.plainLyrics ?: "")
+        _lyricsContent.value =
+            (if (preferredLyricsType == LyricsType.SYNCED) lyrics.syncedLyrics else lyrics.plainLyrics)
+                ?: ""
     }
 
     fun sendLyricsToPoweramp(context: Context) {
@@ -119,8 +123,7 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         _supportedLanguageState.value = RequestState.Processing
         viewModelScope.launch {
             val result = translationHelper.getSupportedLanguages(
-                translator = _chosenTranslator.value,
-                lyrics = _lyricsContent.value
+                translator = _chosenTranslator.value, lyrics = _lyricsContent.value
             )
             Log.d(TAG, "fetchSupportedLanguages: result- $result")
             _supportedLanguageState.value = result
@@ -147,9 +150,7 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         }
         viewModelScope.launch {
             val result = translationHelper.translate(
-                lyrics = lyricsContent,
-                targetLanguage = targetLang,
-                translator = selectedTranslator
+                lyrics = lyricsContent, targetLanguage = targetLang, translator = selectedTranslator
             )
             Log.d(TAG, "translate: result- $result")
             _translatorState.value = result

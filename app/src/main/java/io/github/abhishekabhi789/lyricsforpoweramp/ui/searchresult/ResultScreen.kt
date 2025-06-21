@@ -105,18 +105,17 @@ fun ResultScreen(
                             )
                         }
                     },
-                    onEditLyrics = {
+                    onEditLyrics = { lyricsType ->
                         try {
-                            Intent(context, EditorActivity::class.java).apply {
+                            val intent = Intent(context, EditorActivity::class.java).apply {
                                 putExtra(EditorActivity.KEY_REAL_ID, viewmodel.powerampId)
                                 putExtra(EditorActivity.KEY_FILE_PATH, viewmodel.filePath)
+                                putExtra(EditorActivity.KEY_PREFERRED_TYPE, lyricsType.name)
                                 putParcelableArrayListExtra(
-                                    EditorActivity.KEY_LYRICS,
-                                    arrayListOf(lyrics)
+                                    EditorActivity.KEY_LYRICS, arrayListOf(lyrics)
                                 )
-                            }.also {
-                                context.startActivity(it)
                             }
+                            context.startActivity(intent)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }

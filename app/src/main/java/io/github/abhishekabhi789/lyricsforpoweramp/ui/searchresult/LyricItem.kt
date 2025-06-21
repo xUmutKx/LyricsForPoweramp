@@ -4,7 +4,9 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BasicTooltipBox
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,19 +25,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberBasicTooltipState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.InterpreterMode
 import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -44,11 +46,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -62,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -83,7 +88,7 @@ fun LyricItem(
     lyrics: Lyrics,
     isLaunchedFromPowerAmp: Boolean,
     onLyricChosen: (preferredLyricsType: LyricsType) -> Unit,
-    onEditLyrics: () -> Unit
+    onEditLyrics: (preferredLyricsType: LyricsType) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -98,8 +103,7 @@ fun LyricItem(
         modifier = modifier.scale(if (expanded) 1.01f else 1.0f)
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(8.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(8.dp)
         ) {
             SelectionContainer {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -162,10 +166,7 @@ fun LyricItem(
                     }
                 }
             }
-            Row(
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
                 Icon(
                     imageVector = Icons.Outlined.Timer,
                     contentDescription = null,
@@ -183,7 +184,10 @@ fun LyricItem(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                FlowRow(modifier = Modifier.weight(1f)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier.weight(0.5f)
+                ) {
                     if (lyrics.plainLyrics != null) {
                         CustomChip(
                             label = stringResource(R.string.plain_lyrics_short),
@@ -201,16 +205,14 @@ fun LyricItem(
                         ) { scope.launch { pagerState.animateScrollToPage(lyricPages.lastIndex) } }
                     }
                 }
-                FlowRow(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    if (isLaunchedFromPowerAmp) {
-                        AssistChip(
-                            label = { Text(stringResource(R.string.edit_lyrics)) },
-                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                            onClick = onEditLyrics
-                        )
+                if (isLaunchedFromPowerAmp) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.End,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .height(IntrinsicSize.Min)
+                    ) {
                         val preferredLyricsType =
                             remember { AppPreference.getPreferredLyricsType(context) }
                         val availableLyrics = buildList {
@@ -218,17 +220,20 @@ fun LyricItem(
                             if (lyrics.plainLyrics != null) add(LyricsType.PLAIN)
                             if (lyrics.instrumental == true) add(LyricsType.INSTRUMENTAL)
                         }
-                        var chosenType by remember {
-                            mutableStateOf(
-                                if (preferredLyricsType in availableLyrics) preferredLyricsType
-                                else availableLyrics.first()
-                            )
-                        }
-                        SendLyricsButton(
-                            availableLyricsTypes = availableLyrics,
-                            preferredLyricsType = chosenType,
-                            onTypeChanged = { chosenType = it },
-                        ) { onLyricChosen(chosenType) }
+                        SelectableButton(
+                            actionIcon = Icons.Default.Edit,
+                            tooltipDescription = stringResource(R.string.edit_lyrics),
+                            preferred = preferredLyricsType,
+                            allItems = availableLyrics,
+                            onSend = onEditLyrics,
+                            getLabel = { stringResource(it.shortLabel) })
+                        SelectableButton(
+                            actionIcon = Icons.Default.Done,
+                            tooltipDescription = stringResource(R.string.save),
+                            preferred = preferredLyricsType,
+                            allItems = availableLyrics,
+                            onSend = onLyricChosen,
+                            getLabel = { stringResource(it.shortLabel) })
                     }
                 }
             }
@@ -246,10 +251,8 @@ fun LyricItem(
                         Text(
                             text = if (expanded) lyricsInView
                             else lyricsInView.lines().run {
-                                subList(0, size.coerceAtMost(6)).joinToString(
-                                    separator = "\n",
-                                    postfix = "\n..."
-                                )
+                                subList(0, size.coerceAtMost(6))
+                                    .joinToString(separator = "\n", postfix = "\n...")
                             },
                             style = TextStyle(
                                 fontStyle = FontStyle.Italic,
@@ -282,86 +285,109 @@ fun LyricItem(
                                 .coerceIn(0f, 1f)
                         }
                         .background(
-                            MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
-                            CircleShape
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.5f), CircleShape
                         )
-                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                )
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape))
 
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun SendLyricsButton(
+fun <T> SelectableButton(
     modifier: Modifier = Modifier,
-    preferredLyricsType: LyricsType,
-    availableLyricsTypes: List<LyricsType>,
-    onTypeChanged: (LyricsType) -> Unit,
-    onSend: () -> Unit
+    actionIcon: ImageVector,
+    tooltipDescription: String,
+    preferred: T,
+    allItems: List<T>,
+    onSend: (T) -> Unit,
+    getLabel: @Composable (T) -> String,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = modifier.clip(MaterialTheme.shapes.small)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .height(40.dp)
-                .padding(start = 8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = stringResource(R.string.send_lyrics_button),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onSend() }
-            )
-            VerticalDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp))
-            ExposedDropdownMenuBox(
-                modifier = modifier,
-                expanded = expanded,
-                onExpandedChange = { expanded = it }
+    var chosenItem by remember {
+        mutableStateOf(if (preferred in allItems) preferred else allItems.first())
+    }
+    BasicTooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        state = rememberBasicTooltipState(),
+        tooltip = {
+            ElevatedCard(
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = CardDefaults.shape
+                )
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                ) {
-                    Text(
-                        text = stringResource(preferredLyricsType.label),
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    Icon(
-                        imageVector = Icons.Default.let { if (expanded) it.ArrowDropUp else it.ArrowDropDown },
-                        contentDescription = stringResource(R.string.change_preferred_lyrics_type),
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-                ExposedDropdownMenu(
+                Text(
+                    text = tooltipDescription,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
+        }) {
+        Surface(
+            shape = InputChipDefaults.shape,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            modifier = modifier
+                .clip(MaterialTheme.shapes.small)
+                .padding(vertical = 4.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .height(36.dp)
+            ) {
+                Icon(
+                    imageVector = actionIcon,
+                    contentDescription = stringResource(R.string.send_lyrics_button),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clickable { onSend(chosenItem) }
+                        .size(34.dp)
+                        .padding(2.dp)
+                )
+                VerticalDivider()
+                ExposedDropdownMenuBox(
+                    modifier = Modifier,
                     expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.width(IntrinsicSize.Max)
-                ) {
-                    availableLyricsTypes.forEach { value ->
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(value.label)) },
-                            colors = MenuDefaults.itemColors()
-                                .copy(
-                                    textColor = if (value == preferredLyricsType)
-                                        MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                                ),
-                            onClick = {
-                                onTypeChanged(value)
-                                expanded = false
-                            },
+                    onExpandedChange = { expanded = it }) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    ) {
+                        Text(
+                            text = getLabel(chosenItem),
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelMedium
                         )
+                        Icon(
+                            imageVector = Icons.Default.let { if (expanded) it.ArrowDropUp else it.ArrowDropDown },
+                            contentDescription = stringResource(R.string.change_preferred_lyrics_type),
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.width(IntrinsicSize.Max)
+                    ) {
+                        allItems.forEach { value ->
+                            DropdownMenuItem(
+                                text = { Text(text = getLabel(value)) },
+                                colors = MenuDefaults.itemColors().copy(
+                                    textColor = if (value == chosenItem) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                                ),
+                                onClick = {
+                                    chosenItem = value
+                                    expanded = false
+                                },
+                            )
+                        }
                     }
                 }
             }

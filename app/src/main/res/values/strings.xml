@@ -38,7 +38,7 @@
     <string name="add_custom_lyrics">Write lyrics</string>
     <!--    lyrics result-->
     <string name="result_topbar_title">Results</string>
-    <string name="send_lyrics_button">Send this lyrics</string>
+    <string name="send_lyrics_button">Send</string>
     <string name="change_preferred_lyrics_type">Change lyrics type</string>
     <string name="edit_lyrics">Edit</string>
     <string name="lyrics_save_search_result">Saving Lyrics</string>
