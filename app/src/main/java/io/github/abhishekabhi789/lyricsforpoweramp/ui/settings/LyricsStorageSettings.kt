@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,12 +26,12 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,35 +69,52 @@ fun LyricsStorageSettings(
         BasicSettings(
             label = stringResource(R.string.settings_send_to_poweramp_label),
             description = stringResource(R.string.settings_send_to_poweramp_description)
-        ) {
+        ) { interactionSource ->
             var savedChoice by remember {
                 mutableStateOf(AppPreference.getSendLyricsToPoweramp(context))
             }
+            val onSwitchToggle = { enabled: Boolean ->
+                AppPreference.setSendLyricsToPoweramp(context, enabled)
+                savedChoice = enabled
+            }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        onSwitchToggle(!savedChoice)
+                    }
+                }
+            }
+
             val accessibilityLabel = (if (savedChoice) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_send_to_poweramp_label)}"
             }
             Switch(
-                checked = savedChoice, onCheckedChange = {
-                    AppPreference.setSendLyricsToPoweramp(context, it)
-                    savedChoice = it
-                },
+                checked = savedChoice, onCheckedChange = onSwitchToggle,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
         var saveAsFile by remember { mutableStateOf(AppPreference.getSaveAsFile(context)) }
         BasicSettings(
             label = stringResource(R.string.settings_save_as_file_label),
             description = stringResource(R.string.settings_save_as_file_description)
-        ) {
+        ) { interactionSource ->
+            val onSwitchToggle = { enabled: Boolean ->
+                AppPreference.setSaveAsFile(context, enabled)
+                saveAsFile = enabled
+            }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        onSwitchToggle(!saveAsFile)
+                    }
+                }
+            }
             val accessibilityLabel = (if (saveAsFile) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_save_as_file_label)}"
             }
             Switch(
-                checked = saveAsFile, onCheckedChange = {
-                    AppPreference.setSaveAsFile(context, it)
-                    saveAsFile = it
-                },
+                checked = saveAsFile, onCheckedChange = onSwitchToggle,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
         AnimatedVisibility(visible = saveAsFile) {
@@ -112,7 +130,6 @@ fun LyricsStorageSettings(
                     AppPreference.saveFolderUri(context, it)
                     savedUris = savedUris.toMutableSet().apply { add(it) }.toList()
                     accessRequestedPath?.let { path -> viewmodel.setAccessRequestedPath(null) }
-
                 }
             }
             Column(modifier = modifier.fillMaxWidth()) {
@@ -120,9 +137,18 @@ fun LyricsStorageSettings(
                 Text(
                     text = stringResource(R.string.settings_save_as_file_info),
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .padding(bottom = 8.dp)
                 )
-                BasicSettings(label = stringResource(R.string.settings_save_as_file_folder_list_title)) {
+                BasicSettings(label = stringResource(R.string.settings_save_as_file_folder_list_title)) { interactionSource ->
+                    LaunchedEffect(interactionSource) {
+                        interactionSource.interactions.collect { interaction ->
+                            if (interaction is PressInteraction.Release) {
+                                pickFolderLauncher.launch(null)
+                            }
+                        }
+                    }
                     TextButton(onClick = { pickFolderLauncher.launch(null) }) {
                         Icon(Icons.Default.AddCircle, null)
                         Spacer(Modifier.width(4.dp))
@@ -132,10 +158,17 @@ fun LyricsStorageSettings(
                 if (savedUris.isNotEmpty()) {
                     for ((i, uri) in savedUris.withIndex()) {
                         val path by remember(uri) { derivedStateOf { uri.getCleanedPath() } }
-                        val hasAccess by rememberUpdatedState(uri.hasAccess(context))
+                        val hasAccess by remember(savedUris) {
+                            derivedStateOf {
+                                uri.hasAccess(context)
+                            }
+                        }
+
                         Row(
-                            verticalAlignment = Alignment.Top,
-                            modifier = Modifier.fillMaxWidth()
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp)
                         ) {
                             Text("${i + 1}.", modifier = Modifier.padding(end = 8.dp))
                             Text(

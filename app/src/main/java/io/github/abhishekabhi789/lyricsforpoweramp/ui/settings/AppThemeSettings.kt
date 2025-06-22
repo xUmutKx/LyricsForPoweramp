@@ -1,8 +1,10 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,9 +27,15 @@ fun AppThemeSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel
         var expanded by remember { mutableStateOf(false) }
         var currentTheme by remember { mutableStateOf(AppPreference.getTheme(context)) }
         val allThemes = remember { AppPreference.getThemes() }
-        BasicSettings(label = stringResource(R.string.settings_app_theme_description)) {
+        BasicSettings(label = stringResource(R.string.settings_app_theme_description)) { interactionSource ->
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        if (!expanded) expanded = true
+                    }
+                }
+            }
             DropdownSettings(
-                modifier = Modifier,
                 expanded = expanded,
                 currentValue = currentTheme,
                 values = allThemes,
@@ -36,7 +44,7 @@ fun AppThemeSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel
                     AppPreference.setTheme(context, selectedTheme)
                     viewmodel.updateTheme(selectedTheme)
                 },
-                onExpandedChanged = { expanded = it },
+                onExpandChanged = { if (expanded) expanded = false },
                 getLabel = { theme -> stringResource(theme.label) }
             )
         }

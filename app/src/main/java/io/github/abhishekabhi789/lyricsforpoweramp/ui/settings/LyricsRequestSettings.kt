@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lyrics
@@ -96,17 +97,25 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
             label = stringResource(id = R.string.settings_fallback_to_search_label),
             description = stringResource(id = R.string.settings_fallback_to_search_description),
             modifier = Modifier
-        ) {
+        ) { interactionSource ->
+            val onSwitchToggle = { enabled: Boolean ->
+                fallbackToSearch = enabled
+                AppPreference.setSearchIfGetFailed(context, enabled)
+            }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        onSwitchToggle(!fallbackToSearch)
+                    }
+                }
+            }
             val accessibilityLabel = (if (fallbackToSearch) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_fallback_to_search_label)}"
             }
             Switch(
                 checked = fallbackToSearch,
-                onCheckedChange = {
-                    fallbackToSearch = it
-                    AppPreference.setSearchIfGetFailed(context, it)
-                },
+                onCheckedChange = onSwitchToggle,
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .semantics { contentDescription = accessibilityLabel }
@@ -119,17 +128,25 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
             label = stringResource(id = R.string.settings_request_fail_notification_label),
             description = stringResource(id = R.string.settings_request_fail_notification_description),
             modifier = Modifier
-        ) {
+        ) { interactionSource ->
+            val onSwitchToggle = { enabled: Boolean ->
+                showNotification = enabled
+                AppPreference.setShowNotification(context, enabled)
+            }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        onSwitchToggle(!showNotification)
+                    }
+                }
+            }
             val accessibilityLabel = (if (showNotification) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_request_fail_notification_label)}"
             }
             Switch(
                 checked = showNotification,
-                onCheckedChange = {
-                    showNotification = it
-                    AppPreference.setShowNotification(context, it)
-                },
+                onCheckedChange = onSwitchToggle,
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .semantics { contentDescription = accessibilityLabel }
@@ -145,11 +162,16 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                 BasicSettings(
                     label = stringResource(R.string.settings_notification_permission_label),
                     description = stringResource(R.string.settings_notification_permission_description)
-                ) {
-                    Button(
-                        onClick = { askPermission = true },
-                        enabled = !hasNotificationPermission
-                    ) {
+                ) { interactionSource ->
+                    val onButtonClick = { askPermission = true }
+                    LaunchedEffect(interactionSource) {
+                        interactionSource.interactions.collect { interaction ->
+                            if (interaction is PressInteraction.Release) {
+                                onButtonClick()
+                            }
+                        }
+                    }
+                    Button(onClick = onButtonClick, enabled = !hasNotificationPermission) {
                         Text(stringResource(R.string.settings_permission_button_grant))
                     }
                 }
@@ -167,7 +189,18 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                 label = stringResource(id = R.string.settings_overwrite_existing_notification_label),
                 description = stringResource(id = R.string.settings_overwrite_existing_notification_description),
                 modifier = Modifier.alpha(if (hasNotificationPermission) 1.0f else 0.7f)
-            ) {
+            ) { interactionSource ->
+                val onSwitchToggle = { enabled: Boolean ->
+                    overwriteNotification = enabled
+                    AppPreference.setOverwriteNotification(context, enabled)
+                }
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
+                            onSwitchToggle(!overwriteNotification)
+                        }
+                    }
+                }
                 val accessibilityLabel =
                     (if (overwriteNotification) stringResource(R.string.disable)
                     else stringResource(R.string.enable)).let {
@@ -176,10 +209,7 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                 Switch(
                     checked = overwriteNotification,
                     enabled = hasNotificationPermission,
-                    onCheckedChange = {
-                        overwriteNotification = it
-                        AppPreference.setOverwriteNotification(context, it)
-                    },
+                    onCheckedChange = onSwitchToggle,
                     modifier = Modifier
                         .padding(start = 4.dp)
                         .semantics { contentDescription = accessibilityLabel }
@@ -191,8 +221,15 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
         BasicSettings(
             label = stringResource(R.string.settings_preferred_lyrics_type_label),
             description = stringResource(R.string.settings_preferred_lyrics_type_description)
-        ) {
+        ) { interactionSource ->
             var expanded by remember { mutableStateOf(false) }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        expanded = !expanded
+                    }
+                }
+            }
             var preferredLyricsType by remember {
                 mutableStateOf(AppPreference.getPreferredLyricsType(context))
             }
@@ -204,27 +241,36 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                     preferredLyricsType = it
                     AppPreference.setPreferredLyricsType(context, it)
                 },
-                onExpandedChanged = { expanded = it },
+                onExpandChanged = { if (expanded) expanded = false },
                 getLabel = { stringResource(it.shortLabel) }
             )
         }
         BasicSettings(
             label = stringResource(R.string.settings_mark_instrumental_tracks),
             description = stringResource(R.string.settings_mark_instrumental_tracks_description)
-        ) {
+        ) { interactionSource ->
             var markInstrumental by remember {
                 mutableStateOf(AppPreference.getMarkInstrumental(context))
             }
+            val onSwitchToggle = { enabled: Boolean ->
+                markInstrumental = enabled
+                AppPreference.setMarkInstrumental(context, enabled)
+            }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        onSwitchToggle(!markInstrumental)
+                    }
+                }
+            }
+
             val accessibilityLabel = (if (markInstrumental) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_mark_instrumental_tracks)}"
             }
             Switch(
                 checked = markInstrumental,
-                onCheckedChange = {
-                    markInstrumental = it
-                    AppPreference.setMarkInstrumental(context, it)
-                },
+                onCheckedChange = onSwitchToggle,
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .semantics { contentDescription = accessibilityLabel }

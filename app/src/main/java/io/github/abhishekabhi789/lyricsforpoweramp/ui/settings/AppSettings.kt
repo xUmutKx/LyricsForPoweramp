@@ -79,6 +79,7 @@ fun AppSettings(
                 .padding(contentPadding)
                 .consumeWindowInsets(contentPadding)
                 .padding(horizontal = 8.dp)
+                .padding(bottom = 8.dp)
         ) {
             item { AppThemeSettings(viewmodel = viewmodel) }
             item { LyricsRequestSettings() }

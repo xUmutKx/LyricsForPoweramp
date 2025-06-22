@@ -29,14 +29,19 @@ fun SettingsGroup(
     content: @Composable (ColumnScope.() -> Unit)
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.Center,
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(8.dp)
+            .padding(vertical = 4.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .padding(bottom = 2.dp)
+        ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,

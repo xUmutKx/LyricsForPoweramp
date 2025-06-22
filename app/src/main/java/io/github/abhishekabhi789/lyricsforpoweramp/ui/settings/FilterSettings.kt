@@ -2,6 +2,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.FilterAlt
@@ -26,9 +27,13 @@ fun FilterSettings(modifier: Modifier = Modifier) {
     ) {
         Disclaimer(
             textContent = stringResource(R.string.settings_filter_description),
-            icon = Icons.Default.Info
+            icon = Icons.Default.Info,
+            modifier = Modifier.padding(8.dp)
         )
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+            modifier = Modifier.padding(8.dp)
+        ) {
             FilterField(filterType = FilterType.TITLE_FILTER, icon = Icons.Default.MusicNote)
             FilterField(
                 filterType = FilterType.ARTISTS_FILTER,

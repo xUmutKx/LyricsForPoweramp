@@ -29,13 +29,13 @@ fun <T> DropdownSettings(
     currentValue: T,
     values: List<T>,
     onSelection: (T) -> Unit,
-    onExpandedChanged: (Boolean) -> Unit,
+    onExpandChanged: (expanded: Boolean) -> Unit,
     getLabel: @Composable (T) -> String,
 ) {
     ExposedDropdownMenuBox(
         modifier = modifier,
         expanded = expanded,
-        onExpandedChange = onExpandedChanged
+        onExpandedChange = onExpandChanged
     ) {
         Row(
             horizontalArrangement = Arrangement.End,
@@ -55,7 +55,7 @@ fun <T> DropdownSettings(
         }
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { onExpandedChanged(false) },
+            onDismissRequest = { onExpandChanged(false) },
             modifier = Modifier.width(IntrinsicSize.Max)
         ) {
             values.forEach { value ->
@@ -68,7 +68,7 @@ fun <T> DropdownSettings(
                         ),
                     onClick = {
                         onSelection(value)
-                        onExpandedChanged(false)
+                        onExpandChanged(false)
                     },
                 )
             }

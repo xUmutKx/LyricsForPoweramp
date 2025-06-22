@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -67,7 +68,8 @@ fun EditorSettings(modifier: Modifier = Modifier) {
             ) {
                 Disclaimer(
                     textContent = stringResource(R.string.settings_editor_api_keys_disclaimer),
-                    icon = Icons.Default.Info
+                    icon = Icons.Default.Info,
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 TranslatorApiKey(translator = Translator.GEMINI)
             }
@@ -89,7 +91,11 @@ fun TranslatorApiKey(modifier: Modifier = Modifier, translator: Translator) {
         focusManager.clearFocus()
         savedApiKey = inputValue
     }
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    ) {
         OutlinedTextField(
             value = inputValue,
             onValueChange = { inputValue = it },
