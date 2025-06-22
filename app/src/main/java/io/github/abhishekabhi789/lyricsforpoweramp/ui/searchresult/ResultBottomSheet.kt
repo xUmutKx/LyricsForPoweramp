@@ -103,7 +103,7 @@ fun ResultBottomSheet(
                 if (saveToStorage.shouldPerform) {
                     val label = saveToStorage.result?.message?.let { stringResource(it) }
                     StepIndicator(
-                        text = label ?: stringResource(R.string.lyrics_save_to_storage_failed),
+                        text = label ?: stringResource(R.string.settings_save_as_file_label),
                         isCompleted = saveToStorage.result?.let { it == StorageHelper.Result.SUCCESS },
                         actionLabel = if (saveToStorage.result == StorageHelper.Result.NO_PERMISSION)
                             stringResource(R.string.settings_save_as_file_button_grant_access) else null,
@@ -113,8 +113,15 @@ fun ResultBottomSheet(
                 }
                 val completed: Boolean? by remember(sendLyricsState) {
                     derivedStateOf {
-                        if (!sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform) false
-                        else sendLyricsState.progress == 1f
+                        val send = !sendToPoweramp.shouldPerform || sendToPoweramp.result == true
+                        val saved =
+                            !saveToStorage.shouldPerform || saveToStorage.result == StorageHelper.Result.SUCCESS
+                        when {
+                            !sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform -> false
+                            sendLyricsState.progress == 1f -> true
+                            (sendToPoweramp.result != null && !send) || (saveToStorage.result != null && !saved) -> false
+                            else -> null
+                        }
                     }
                 }
                 StepIndicator(stringResource(R.string.done), completed)
