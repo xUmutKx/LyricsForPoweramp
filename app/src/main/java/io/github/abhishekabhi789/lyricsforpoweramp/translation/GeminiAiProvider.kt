@@ -38,6 +38,8 @@ class GeminiAiProvider(
             You need to provide a list of languages you can work on translating the below lyrics.
             List the languages alphabetically.
             The list of languages will be split with a comma and shown to user in a list.
+            If the language of the lyrics have any transliteration possible such as such as Kanji, Romaji etc. also include them.
+            If it's possible to romanize the lyrics, add Language name + Romanize, like Malayalam Romanize, Hindi Romanize etc.
             Do not write language code or country code, just human readable language name only.
             Do not include any extra text or explanation.
             Do not add space or quotes in the response.
