@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,6 +46,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorSettings(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     SettingsGroup(
         title = stringResource(R.string.settings_editor_label),
         icon = Icons.Default.EditNote,
@@ -73,6 +75,31 @@ fun EditorSettings(modifier: Modifier = Modifier) {
                 )
                 TranslatorApiKey(translator = Translator.GEMINI)
             }
+        }
+        BasicSettings(
+            label = stringResource(R.string.settings_timestamp_step_title),
+            description = stringResource(R.string.settings_timestamp_step_summary)
+        ) {
+            val suggstedSteps = listOf(1, 5, 10, 25, 50)
+            var expanded by remember { mutableStateOf(false) }
+            var savedValue by remember { mutableIntStateOf(AppPreference.getTimestampDelta(context)) }
+            DropdownSettings(
+                expanded = expanded,
+                currentValue = savedValue,
+                values = suggstedSteps,
+                onExpandChanged = { expanded = it },
+                getLabel = {
+                    stringResource(
+                        R.string.settings_timestamp_step_dropdown_item,
+                        it
+                    )
+                },
+                onSelection = {
+                    savedValue = it
+                    AppPreference.setTimestampDelta(context, it)
+                },
+                modifier = Modifier.padding(start = 4.dp)
+            )
         }
     }
 }

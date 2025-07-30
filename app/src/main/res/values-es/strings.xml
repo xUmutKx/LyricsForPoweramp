@@ -57,6 +57,8 @@
     <string name="undo">Deshacer</string>
     <string name="redo">Rehacer</string>
     <string name="save">ahorrar</string>
+    <string name="increase_timestamp_by">Aumentar la marca de tiempo en %1$d centisegundos</string>
+    <string name="decrease_timestamp_by">Reducir la marca de tiempo en %1$d centisegundos</string>
     <string name="editor_placeholder">Entrar Letra</string>
     <string name="ai_gemini_name">Google Gemini</string>
     <string name="translation_button_description">Traducción de letras</string>
@@ -116,6 +118,9 @@
     <string name="settings_editor_label">Editor de letras</string>
     <string name="settings_editor_api_keys_list">Llaves de API</string>
     <string name="settings_editor_api_keys_disclaimer">Debes añadir tu propia clave API para habilitar la traducción. Esto permite que la app siga siendo gratuita y evita límites de uso de pago. Tu clave se guarda solo en tu dispositivo — nunca se recopila ni se comparte</string>
+    <string name="settings_timestamp_step_title">Paso de ajuste de marca de tiempo</string>
+    <string name="settings_timestamp_step_summary">Cantidad de tiempo que se ajusta al pulsar los botones + o −</string>
+    <string name="settings_timestamp_step_dropdown_item">%1$d centisegundos</string>
     <string name="settings_filter_label">Filtros</string>
     <string name="settings_filter_description">Estas palabras se eliminarán de los campos respectivos durante el procesamiento. No distingue mayúsculas/minúsculas. Soporta expresiones regulares.</string>
     <string name="settings_filter_title_label">Filtro de Título</string>

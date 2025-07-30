@@ -55,6 +55,8 @@
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
     <string name="save">Save</string>
+    <string name="increase_timestamp_by">Increase timestamp by %1$d centiseconds</string>
+    <string name="decrease_timestamp_by">Decrease timestamp by %1$d centiseconds</string>
     <string name="editor_placeholder">Enter lyrics</string>
     <string name="ai_gemini_name">Google Gemini</string>
     <string name="translation_button_description">Lyrics Translator</string>
@@ -114,6 +116,9 @@
     <string name="settings_editor_label">Lyrics Editor</string>
     <string name="settings_editor_api_keys_list">API Keys</string>
     <string name="settings_editor_api_keys_disclaimer">You need to add your own API key to enable translation. This keeps the app free and avoids paid usage limits. Your key is stored only on your device — it’s never collected or shared.</string>
+    <string name="settings_timestamp_step_title">Timestamp Adjustment Step</string>
+    <string name="settings_timestamp_step_summary">Amount of time to shift timestamps with each + or − button press</string>
+    <string name="settings_timestamp_step_dropdown_item">%1$d centiseconds</string>
     <string name="settings_filter_label">Filters</string>
     <string name="settings_filter_description">These words will be removed from respective fields while processing. Case insensitive. Supports regex.</string>
     <string name="settings_filter_title_label">Title Filter</string>

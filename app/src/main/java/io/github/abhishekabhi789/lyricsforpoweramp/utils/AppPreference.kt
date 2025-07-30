@@ -27,6 +27,7 @@ object AppPreference {
     private const val FOLDER_URIS = "folder_uri_list"
     private const val MARK_INSTRUMENTAL_LYRICS = "mark_instrumental_lyrics"
     private const val GEMINI_API_KEY = "ai_key_gemini"
+    private const val TIMESTAMP_DELTA = "timestamp_delta_in_centi_seconds"
 
     private fun getSharedPreference(context: Context, prefName: String): SharedPreferences? {
         return context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
@@ -181,6 +182,16 @@ object AppPreference {
             Translator.GEMINI -> GEMINI_API_KEY
         }
         return sharedPreferences?.getString(prefKey, null) ?: ""
+    }
+
+    fun setTimestampDelta(context: Context, deltaInCentiseconds: Int) {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        sharedPreferences?.edit()?.putInt(TIMESTAMP_DELTA, deltaInCentiseconds)?.apply()
+    }
+
+    fun getTimestampDelta(context: Context): Int {
+        val sharedPreference = getSharedPreference(context, OTHER_PREF)
+        return sharedPreference?.getInt(TIMESTAMP_DELTA, 10) ?: 10
     }
 
     @Composable
