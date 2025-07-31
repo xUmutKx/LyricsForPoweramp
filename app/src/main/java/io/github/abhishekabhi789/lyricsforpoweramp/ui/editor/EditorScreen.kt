@@ -33,6 +33,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -58,11 +59,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
+import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -72,16 +79,16 @@ fun EditorScreen(
     onFinish: () -> Unit
 ) {
     val context = LocalContext.current
-    val lyricsContent by viewmodel.lyricsContent.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val inputState by viewmodel.inputState.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
     val sendLyricsState by viewmodel.sendLyricsState.collectAsState()
     var showTranslator by remember { mutableStateOf(false) }
-    var textFieldValue by rememberSaveable(
-        key = lyricsContent, stateSaver = TextFieldValue.Saver
-    ) {
-        mutableStateOf(TextFieldValue(lyricsContent))
+    var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(inputState.lyrics, inputState.selection))
     }
+    val lyricsContent by remember(inputState) { derivedStateOf { inputState.lyrics } }
     val showTimestampAdjustButtons by remember {
         derivedStateOf {
             getTimeStampFromRange(textFieldValue.selection, lyricsContent).isNotEmpty()
@@ -106,24 +113,54 @@ fun EditorScreen(
         bottomBar = {
             BottomAppBar(
                 actions = {
-                    IconButton(enabled = canUndo, onClick = viewmodel::undo) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Undo,
-                            contentDescription = stringResource(R.string.undo)
-                        )
-                    }
-                    IconButton(enabled = canRedo, onClick = viewmodel::redo) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Redo,
-                            contentDescription = stringResource(R.string.redo)
-                        )
-                    }
-                    IconButton(onClick = { showTranslator = true }) {
-                        Icon(
-                            Icons.Default.Translate,
-                            contentDescription = stringResource(R.string.translation_button_description)
-                        )
-                    }
+                    var undoJob: Job? by remember { mutableStateOf(null) }
+                    BottomBarToolButton(
+                        icon = Icons.AutoMirrored.Filled.Undo,
+                        label = stringResource(R.string.undo),
+                        enabled = canUndo,
+                        onClick = viewmodel::undo,
+                        onLongPressChange = { pressed ->
+                            if (pressed) {
+                                undoJob?.cancel()
+                                undoJob = scope.launch {
+                                    while (isActive) {
+                                        viewmodel.undo()
+                                        delay(100.milliseconds)
+                                    }
+                                }
+                            } else {
+                                undoJob?.cancel()
+                                undoJob = null
+                            }
+                        }
+                    )
+                    var redoJob: Job? by remember { mutableStateOf(null) }
+                    BottomBarToolButton(
+                        icon = Icons.AutoMirrored.Filled.Redo,
+                        label = stringResource(R.string.redo),
+                        enabled = canRedo,
+                        onClick = viewmodel::redo,
+                        onLongPressChange = { pressed ->
+                            if (pressed) {
+                                redoJob?.cancel()
+                                redoJob = scope.launch {
+                                    while (isActive) {
+                                        viewmodel.redo()
+                                        delay(100.milliseconds)
+                                    }
+                                }
+                            } else {
+                                redoJob?.cancel()
+                                redoJob = null
+                            }
+                        }
+                    )
+                    BottomBarToolButton(
+                        icon = Icons.Default.Translate,
+                        label = stringResource(R.string.translation_button_description),
+                        onClick = { showTranslator = true }
+                    )
+
                     val offsetTimestamp = { increase: Boolean ->
                         val timestamps =
                             getTimeStampFromRange(textFieldValue.selection, lyricsContent)
@@ -132,30 +169,25 @@ fun EditorScreen(
                             else timestamp.decrease(timestampDeltaCenti)
                             lyrics.replace(timestamp.toString(), newTimestamp.toString())
                         }
-                        viewmodel.setLyrics(newLyrics)
+                        viewmodel.updateInputState(
+                            EditorInputState(newLyrics, textFieldValue.selection)
+                        )
                     }
-                    IconButton(
+                    BottomBarToolButton(
+                        icon = Icons.Default.Remove,
+                        label = stringResource(R.string.decrease_timestamp_by, timestampDeltaCenti),
                         onClick = { offsetTimestamp(false) },
                         enabled = showTimestampAdjustButtons
-                    ) {
-                        Icon(
-                            Icons.Default.Remove,
-                            stringResource(R.string.decrease_timestamp_by, timestampDeltaCenti)
-                        )
-                    }
-                    IconButton(
+                    )
+                    BottomBarToolButton(
+                        icon = Icons.Default.Add,
+                        label = stringResource(R.string.increase_timestamp_by, timestampDeltaCenti),
                         onClick = { offsetTimestamp(true) },
                         enabled = showTimestampAdjustButtons
-                    ) {
-                        Icon(
-                            Icons.Default.Add,
-                            stringResource(R.string.increase_timestamp_by, timestampDeltaCenti)
-                        )
-                    }
-                }, floatingActionButton = {
-                    FloatingActionButton(onClick = {
-                        viewmodel.sendLyricsToPoweramp(context)
-                    }) {
+                    )
+                },
+                floatingActionButton = {
+                    FloatingActionButton(onClick = { viewmodel.sendLyricsToPoweramp(context) }) {
                         Icon(Icons.Default.Save, contentDescription = stringResource(R.string.save))
                     }
                 },
@@ -175,16 +207,26 @@ fun EditorScreen(
             val onPrimaryContainerColor = MaterialTheme.colorScheme.onPrimaryContainer
             val errorColor = MaterialTheme.colorScheme.onErrorContainer
             val errorContainerColor = MaterialTheme.colorScheme.errorContainer
-            LaunchedEffect(lyricsContent) {
-                if (lyricsContent != textFieldValue.text) {
-                    textFieldValue = textFieldValue.copy(text = lyricsContent)
+            LaunchedEffect(inputState) {
+                if (inputState.lyrics != textFieldValue.text ||
+                    inputState.selection != textFieldValue.selection
+                ) {
+                    textFieldValue = TextFieldValue(
+                        inputState.lyrics,
+                        selection = inputState.selection
+                    )
                 }
             }
+
             BasicTextField(
                 value = textFieldValue,
                 onValueChange = {
                     textFieldValue = it
-                    viewmodel.setLyrics(it.text)
+                    if (it.text != lyricsContent) {
+                        viewmodel.updateInputState(
+                            EditorInputState(it.text, it.selection)
+                        )
+                    }
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                 decorationBox = { innerTextField ->
@@ -297,8 +339,10 @@ fun isValidTimestamp(ts: String): Boolean {
 }
 
 fun getTimeStampFromRange(range: TextRange, lyrics: String): List<Timestamp> {
-    val firstLine = lyrics.substring(0, range.start).lines().size - 1
-    val lastLine = lyrics.substring(0, range.end).lines().size
+    val firstLine =
+        (lyrics.substring(0, (range.start - 1).coerceAtLeast(0)).lines().size - 1).coerceAtLeast(0)
+    val lastLine =
+        (lyrics.substring(0, (range.end - 1).coerceAtLeast(0)).lines().size).coerceAtLeast(0)
     val lines = lyrics.lines().subList(firstLine, lastLine)
     val timeStampRegex = Regex("(\\[\\d{2,}:\\d{2}\\.\\d{2}])")
     return lines.flatMap { line ->

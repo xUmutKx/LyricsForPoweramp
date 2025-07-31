@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
+import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
@@ -24,14 +25,14 @@ import kotlinx.coroutines.launch
 
 class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewModel() {
 
-    private val undoStack = ArrayDeque<String>(50)
-    private val redoStack = ArrayDeque<String>(50)
+    private val undoStack = ArrayDeque<EditorInputState>(50)
+    private val redoStack = ArrayDeque<EditorInputState>(50)
 
     val canUndo: MutableStateFlow<Boolean> = MutableStateFlow(undoStack.isNotEmpty())
     val canRedo: MutableStateFlow<Boolean> = MutableStateFlow(redoStack.isNotEmpty())
 
-    private val _lyricsContent = MutableStateFlow("")
-    val lyricsContent: StateFlow<String> = _lyricsContent
+    private val _inputState = MutableStateFlow(EditorInputState())
+    val inputState: StateFlow<EditorInputState> = _inputState.asStateFlow()
 
     private var powerampId: Long = 0L
     private lateinit var lyrics: Lyrics
@@ -60,25 +61,25 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     fun undo() {
         if (canUndo.value) {
             val popped = undoStack.removeLast()
-            redoStack.add(lyricsContent.value)
-            _lyricsContent.value = popped
+            redoStack.add(inputState.value)
+            _inputState.value = popped
             updateStackState()
         }
     }
 
     fun redo() {
         if (canRedo.value) {
-            undoStack.add(lyricsContent.value)
-            _lyricsContent.value = redoStack.removeLast()
+            undoStack.add(inputState.value)
+            _inputState.value = redoStack.removeLast()
             updateStackState()
         }
     }
 
-    fun setLyrics(lyrics: String) {
-        undoStack.add(this.lyricsContent.value)
+    fun updateInputState(newState: EditorInputState) {
+        undoStack.add(this.inputState.value)
         redoStack.clear()
         updateStackState()
-        _lyricsContent.value = lyrics
+        _inputState.value = newState
     }
 
     fun initialize(
@@ -87,9 +88,10 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         this.lyrics = lyrics
         this.filePath = filePath
         this.powerampId = powerampId
-        _lyricsContent.value =
+        val lyrics =
             (if (preferredLyricsType == LyricsType.SYNCED) lyrics.syncedLyrics else lyrics.plainLyrics)
                 ?: ""
+        this._inputState.value = EditorInputState(lyrics = lyrics)
     }
 
     fun sendLyricsToPoweramp(context: Context) {
@@ -99,7 +101,7 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
                 context = context,
                 filePath = filePath,
                 powerampId = powerampId,
-                lyrics = lyrics.copy(syncedLyrics = lyricsContent.value),
+                lyrics = lyrics.copy(syncedLyrics = inputState.value.lyrics),
                 lyricsType = LyricsType.SYNCED,
             ).collect { state -> _sendLyricsState.value = state }
         }
@@ -123,7 +125,7 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         _supportedLanguageState.value = RequestState.Processing
         viewModelScope.launch {
             val result = translationHelper.getSupportedLanguages(
-                translator = _chosenTranslator.value, lyrics = _lyricsContent.value
+                translator = _chosenTranslator.value, lyrics = _inputState.value.lyrics
             )
             Log.d(TAG, "fetchSupportedLanguages: result- $result")
             _supportedLanguageState.value = result
@@ -139,24 +141,27 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
 
     fun translate() {
         _translatorState.value = RequestState.Processing
-        val lyricsContent = _lyricsContent.value
+        val lyricsContent = _inputState.value
         val targetLang = _targetLanguage.value
         val selectedTranslator = _chosenTranslator.value
-        if (lyricsContent.isBlank() || targetLang.isNullOrBlank()) {
-            "lyrics blank ${lyricsContent.isBlank()} || targetLang blank ${targetLang.isNullOrBlank()}".let {
+        if (lyricsContent.lyrics.isBlank() || targetLang.isNullOrBlank()) {
+            "lyrics blank ${lyricsContent.lyrics.isBlank()} || targetLang blank ${targetLang.isNullOrBlank()}".let {
                 Log.w(TAG, "translate: $it")
             }
             return
         }
         viewModelScope.launch {
             val result = translationHelper.translate(
-                lyrics = lyricsContent, targetLanguage = targetLang, translator = selectedTranslator
+                lyrics = lyricsContent.lyrics,
+                targetLanguage = targetLang,
+                translator = selectedTranslator
             )
             Log.d(TAG, "translate: result- $result")
             _translatorState.value = result
             if (result is RequestState.Success<*>) {
                 val lyrics = (result.response) as String
-                setLyrics(lyrics)
+                val newState = _inputState.value.copy(lyrics = lyrics)
+                updateInputState(newState)
             }
         }
     }
