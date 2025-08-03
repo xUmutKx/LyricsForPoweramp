@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.BasicSettings
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -144,6 +146,19 @@ fun TranslationBottomSheet(
                             )
                         }
                     }
+                }
+            }
+            Row {
+                val replaceOriginal by viewmodel.replaceOriginalWithTranslation.collectAsStateWithLifecycle()
+                BasicSettings(
+                    label = stringResource(R.string.editor_settings_lyrics_replace_original_title),
+                    description = stringResource(R.string.editor_settings_lyrics_replace_original_description)
+                ) {
+                    Switch(
+                        checked = replaceOriginal,
+                        onCheckedChange = { viewmodel.setReplaceLyrics(it) },
+                        enabled = translatorState == RequestState.Idle
+                    )
                 }
             }
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {

@@ -49,6 +49,9 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         MutableStateFlow(RequestState.Idle)
     val supportedLanguageState = _supportedLanguageState.asStateFlow()
 
+    private val _replaceOriginalWithTranslation = MutableStateFlow(false)
+    val replaceOriginalWithTranslation = _replaceOriginalWithTranslation.asStateFlow()
+
     private val _translatorState: MutableStateFlow<RequestState> =
         MutableStateFlow(RequestState.Idle)
     val translatorState = _translatorState.asStateFlow()
@@ -139,31 +142,78 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         }
     }
 
+    fun setReplaceLyrics(replaceLyrics: Boolean) {
+        _replaceOriginalWithTranslation.value = replaceLyrics
+    }
+
     fun translate() {
         _translatorState.value = RequestState.Processing
-        val lyricsContent = _inputState.value
+        val lyricsContent = _inputState.value.lyrics
+        val originalLyrics = getOriginalLyrics(_inputState.value.lyrics)
         val targetLang = _targetLanguage.value
         val selectedTranslator = _chosenTranslator.value
-        if (lyricsContent.lyrics.isBlank() || targetLang.isNullOrBlank()) {
-            "lyrics blank ${lyricsContent.lyrics.isBlank()} || targetLang blank ${targetLang.isNullOrBlank()}".let {
+        if (originalLyrics.isBlank() || targetLang.isNullOrBlank()) {
+            "lyrics blank ${originalLyrics.isBlank()} || targetLang blank ${targetLang.isNullOrBlank()}".let {
                 Log.w(TAG, "translate: $it")
             }
             return
         }
         viewModelScope.launch {
             val result = translationHelper.translate(
-                lyrics = lyricsContent.lyrics,
+                lyrics = originalLyrics,
                 targetLanguage = targetLang,
                 translator = selectedTranslator
             )
             Log.d(TAG, "translate: result- $result")
             _translatorState.value = result
             if (result is RequestState.Success<*>) {
-                val lyrics = (result.response) as String
-                val newState = _inputState.value.copy(lyrics = lyrics)
+                val translatedLyrics = (result.response) as String
+                val newLyrics = if (_replaceOriginalWithTranslation.value) translatedLyrics else {
+                    mergeLyricsWithTranslation(lyricsContent, translatedLyrics, targetLang)
+                }
+                val newState = _inputState.value.copy(lyrics = newLyrics)
                 updateInputState(newState)
             }
         }
+    }
+
+    private fun mergeLyricsWithTranslation(
+        lyricsContent: String,
+        translatedLyrics: String,
+        language: String
+    ): String {
+        val hasOriginalTag = lyricsContent.contains(
+            Regex("^\\[#?.*Original.*]", RegexOption.IGNORE_CASE)
+        )
+        return if (hasOriginalTag) {
+            buildString {
+                appendLine(lyricsContent.trimEnd())
+                appendLine()
+                appendLine("[# Translated $language]")
+                appendLine(translatedLyrics.trim())
+            }
+        } else {
+            val firstTimestampIndex = Regex("\\[\\d{2}:\\d{2}\\.\\d{2}]")
+                .find(lyricsContent)?.range?.first ?: 0
+            val prefix = lyricsContent.substring(0, firstTimestampIndex)
+            val lyricsWithoutPrefix = lyricsContent.substring(firstTimestampIndex)
+
+            buildString {
+                if (prefix.isNotBlank()) appendLine(prefix.trimEnd())
+                appendLine("[# Original Lyrics]")
+                appendLine(lyricsWithoutPrefix.trim())
+                appendLine()
+                appendLine("[# Translated $language]")
+                appendLine(translatedLyrics.trim())
+            }
+        }
+    }
+
+    private fun getOriginalLyrics(lyrics: String): String {
+        val matchResult = Regex("^\\[#?.*Original.*]", RegexOption.IGNORE_CASE).find(lyrics)
+        return matchResult?.let { result ->
+            lyrics.substringAfter(result.value).substringBefore("[# Translated")
+        } ?: lyrics
     }
 
     init {

@@ -59,6 +59,8 @@
     <string name="decrease_timestamp_by">Decrease timestamp by %1$d centiseconds</string>
     <string name="editor_placeholder">Enter lyrics</string>
     <string name="ai_gemini_name">Google Gemini</string>
+    <string name="editor_settings_lyrics_replace_original_title">Replace Original Lyrics</string>
+    <string name="editor_settings_lyrics_replace_original_description">Replace the original lyrics with the translated version. Turn this off to display both the original and translated lyrics.</string>
     <string name="translation_button_description">Lyrics Translator</string>
     <string name="supported_language_choose_title">Select target language</string>
     <string name="translation_button_label">Translate</string>"

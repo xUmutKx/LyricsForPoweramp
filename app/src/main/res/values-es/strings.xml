@@ -61,6 +61,8 @@
     <string name="decrease_timestamp_by">Reducir la marca de tiempo en %1$d centisegundos</string>
     <string name="editor_placeholder">Entrar Letra</string>
     <string name="ai_gemini_name">Google Gemini</string>
+    <string name="editor_settings_lyrics_replace_original_title">Reemplazar la letra original</string>
+    <string name="editor_settings_lyrics_replace_original_description">Reemplaza la letra original por la versión traducida. Desactiva esta opción para mostrar tanto la letra original como la traducida.</string>
     <string name="translation_button_description">Traducción de letras</string>
     <string name="supported_language_choose_title">Selecciona el idioma de destino</string>
     <string name="translation_button_label">Traducir</string>
