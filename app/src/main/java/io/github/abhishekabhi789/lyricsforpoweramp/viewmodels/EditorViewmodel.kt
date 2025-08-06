@@ -9,18 +9,21 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.maxmpz.poweramp.player.PowerampAPI
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
+import io.github.abhishekabhi789.lyricsforpoweramp.model.PlaybackState
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewModel() {
@@ -34,7 +37,9 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     private val _inputState = MutableStateFlow(EditorInputState())
     val inputState: StateFlow<EditorInputState> = _inputState.asStateFlow()
 
-    private var powerampId: Long = 0L
+    private val _powerampId = MutableStateFlow(PowerampAPI.NO_ID)
+    val powerampId = _powerampId.asStateFlow()
+
     private lateinit var lyrics: Lyrics
     lateinit var filePath: String
 
@@ -90,7 +95,7 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     ) {
         this.lyrics = lyrics
         this.filePath = filePath
-        this.powerampId = powerampId
+        _powerampId.value = powerampId
         val lyrics =
             (if (preferredLyricsType == LyricsType.SYNCED) lyrics.syncedLyrics else lyrics.plainLyrics)
                 ?: ""
@@ -103,7 +108,7 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
             PowerampApiHelper.sendLyrics(
                 context = context,
                 filePath = filePath,
-                powerampId = powerampId,
+                powerampId = _powerampId.value,
                 lyrics = lyrics.copy(syncedLyrics = inputState.value.lyrics),
                 lyricsType = LyricsType.SYNCED,
             ).collect { state -> _sendLyricsState.value = state }
@@ -214,6 +219,25 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         return matchResult?.let { result ->
             lyrics.substringAfter(result.value).substringBefore("[# Translated")
         } ?: lyrics
+    }
+
+    private val _playbackState = MutableStateFlow(PlaybackState())
+    val playbackState = _playbackState.asStateFlow()
+
+    fun updateNowPlayingTrack(
+        trackId: Long? = null,
+        paused: Boolean? = null,
+        position: Int? = null,
+        duration: Int? = null
+    ) {
+        _playbackState.update { current ->
+            current.copy(
+                trackId = trackId ?: current.trackId,
+                duration = duration ?: current.duration,
+                paused = paused ?: current.paused,
+                position = position ?: current.position
+            )
+        }
     }
 
     init {

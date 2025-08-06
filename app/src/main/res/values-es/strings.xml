@@ -67,6 +67,10 @@
     <string name="supported_language_choose_title">Selecciona el idioma de destino</string>
     <string name="translation_button_label">Traducir</string>
     <string name="translation_failed">Traducción fallida</string>
+    <string name="playback_play_button">Reproducir</string>
+    <string name="playback_pause_button">Pausar</string>
+    <string name="playback_rewind_10s">Retroceder 10s</string>
+    <string name="playback_forward_10s">Avanzar 10s</string>
     <!--    about activity-->
     <string name="about">Acerca de</string>
     <string name="version">Versión</string>
