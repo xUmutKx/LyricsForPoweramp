@@ -81,10 +81,15 @@ fun isValidTimestamp(ts: String): Boolean {
 }
 
 fun getTimeStampFromRange(range: TextRange, lyrics: String): List<Timestamp> {
+    val startIndex = minOf(range.start, range.end)
+    val endIndex = maxOf(range.start, range.end)
+
     val firstLine =
-        (lyrics.substring(0, (range.start - 1).coerceAtLeast(0)).lines().size - 1).coerceAtLeast(0)
+        (lyrics.substring(0, (startIndex - 1).coerceAtLeast(0)).lines().size - 1)
+            .coerceAtLeast(0)
     val lastLine =
-        (lyrics.substring(0, (range.end - 1).coerceAtLeast(0)).lines().size).coerceAtLeast(0)
+        (lyrics.substring(0, (endIndex - 1).coerceAtLeast(0)).lines().size)
+            .coerceAtLeast(0)
     val lines = lyrics.lines().subList(firstLine, lastLine)
     val timeStampRegex = Regex("(\\[\\d{2,}:\\d{2}\\.\\d{2}])")
     return lines.flatMap { line ->
