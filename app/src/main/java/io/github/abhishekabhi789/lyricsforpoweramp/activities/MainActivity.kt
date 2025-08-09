@@ -56,6 +56,10 @@ class MainActivity : ComponentActivity() {
             }
             val appTheme by viewModel.appTheme.collectAsState()
             val useDarkTheme = AppPreference.isDarkTheme(theme = appTheme)
+            var firstTimeInfoShown by rememberSaveable {
+                mutableStateOf(AppPreference.getFirstTimeInfoShown(this@MainActivity))
+            }
+            var readyToShowFirstTimeInfo by rememberSaveable { mutableStateOf(false) }
             enableEdgeToEdge(
                 statusBarStyle = SystemBarStyle.auto(
                     lightScrim = android.graphics.Color.TRANSPARENT,
@@ -81,6 +85,7 @@ class MainActivity : ComponentActivity() {
                         setText(message)
                         setDuration(Toast.LENGTH_SHORT)
                     }.show()
+                    readyToShowFirstTimeInfo = true
                 }
                 var showPermissionDialog by rememberSaveable { mutableStateOf(!permissionState.status.isGranted) }
                 if (shouldAskForNotificationPermission && showPermissionDialog) {
@@ -109,19 +114,15 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             showPermissionDialog = false
+                            readyToShowFirstTimeInfo = true
                         }
                     )
-                } else {
-                    var firstTimeInfoShown by rememberSaveable {
-                        mutableStateOf(AppPreference.getFirstTimeInfoShown(this@MainActivity))
-                    }
-                    if (!firstTimeInfoShown) {
-                        FirstTimeInfoDialog {
-                            AppPreference.setFirstTimeInfoShown(this@MainActivity, true)
-                            firstTimeInfoShown = true
-                        }
-                    }
                 }
+                if (readyToShowFirstTimeInfo && !firstTimeInfoShown)
+                    FirstTimeInfoDialog {
+                        AppPreference.setFirstTimeInfoShown(this@MainActivity, true)
+                        firstTimeInfoShown = true
+                    }
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.tertiaryContainer,

@@ -128,7 +128,8 @@ fun LyricsStorageSettings(
                         it, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     )
                     AppPreference.saveFolderUri(context, it)
-                    savedUris = savedUris.toMutableSet().apply { add(it) }.toList()
+                    savedUris = savedUris.toMutableSet().apply { add(it) }.distinct().toList()
+                    //clearing the requested URI
                     accessRequestedPath?.let { path -> viewmodel.setAccessRequestedPath(null) }
                 }
             }
@@ -159,9 +160,7 @@ fun LyricsStorageSettings(
                     for ((i, uri) in savedUris.withIndex()) {
                         val path by remember(uri) { derivedStateOf { uri.getCleanedPath() } }
                         val hasAccess by remember(savedUris) {
-                            derivedStateOf {
-                                uri.hasAccess(context)
-                            }
+                            derivedStateOf { uri.hasAccess(context) }
                         }
 
                         Row(
