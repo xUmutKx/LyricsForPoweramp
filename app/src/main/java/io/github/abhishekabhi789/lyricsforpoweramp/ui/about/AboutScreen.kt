@@ -165,7 +165,7 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
                         )
                         AssistChip(
                             onClick = { browseUrl(context, playStoreUrl) },
-                            label = { Text(stringResource(R.string.link_to_playstore)) },
+                            label = { Text(stringResource(R.string.link_to_play_store)) },
                             leadingIcon = { Icon(painterResource(R.drawable.ic_playstore), null) }
                         )
                         AssistChip(

@@ -8,8 +8,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.os.BundleCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.maxmpz.poweramp.player.PowerampAPI
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.editor.EditorScreen
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
@@ -17,16 +19,17 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
 class EditorActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
         val lyrics: Lyrics? = intent.extras?.let {
-            BundleCompat.getParcelableArrayList(it, KEY_LYRICS, Lyrics::class.java)?.firstOrNull()
+            BundleCompat.getParcelableArrayList(it, Track.KEY_LYRICS, Lyrics::class.java)
+                ?.firstOrNull()
         }
-        val powerampId = intent.getLongExtra(KEY_REAL_ID, 0L)
-        val filePath = intent.getStringExtra(KEY_FILE_PATH)
-        val preferredLyricsType = intent.getStringExtra(KEY_PREFERRED_TYPE)?.let { name ->
-            LyricsType.valueOf(name)
-        } ?: AppPreference.getPreferredLyricsType(this)
+        val powerampId = intent.getLongExtra(Track.KEY_REAL_ID, PowerampAPI.NO_ID)
+        val filePath = intent.getStringExtra(Track.KEY_FILE_PATH)
+        val preferredLyricsType = intent.getStringExtra(KEY_PREFERRED_TYPE)
+            ?.let { name -> LyricsType.valueOf(name) }
+            ?: AppPreference.getPreferredLyricsType(this)
         if (powerampId == 0L || filePath == null || lyrics == null) {
             Log.i(TAG, "onCreate: realId = $powerampId || path = $filePath || lyrics == $lyrics")
             Log.e(TAG, "onCreate: failed to get required parameters, returning")
@@ -46,9 +49,6 @@ class EditorActivity : ComponentActivity() {
 
     companion object {
         const val TAG = "EditorActivity"
-        const val KEY_LYRICS = "lyrics"
-        const val KEY_REAL_ID = "poweramp_id"
-        const val KEY_FILE_PATH = "file_path"
         const val KEY_PREFERRED_TYPE = "preferred_lyrics_type"
     }
 }

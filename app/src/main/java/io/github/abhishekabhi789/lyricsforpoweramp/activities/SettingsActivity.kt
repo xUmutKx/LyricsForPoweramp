@@ -2,7 +2,6 @@ package io.github.abhishekabhi789.lyricsforpoweramp.activities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +20,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             val viewmodel: SettingsViewModel = viewModel()
@@ -33,16 +33,6 @@ class SettingsActivity : ComponentActivity() {
                     }
                 }
             }
-            enableEdgeToEdge(
-                statusBarStyle = SystemBarStyle.auto(
-                    lightScrim = android.graphics.Color.TRANSPARENT,
-                    darkScrim = android.graphics.Color.TRANSPARENT,
-                ) { useDarkTheme },
-                navigationBarStyle = SystemBarStyle.auto(
-                    lightScrim = android.graphics.Color.TRANSPARENT,
-                    darkScrim = android.graphics.Color.TRANSPARENT,
-                ) { useDarkTheme },
-            )
             LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -58,6 +48,6 @@ class SettingsActivity : ComponentActivity() {
         const val TAG = "SettingsActivity"
         const val OPEN_SETTINGS_ACTION =
             "io.github.abhishekabhi789.lyricsforpoweramp.FOLDER_ACCESS_NEEDED"
-        const val EXTRA_REQUIRED_PATH = "need_permissison_for_this_path"
+        const val EXTRA_REQUIRED_PATH = "need_permission_for_this_path"
     }
 }

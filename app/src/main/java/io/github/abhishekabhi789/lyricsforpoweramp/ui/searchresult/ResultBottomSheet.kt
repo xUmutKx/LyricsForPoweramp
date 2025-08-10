@@ -101,7 +101,7 @@ fun ResultBottomSheet(
                     }
                 }
                 if (saveToStorage.shouldPerform) {
-                    val label = saveToStorage.result?.message?.let { stringResource(it) }
+                    val label = saveToStorage.result?.messageResId?.let { stringResource(it) }
                     StepIndicator(
                         text = label ?: stringResource(R.string.settings_save_as_file_label),
                         isCompleted = saveToStorage.result?.let { it == StorageHelper.Result.SUCCESS },

@@ -72,6 +72,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
@@ -226,14 +227,14 @@ fun LyricItem(
                             preferred = preferredLyricsType,
                             allItems = availableLyrics,
                             onSend = onEditLyrics,
-                            getLabel = { stringResource(it.shortLabel) })
+                            getLabel = { stringResource(it.shortLabelResId) })
                         SelectableButton(
                             actionIcon = Icons.Default.Done,
                             tooltipDescription = stringResource(R.string.save),
                             preferred = preferredLyricsType,
                             allItems = availableLyrics,
                             onSend = onLyricChosen,
-                            getLabel = { stringResource(it.shortLabel) })
+                            getLabel = { stringResource(it.shortLabelResId) })
                     }
                 }
             }
@@ -398,14 +399,15 @@ fun <T> SelectableButton(
 @Preview
 @Composable
 fun PreviewLyricItem() {
+    val lyrics = LoremIpsum(words = 20).values.joinToString(" ")
     val data = Lyrics(
-        trackName = "Fireworks (feat. Moss Kena & The knocks) [Breakbot & Irfane Remix]",
+        trackName = "Track Name 1",
         artistName = "Artists Name 1",
         albumName = "Album Name 1",
         duration = 200.0,
         instrumental = false,
-        plainLyrics = "1 Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n Nunc sit amet turpis et odio egestas finibus vel quis nisi.\n Duis aliquam tortor non dui tempor, et sodales orci tempus.\n Mauris fermentum mauris quis commodo viverra.\n Suspendisse scelerisque lorem eu dolor fringilla ultrices.\n Suspendisse scelerisque lorem eu dolor fringilla ultrices.\n Suspendisse scelerisque lorem eu dolor fringilla ultrices.",
-        syncedLyrics = "[00:10.00] 1 Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n [00:20.10] Nunc sit amet turpis et odio egestas finibus vel quis nisi.\n [00:30.20] Duis aliquam tortor non dui tempor, et sodales orci tempus.\n [00:40.30] Mauris fermentum mauris quis commodo viverra.\n [00:50.40] Suspendisse scelerisque lorem eu dolor fringilla ultrices.\n [01:00.50] Suspendisse scelerisque lorem eu dolor fringilla ultrices.\n [01:10.00] Suspendisse scelerisque lorem eu dolor fringilla ultrices."
+        plainLyrics = lyrics,
+        syncedLyrics = lyrics
     )
     LyricItem(lyrics = data, isLaunchedFromPowerAmp = true, onLyricChosen = { }, onEditLyrics = {})
 }

@@ -45,7 +45,7 @@ fun AppThemeSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel
                     viewmodel.updateTheme(selectedTheme)
                 },
                 onExpandChanged = { if (expanded) expanded = false },
-                getLabel = { theme -> stringResource(theme.label) }
+                getLabel = { theme -> stringResource(theme.labelResId) }
             )
         }
     }

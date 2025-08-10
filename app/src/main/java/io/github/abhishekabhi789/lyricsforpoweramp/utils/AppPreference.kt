@@ -4,9 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
-import androidx.annotation.StringRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
@@ -40,7 +40,7 @@ object AppPreference {
 
     fun setFilter(context: Context, filterType: FilterType, value: String?) {
         val sharedPreferences = getSharedPreference(context, FILTER_PREF_NAME)
-        sharedPreferences?.edit()?.putString(filterType.key, value)?.apply()
+        sharedPreferences?.edit { putString(filterType.key, value) }
     }
 
     fun getFirstTimeInfoShown(context: Context): Boolean {
@@ -50,7 +50,7 @@ object AppPreference {
 
     fun setFirstTimeInfoShown(context: Context, value: Boolean) {
         val sharedPreferences = getSharedPreference(context, OTHER_PREF)
-        sharedPreferences?.edit()?.putBoolean(FIRST_TIME_INFO_SHOWN, value)?.apply()
+        sharedPreferences?.edit { putBoolean(FIRST_TIME_INFO_SHOWN, value) }
     }
 
     fun getTheme(context: Context): AppTheme {
@@ -68,7 +68,7 @@ object AppPreference {
 
     fun setTheme(context: Context, theme: AppTheme) {
         val sharedPreferences = getSharedPreference(context, UI_PREF_NAME)
-        sharedPreferences?.edit()?.putString(UI_THEME_KEY, theme.name)?.apply()
+        sharedPreferences?.edit { putString(UI_THEME_KEY, theme.name) }
     }
 
     fun getSearchIfGetFailed(context: Context): Boolean {
@@ -78,7 +78,7 @@ object AppPreference {
 
     fun setSearchIfGetFailed(context: Context, choice: Boolean) {
         val sharedPreferences = getSharedPreference(context, OTHER_PREF)
-        sharedPreferences?.edit()?.putBoolean(SEARCH_IF_GET_FAILED, choice)?.apply()
+        sharedPreferences?.edit { putBoolean(SEARCH_IF_GET_FAILED, choice) }
     }
 
     fun getShowNotification(context: Context): Boolean {
@@ -88,7 +88,7 @@ object AppPreference {
 
     fun setShowNotification(context: Context, choice: Boolean) {
         val sharedPreferences = getSharedPreference(context, OTHER_PREF)
-        sharedPreferences?.edit()?.putBoolean(SHOW_LYRICS_REQUEST_NOTIFICATION, choice)?.apply()
+        sharedPreferences?.edit { putBoolean(SHOW_LYRICS_REQUEST_NOTIFICATION, choice) }
     }
 
     fun getOverwriteNotification(context: Context): Boolean {
@@ -98,7 +98,7 @@ object AppPreference {
 
     fun setOverwriteNotification(context: Context, choice: Boolean) {
         val sharedPreferences = getSharedPreference(context, OTHER_PREF)
-        sharedPreferences?.edit()?.putBoolean(OVERWRITE_NOTIFICATION, choice)?.apply()
+        sharedPreferences?.edit { putBoolean(OVERWRITE_NOTIFICATION, choice) }
     }
 
     fun getPreferredLyricsType(context: Context): LyricsType {
@@ -111,7 +111,7 @@ object AppPreference {
 
     fun setPreferredLyricsType(context: Context, type: LyricsType) {
         val sharedPreferences = getSharedPreference(context, OTHER_PREF)
-        sharedPreferences?.edit()?.putString(PREFERRED_LYRICS_TYPE, type.name)?.apply()
+        sharedPreferences?.edit { putString(PREFERRED_LYRICS_TYPE, type.name) }
     }
 
     fun getMarkInstrumental(context: Context): Boolean {
@@ -121,7 +121,7 @@ object AppPreference {
 
     fun setMarkInstrumental(context: Context, choice: Boolean) {
         val sharedPreferences = getSharedPreference(context, OTHER_PREF)
-        sharedPreferences?.edit()?.putBoolean(MARK_INSTRUMENTAL_LYRICS, choice)?.apply()
+        sharedPreferences?.edit { putBoolean(MARK_INSTRUMENTAL_LYRICS, choice) }
     }
 
     fun getSendLyricsToPoweramp(context: Context): Boolean {
@@ -131,7 +131,7 @@ object AppPreference {
 
     fun setSendLyricsToPoweramp(context: Context, value: Boolean) {
         val sharedPreference = getSharedPreference(context, OTHER_PREF)
-        sharedPreference?.edit()?.putBoolean(SEND_LYRICS_TO_POWERAMP, value)?.apply()
+        sharedPreference?.edit { putBoolean(SEND_LYRICS_TO_POWERAMP, value) }
     }
 
 
@@ -142,7 +142,7 @@ object AppPreference {
 
     fun setSaveAsFile(context: Context, value: Boolean) {
         val sharedPreference = getSharedPreference(context, OTHER_PREF)
-        sharedPreference?.edit()?.putBoolean(SAVE_LYRICS_IN_FILE, value)?.apply()
+        sharedPreference?.edit { putBoolean(SAVE_LYRICS_IN_FILE, value) }
     }
 
     fun getSavedUris(context: Context): List<Uri> {
@@ -155,7 +155,7 @@ object AppPreference {
         val sharedPreferences = getSharedPreference(context, OTHER_PREF)
         val savedUri = getSavedUris(context).toMutableSet().apply { add(uri) }
         val uriStringSet = savedUri.map { it.toString() }.toSet()
-        sharedPreferences?.edit()?.putStringSet(FOLDER_URIS, uriStringSet)?.apply()
+        sharedPreferences?.edit { putStringSet(FOLDER_URIS, uriStringSet) }
     }
 
     fun removeSavedFolder(context: Context, uri: Uri): Boolean {
@@ -163,7 +163,7 @@ object AppPreference {
         val success = savedUris.remove(uri)
         savedUris.map { it.toString() }.let {
             val sharedPreferences = getSharedPreference(context, OTHER_PREF)
-            sharedPreferences?.edit()?.putStringSet(FOLDER_URIS, it.toSet())?.apply()
+            sharedPreferences?.edit { putStringSet(FOLDER_URIS, it.toSet()) }
         }
         return success
     }
@@ -173,7 +173,7 @@ object AppPreference {
         val prefKey = when (translator) {
             Translator.GEMINI -> GEMINI_API_KEY
         }
-        sharedPreferences?.edit()?.putString(prefKey, apiKey)?.apply()
+        sharedPreferences?.edit { putString(prefKey, apiKey) }
     }
 
     fun getTranslationApiKey(context: Context, translator: Translator): String {
@@ -186,7 +186,7 @@ object AppPreference {
 
     fun setTimestampDelta(context: Context, deltaInCentiseconds: Int) {
         val sharedPreferences = getSharedPreference(context, OTHER_PREF)
-        sharedPreferences?.edit()?.putInt(TIMESTAMP_DELTA, deltaInCentiseconds)?.apply()
+        sharedPreferences?.edit { putInt(TIMESTAMP_DELTA, deltaInCentiseconds) }
     }
 
     fun getTimestampDelta(context: Context): Int {
@@ -203,13 +203,13 @@ object AppPreference {
         }
     }
 
-    enum class AppTheme(@StringRes val label: Int) {
+    enum class AppTheme(val labelResId: Int) {
         Auto(R.string.settings_theme_auto_label),
         Light(R.string.settings_theme_light_label),
         Dark(R.string.settings_theme_dark_label)
     }
 
-    enum class FilterType(val key: String, @StringRes val label: Int) {
+    enum class FilterType(val key: String, val labelResId: Int) {
         TITLE_FILTER("title_filter", R.string.settings_filter_title_label),
         ARTISTS_FILTER("artists_filter", R.string.settings_filter_artists_label),
         ALBUM_FILTER("album_filter", R.string.settings_filter_album_label),

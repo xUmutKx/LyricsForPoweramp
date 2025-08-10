@@ -242,7 +242,7 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                     AppPreference.setPreferredLyricsType(context, it)
                 },
                 onExpandChanged = { if (expanded) expanded = false },
-                getLabel = { stringResource(it.shortLabel) }
+                getLabel = { stringResource(it.shortLabelResId) }
             )
         }
         BasicSettings(

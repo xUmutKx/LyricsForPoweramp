@@ -1,9 +1,8 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.model
 
-import androidx.annotation.StringRes
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 
-enum class LyricsType(@StringRes val shortLabel: Int, @StringRes val longLabel: Int) {
+enum class LyricsType(val shortLabelResId: Int, val longLabelResId: Int) {
     PLAIN(R.string.plain_lyrics_short, R.string.plain_lyrics),
     SYNCED(R.string.synced_lyrics_short, R.string.synced_lyrics),
     INSTRUMENTAL(

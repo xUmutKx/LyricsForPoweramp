@@ -29,6 +29,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SearchResultActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -50,12 +51,12 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
     val hasRealId by remember { derivedStateOf { inputState.queryTrack.realId != null } }
     val launchedEditor = {
         val intent = Intent(context, EditorActivity::class.java).apply {
-            putExtra(EditorActivity.KEY_REAL_ID, inputState.queryTrack.realId)
+            putExtra(Track.KEY_REAL_ID, inputState.queryTrack.realId)
             putExtra(
-                EditorActivity.KEY_FILE_PATH, inputState.queryTrack.filePath
+                Track.KEY_FILE_PATH, inputState.queryTrack.filePath
             )
             putParcelableArrayListExtra(
-                EditorActivity.KEY_LYRICS,
+                Track.KEY_LYRICS,
                 arrayListOf(Lyrics.makeDummyLyricsForTrack(inputState.queryTrack))
             )
         }
@@ -72,7 +73,7 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             scope.launch {
                 when (snackbarHostState.showSnackbar(
                     message = listOfNotNull(
-                        context.getString(errMsg.errMsg),
+                        context.getString(errMsg.errMsgResId),
                         errMsg.moreInfo
                     ).joinToString(" "),
                     withDismissAction = true
@@ -88,11 +89,11 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             val intent = Intent(context, SearchResultActivity::class.java).apply {
                 putParcelableArrayListExtra(SearchResultActivity.KEY_RESULT, ArrayList(result))
                 putExtra(
-                    SearchResultActivity.KEY_POWERAMP_REAL_ID,
+                    Track.KEY_REAL_ID,
                     viewModel.inputState.value.queryTrack.realId
                 )
                 putExtra(
-                    SearchResultActivity.KEY_FILE_PATH,
+                    Track.KEY_FILE_PATH,
                     viewModel.inputState.value.queryTrack.filePath
                 )
             }

@@ -6,7 +6,6 @@
     <string name="synced_lyrics">Letras Sincronizadas</string>
     <string name="plain_lyrics_short">Planas</string>
     <string name="synced_lyrics_short">Sincronizadas</string>
-    <string name="track">Canción</string>
     <string name="navigate_back_action">Atrás</string>
     <string name="close">Cerrar</string>
     <string name="yes">Sí</string>
@@ -46,10 +45,7 @@
     <string name="lyrics_save_search_result">Letras de guardado</string>
     <string name="lyrics_send_to_pa">Enviar letras a Poweramp</string>
     <string name="lyrics_sent_to_pa">Letras enviadas a Poweramp</string>
-    <string name="lyrics_save_to_storage">Guardar letras como almacenamiento</string>
     <string name="lyrics_saved_to_storage">Guardado como archivo</string>
-    <string name="lyrics_save_to_storage_failed">No se pudo guardar como archivo</string>
-    <string name="result_change_type_button_label">Cambiar tipo de letras</string>
     <string name="result_type_synced_description">Letras sincronizadas de esta pista</string>
     <string name="result_type_plain_description">Letras planas de esta pista</string>
     <!--    editor activity-->
@@ -76,8 +72,7 @@
     <string name="version">Versión</string>
     <string name="third_party_licenses">Licencias de Terceros</string>
     <string name="link_to_github">Visitar en GitHub</string>
-    <string name="link_to_playstore">Obtener desde Play Store</string>
-    <string name="link_to_ko_fi">Donar vía Ko-Fi</string>
+    <string name="link_to_play_store">Obtener desde Play Store</string>
     <string name="link_to_guide">Leer Guía</string>
     <string name="link_to_feedback">Comentario</string>
     <string name="link_to_more_projects">Más proyectos</string>
@@ -99,7 +94,7 @@
     <string name="settings_permission_dialog_deny">Denegar</string>
     <string name="settings_permission_dialog_disable_notification">Desactivar Notificaciones</string>
     <string name="settings_permission_toast_notification_disabled">Notificaciones desactivadas</string>
-    <string name="settings_permission_toast_graned">Permiso Concedido</string>
+    <string name="settings_permission_toast_granted">Permiso Concedido</string>
     <string name="settings_permission_toast_denied">Permiso Denegado</string>
     <string name="settings_request_fail_notification_label">Notificar en Fallo de Solicitud</string>
     <string name="settings_request_fail_notification_description">Recibe una notificación cuando falle la recuperación de letras. Permite búsqueda manual.</string>
@@ -137,8 +132,8 @@
     <!--    notifications-->
     <string name="lyrics_request_handling_notifications">Notificaciones de Solicitudes de Letras</string>
     <string name="timeout_cancelled">Tiempo de espera cancelado</string>
+    <string name="notification_lyrics_request_failed">La solicitud de letras falló</string>
     <string name="notification_manual_search_suggestion">Toca aquí para buscar manualmente</string>
-    <string name="request_handling_notification_title">Procesando Solicitud</string>
     <string name="notification_storage_access_needed_title">Se necesita acceso a la carpeta</string>
     <string name="notification_storage_missing_access_to_path">Toca aquí para conceder acceso a %1$s.</string>
     <string name="notification_no_saving_method_title">Guardado de letras desactivado</string>
@@ -154,7 +149,6 @@
     <string name="error_no_results">No se encontraron resultados</string>
     <string name="error_processing_error">Error al procesar la respuesta</string>
     <!--    lyrics file writing status messages-->
-    <string name="lyrics_write_success">Archivo guardado correctamente.</string>
     <string name="lyrics_write_no_permission">Sin acceso para escribir en esta carpeta</string>
     <string name="lyrics_write_invalid_path">No se pudo determinar la ruta del archivo.</string>
     <string name="lyrics_write_invalid_lyrics">No se pudieron analizar las letras para guardarlas.</string>

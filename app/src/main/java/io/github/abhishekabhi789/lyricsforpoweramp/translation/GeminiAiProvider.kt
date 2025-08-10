@@ -29,7 +29,7 @@ class GeminiAiProvider(
     private val apiKey: String
 ) : TranslationProvider {
 
-    override val nameRes: Int = R.string.ai_gemini_name
+    override val nameResId: Int = R.string.ai_gemini_name
 
     override suspend fun getSupportedLanguages(lyrics: String): Result {
         val prompt = """

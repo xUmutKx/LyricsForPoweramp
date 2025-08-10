@@ -5,7 +5,6 @@
     <string name="synced_lyrics">Synced Lyrics</string>
     <string name="plain_lyrics_short">Plain</string>
     <string name="synced_lyrics_short">Synced</string>
-    <string name="track">Track</string>
     <string name="navigate_back_action">Go Back</string>
     <string name="close">Close</string>
     <string name="yes">Yes</string>
@@ -44,10 +43,7 @@
     <string name="lyrics_save_search_result">Saving Lyrics</string>
     <string name="lyrics_send_to_pa">Sending lyrics to Poweramp</string>
     <string name="lyrics_sent_to_pa">Lyrics sent to Poweramp</string>
-    <string name="lyrics_save_to_storage">Saving lyrics as storage</string>
     <string name="lyrics_saved_to_storage">Saved as lyrics file</string>
-    <string name="lyrics_save_to_storage_failed">Failed to save as file</string>
-    <string name="result_change_type_button_label">Change lyrics type</string>
     <string name="result_type_synced_description">Synced lyrics of this track</string>
     <string name="result_type_plain_description">Plain lyrics of this track</string>
     <!--    editor activity-->
@@ -74,8 +70,7 @@
     <string name="version">Version</string>
     <string name="third_party_licenses">Third Party Licenses</string>
     <string name="link_to_github">Visit on GitHub</string>
-    <string name="link_to_playstore">Get from Play Store</string>
-    <string name="link_to_ko_fi">Donate via Ko-Fi</string>
+    <string name="link_to_play_store">Get from Play Store</string>
     <string name="link_to_guide">Read Guide</string>
     <string name="link_to_feedback">Feedback</string>
     <string name="link_to_more_projects">More Projects</string>
@@ -97,7 +92,7 @@
     <string name="settings_permission_dialog_deny">Deny</string>
     <string name="settings_permission_dialog_disable_notification">Disable Notifications</string>
     <string name="settings_permission_toast_notification_disabled">Notifications disabled</string>
-    <string name="settings_permission_toast_graned">Permission Granted</string>
+    <string name="settings_permission_toast_granted">Permission Granted</string>
     <string name="settings_permission_toast_denied">Permission Denied</string>
     <string name="settings_request_fail_notification_label">Notify on Lyrics Request Failure</string>
     <string name="settings_request_fail_notification_description">Get notified when lyrics retrieval fails. Allows manual search.</string>
@@ -135,8 +130,8 @@
     <!--    notifications-->
     <string name="lyrics_request_handling_notifications">Lyrics Request Handling Notifications</string>
     <string name="timeout_cancelled">Timeout cancelled</string>
+    <string name="notification_lyrics_request_failed">Lyrics Request Failed</string>
     <string name="notification_manual_search_suggestion">Tap here to manually search</string>
-    <string name="request_handling_notification_title">Handling Request</string>
     <string name="notification_storage_access_needed_title">Need access to folder</string>
     <string name="notification_storage_missing_access_to_path">Tap here grant access to %1$s.</string>
     <string name="notification_no_saving_method_title">Lyrics saving is disabled</string>
@@ -152,7 +147,6 @@
     <string name="error_no_results">No result found</string>
     <string name="error_processing_error">Error processing response</string>
     <!--    lyrics file writing status messages-->
-    <string name="lyrics_write_success">File was saved successfully.</string>
     <string name="lyrics_write_no_permission">No access to write on this folder</string>
     <string name="lyrics_write_invalid_path">Failed to determine the file path.</string>
     <string name="lyrics_write_invalid_lyrics">Failed to parse lyrics for saving.</string>

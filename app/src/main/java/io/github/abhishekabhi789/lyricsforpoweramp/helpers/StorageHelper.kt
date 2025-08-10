@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import androidx.annotation.StringRes
 import androidx.documentfile.provider.DocumentFile
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
@@ -148,7 +147,7 @@ object StorageHelper {
     }
 
 
-    enum class Result(@StringRes val message: Int) {
+    enum class Result(val messageResId: Int) {
         /** Successfully wrote the lyrics file. */
         SUCCESS(R.string.lyrics_saved_to_storage),
 

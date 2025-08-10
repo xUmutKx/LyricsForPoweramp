@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -21,7 +22,6 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
-import io.github.abhishekabhi789.lyricsforpoweramp.receivers.LyricsRequestReceiver
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -46,16 +46,15 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
 
     override suspend fun doWork(): Result {
         mNotificationHelper = NotificationHelper(mContext)
-        powerampTrackId = inputData.getLong(LyricsRequestReceiver.KEY_REAL_ID, PowerampAPI.NO_ID)
-        inputData.getString(LyricsRequestReceiver.KEY_TRACK_NAME)?.let {
+        powerampTrackId = inputData.getLong(Track.KEY_REAL_ID, PowerampAPI.NO_ID)
+        inputData.getString(Track.KEY_TRACK_NAME)?.let { trackName ->
             mTrack = Track(
-                trackName = it,
-                artistName = inputData.getString(LyricsRequestReceiver.KEY_ARTIST_NAME),
-                albumName = inputData.getString(LyricsRequestReceiver.KEY_ALBUM_NAME),
-                duration = inputData.getInt(LyricsRequestReceiver.KEY_DURATION, 0)
-                    .let { if (it == 0) null else it },
+                trackName = trackName,
+                artistName = inputData.getString(Track.KEY_ARTIST_NAME),
+                albumName = inputData.getString(Track.KEY_ALBUM_NAME),
+                duration = inputData.getInt(Track.KEY_DURATION, 0).takeIf { it != 0 },
                 realId = powerampTrackId,
-                filePath = inputData.getString(LyricsRequestReceiver.KEY_FILE_PATH) ?: ""
+                filePath = inputData.getString(Track.KEY_FILE_PATH) ?: ""
             )
             Log.i(TAG, "doWork: request for $mTrack")
             return handleLyricsRequest()
@@ -70,8 +69,8 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
         if (!sendToPoweramp && !saveToStorage) {
             Log.e(TAG, "sendLyrics: both saving options are disabled")
             mNotificationHelper.launchSettings(
-                title = mContext.getString(R.string.notification_no_saving_method_title),
-                text = mContext.getString(R.string.notification_no_saving_method_description)
+                title = getString(R.string.notification_no_saving_method_title),
+                text = getString(R.string.notification_no_saving_method_description)
             )
             return Result.failure()
         }
@@ -88,15 +87,27 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
                     launch { sendLyrics(lyrics, preferredLyricsType) }
                 },
                 onError = { error ->
-                    notify(mContext.getString(error.errMsg) + error.moreInfo?.let { " $it" })
+                    when (error) {
+                        LrclibApiHelper.Error.TIMEOUT -> {
+                            notifyFailure("${getString(R.string.timeout_cancelled)} - ${mTrack.trackName}")
+                        }
+
+                        LrclibApiHelper.Error.EMPTY_RESPONSE, LrclibApiHelper.Error.NO_RESULTS -> {
+                            notifyFailure("${getString(error.errMsgResId)} - ${mTrack.trackName}")
+                        }
+
+                        else -> {
+                            notifyFailure("${getString(error.errMsgResId)} - ${mTrack.trackName}")
+                        }
+                    }
+
                     Log.e(TAG, "handleLyricsRequest: $error")
-                    notify(mContext.getString(R.string.notification_manual_search_suggestion))
                     result = Result.failure()
                 },
             )
             result
         } ?: run {
-            notify(mContext.getString(R.string.timeout_cancelled))
+            notifyFailure("${getString(R.string.timeout_cancelled)} - ${mTrack.trackName}")
             Log.e(TAG, "handleLyricsRequest: timeout cancelled")
             Result.retry()
         }
@@ -131,13 +142,17 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
                                     results.firstOrNull { it.plainLyrics != null }
                                         ?: results.firstOrNull { it.syncedLyrics != null }
                                 }
-                                lyrics?.let { onSuccess(it) }
+                                lyrics?.let { onSuccess(it) } ?: run {
+                                    notifyFailure(
+                                        getString(R.string.error_no_results, mTrack.trackName)
+                                    )
+                                }
                             },
                             onError = onError
                         )
                     }
                 } else {
-                    Log.e(TAG, "getLyrics: no results, fallback not possible")
+                    Log.e(TAG, "getLyrics: failed or no results, fallback not permitted")
                     onError(error)
                 }
             }
@@ -156,7 +171,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
         ).collect { state ->
             val path = mTrack.filePath.substringBeforeLast(File.separatorChar)
             val notificationText = when (state.saveAsFile.result) {
-                StorageHelper.Result.NO_PERMISSION -> mContext.getString(
+                StorageHelper.Result.NO_PERMISSION -> getString(
                     R.string.notification_storage_missing_access_to_path, path
                 )
 
@@ -180,22 +195,18 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
     }
 
 
-    private fun notify(content: String) {
-        val titleString = mContext.getString(R.string.request_handling_notification_title)
+    private fun notifyFailure(title: String) {
+        val subText = getString(R.string.notification_lyrics_request_failed)
         if (::mTrack.isInitialized) {
-            val (title, subText) = Pair(
-                "$titleString - ${mTrack.trackName}",
-                "${mContext.getString(R.string.track)}: ${mTrack.trackName}"
-            )
+            val content = getString(R.string.notification_manual_search_suggestion)
             mNotificationHelper.makeRequestNotification(title, content, subText, mTrack)
         } else {
-            val (title, subText) = Pair(titleString, null)
-            mNotificationHelper.makeRequestNotification(title, content, subText)
+            mNotificationHelper.makeRequestNotification(title = title, subText = subText)
         }
     }
 
     private fun createWorkerNotification(): Notification {
-        val channelName = mContext.getString(R.string.lyrics_request_handling_notifications)
+        val channelName = getString(R.string.lyrics_request_handling_notifications)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -206,11 +217,15 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
             notificationManager.createNotificationChannel(channel)
         }
         return NotificationCompat.Builder(applicationContext, WORKER_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(mContext.getString(R.string.lyrics_request_handling_notifications))
-            .setContentText(mContext.getString(R.string.request_handling_notification_title))
+            .setContentTitle(getString(R.string.lyrics_request_handling_notifications))
             .setSmallIcon(R.drawable.app_icon)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
+    }
+
+    private fun getString(@StringRes resId: Int, vararg formats: String): String {
+        return if (formats.isEmpty()) mContext.getString(resId)
+        else mContext.getString(resId, *formats)
     }
 
     companion object {

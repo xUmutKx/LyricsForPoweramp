@@ -16,7 +16,6 @@ android {
         targetSdk = 35
         versionCode = 19
         versionName = "1.9"
-        setProperty("archivesBaseName", "Lyrics4Poweramp-v$versionName")
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -41,7 +40,9 @@ android {
             value = "\"https://abhishekabhi789.github.io/\""
         )
     }
-
+    base {
+        archivesName.set("Lyrics4Poweramp-v${defaultConfig.versionName}")
+    }
     buildTypes {
         debug {
             isMinifyEnabled = false

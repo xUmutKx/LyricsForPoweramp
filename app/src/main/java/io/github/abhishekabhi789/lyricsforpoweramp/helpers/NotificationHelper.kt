@@ -1,6 +1,5 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.helpers
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -54,7 +53,7 @@ class NotificationHelper(private val context: Context) {
 
     fun makeRequestNotification(
         title: String,
-        content: String,
+        content: String? = null,
         subText: String? = null,
         track: Track? = null
     ) {
@@ -80,12 +79,12 @@ class NotificationHelper(private val context: Context) {
         } else null
         val notification = NotificationCompat.Builder(context, REQ_CHANNEL_ID).run {
             setContentTitle(title)
-            setContentText(content)
+            content?.let { setContentText(it) }
             setSmallIcon(R.drawable.app_icon)
             if (track != null) setAutoCancel(true)
             if (pendingIntent != null) setContentIntent(pendingIntent)
             if (subText != null) setSubText(subText)
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) setPriority(Notification.PRIORITY_LOW)
+            setPriority(NotificationCompat.PRIORITY_LOW)
             build()
         }
         notificationManager.notify(reqNotificationId, notification)
@@ -120,7 +119,7 @@ class NotificationHelper(private val context: Context) {
             setSmallIcon(R.drawable.app_icon)
             setAutoCancel(true)
             if (pendingIntent != null) setContentIntent(pendingIntent)
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) setPriority(Notification.PRIORITY_DEFAULT)
+            setPriority(NotificationCompat.PRIORITY_DEFAULT)
             build()
         }
         notificationManager.notify(permissionNotificationId, notification)

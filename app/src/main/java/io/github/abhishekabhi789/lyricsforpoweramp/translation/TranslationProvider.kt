@@ -4,7 +4,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import okhttp3.RequestBody
 
 interface TranslationProvider {
-    val nameRes: Int
+    val nameResId: Int
     suspend fun getSupportedLanguages(lyrics: String): Result
     suspend fun translateLyrics(lyrics: String, targetLanguage: String): Result
     suspend fun generateResponse(prompt: String): Result

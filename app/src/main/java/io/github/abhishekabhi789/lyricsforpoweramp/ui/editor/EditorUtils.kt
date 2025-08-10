@@ -76,8 +76,8 @@ fun isValidTimestamp(ts: String): Boolean {
 
     val minutes = mm.toIntOrNull() ?: return false
     val seconds = ss.toIntOrNull() ?: return false
-    val centis = cc.toIntOrNull() ?: return false
-    return minutes >= 0 && seconds in 0..59 && centis in 0..99
+    val centiseconds = cc.toIntOrNull() ?: return false
+    return minutes >= 0 && seconds in 0..59 && centiseconds in 0..99
 }
 
 fun getTimeStampFromRange(range: TextRange, lyrics: String): List<Timestamp> {

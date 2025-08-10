@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.StringRes
@@ -47,6 +46,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         setContent {
@@ -60,16 +60,6 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(AppPreference.getFirstTimeInfoShown(this@MainActivity))
             }
             var readyToShowFirstTimeInfo by rememberSaveable { mutableStateOf(false) }
-            enableEdgeToEdge(
-                statusBarStyle = SystemBarStyle.auto(
-                    lightScrim = android.graphics.Color.TRANSPARENT,
-                    darkScrim = android.graphics.Color.TRANSPARENT,
-                ) { useDarkTheme },
-                navigationBarStyle = SystemBarStyle.auto(
-                    lightScrim = android.graphics.Color.TRANSPARENT,
-                    darkScrim = android.graphics.Color.TRANSPARENT,
-                ) { useDarkTheme },
-            )
             LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
                 /* should not ask from here if user disabled notifications from settings*/
                 val shouldAskForNotificationPermission = rememberSaveable {
@@ -79,7 +69,7 @@ class MainActivity : ComponentActivity() {
                     permission = Manifest.permission.POST_NOTIFICATIONS
                 ) { isGranted ->
                     @StringRes val message =
-                        if (isGranted) R.string.settings_permission_toast_graned
+                        if (isGranted) R.string.settings_permission_toast_granted
                         else R.string.settings_permission_toast_denied
                     Toast(this@MainActivity).apply {
                         setText(message)

@@ -1,7 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.helpers
 
 import android.util.Log
-import androidx.annotation.StringRes
 import com.google.gson.Gson
 import io.github.abhishekabhi789.lyricsforpoweramp.BuildConfig
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -78,11 +77,10 @@ class LrclibApiHelper(private val client: OkHttpClient, private val gson: Gson) 
                                 try {
                                     when (response.code) {
                                         HttpURLConnection.HTTP_OK -> {
-                                            response.body?.let { responseBody ->
+                                            response.body.let { responseBody ->
                                                 val result = responseBody.string()
                                                 continuation.resume(ApiResult.Success(result))
                                             }
-                                                ?: continuation.resume(ApiResult.Failure(Error.EMPTY_RESPONSE))
                                         }
 
                                         HttpURLConnection.HTTP_NOT_FOUND -> {
@@ -230,7 +228,7 @@ class LrclibApiHelper(private val client: OkHttpClient, private val gson: Gson) 
 
     private fun encode(text: String) = URLEncoder.encode(text, "UTF-8")
 
-    enum class Error(@StringRes val errMsg: Int, var moreInfo: String? = null) {
+    enum class Error(val errMsgResId: Int, var moreInfo: String? = null) {
         CANCELLED(R.string.error_cancelled),
         EMPTY_RESPONSE(R.string.error_empty_response),
         NETWORK_ERROR(R.string.error_network),

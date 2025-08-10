@@ -12,8 +12,8 @@ data class Timestamp(
         return fromTotalCentiseconds(total)
     }
 
-    fun decrease(deltaCentis: Int): Timestamp {
-        val total = (toTotalCentiseconds() - deltaCentis).coerceAtLeast(0)
+    fun decrease(deltaCentiseconds: Int): Timestamp {
+        val total = (toTotalCentiseconds() - deltaCentiseconds).coerceAtLeast(0)
         return fromTotalCentiseconds(total)
     }
 

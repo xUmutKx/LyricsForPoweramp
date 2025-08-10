@@ -27,7 +27,7 @@ fun FilterField(
         )
     }
     TextInputWithChips(
-        fieldLabel = stringResource(id = filterType.label),
+        fieldLabel = stringResource(id = filterType.labelResId),
         leadingIcon = icon,
         initialValue = filters.toList(),
         onInputChange = {

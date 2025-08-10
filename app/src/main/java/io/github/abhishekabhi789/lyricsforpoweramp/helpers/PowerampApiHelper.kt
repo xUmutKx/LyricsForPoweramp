@@ -131,7 +131,7 @@ object PowerampApiHelper {
                 putExtra(PowerampAPI.EXTRA_ID, powerampId)
                 if (lyrics.instrumental == true) {
                     Log.i(TAG, "sendLyricResponse: track is instrumental")
-                    if (markInstrumental == true) {
+                    if (markInstrumental) {
                         Log.d(TAG, "sendLyricResponse: marking as instrumental")
                         putExtra(PowerampAPI.Lyrics.EXTRA_LYRICS, INSTRUMENTAL_MARKING)
                     }

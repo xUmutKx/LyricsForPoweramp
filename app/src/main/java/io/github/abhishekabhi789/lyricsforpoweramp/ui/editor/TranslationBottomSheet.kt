@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -30,6 +31,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -66,8 +68,21 @@ fun TranslationBottomSheet(
     val translatorState by viewmodel.translatorState.collectAsStateWithLifecycle()
     val languages: List<String> by remember(supportedLanguageState) {
         derivedStateOf {
-            (supportedLanguageState as? RequestState.Success<*>)?.response as? List<String>
-                ?: emptyList()
+            if (supportedLanguageState is RequestState.Success<*>) {
+                val response =
+                    (supportedLanguageState as RequestState.Success<*>).response as List<*>
+                response.map { it.toString() }
+            } else emptyList()
+        }
+    }
+
+    LaunchedEffect(translatorState) {
+        if (translatorState is RequestState.Failure) {
+            val failure = translatorState as RequestState.Failure
+            failure.errorMessage.let { errMsg ->
+                val text = errMsg ?: context.getString(R.string.translation_failed)
+                Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

@@ -111,7 +111,7 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             tabs.forEachIndexed { tabIndex, tab ->
                 val selected by remember { derivedStateOf { pagerState.currentPage == tabIndex } }
                 Tab(
-                    text = { Text(stringResource(id = tab.label)) },
+                    text = { Text(stringResource(id = tab.labelResId)) },
                     selected = selected,
                     onClick = {
                         viewModel.updateInputState(inputState.copy(searchMode = tab))
