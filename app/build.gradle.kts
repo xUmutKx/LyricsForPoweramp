@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.gson)
+    implementation(libs.media3.exoplayer)
     implementation(libs.documentfile)
     implementation(libs.core.splashscreen)
     implementation(libs.play.services.oss.licenses)

@@ -7,6 +7,7 @@
     <string name="synced_lyrics_short">Synced</string>
     <string name="navigate_back_action">Go Back</string>
     <string name="close">Close</string>
+    <string name="dismiss">Dismiss</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="enable">Enable</string>
@@ -22,6 +23,9 @@
     <string name="got_it">Got it</string>
     <string name="cancel">Cancel</string>
     <string name="closing_with_timeout">Closing in %1$ss</string>
+    <string name="folder_access_request_title">Folder Access Needed</string>
+    <string name="folder_access_request_explanation">To manage lyrics, this app needs access to the folder: %1$s</string>
+    <string name="grant_access">Grant Access</string>
     <!--    top bar-->
     <string name="top_bar_menu_descriptions">More Options</string>
     <!--    search ui-->

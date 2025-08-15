@@ -71,6 +71,7 @@ fun EditorScreen(
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
     val sendLyricsState by viewmodel.sendLyricsState.collectAsState()
+    val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
     var showTranslator by remember { mutableStateOf(false) }
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(inputState.lyrics, inputState.selection))
@@ -246,7 +247,7 @@ fun EditorScreen(
                 onDismiss = viewmodel::resetSendLyricsState,
                 grantAccess = {
                     viewmodel.resetSendLyricsState()
-                    val path = viewmodel.filePath.substringBeforeLast(File.separatorChar)
+                    val path = filePath?.substringBeforeLast(File.separatorChar)
                     Intent(context, SettingsActivity::class.java).apply {
                         setAction(SettingsActivity.Companion.OPEN_SETTINGS_ACTION)
                         putExtra(SettingsActivity.EXTRA_REQUIRED_PATH, path)

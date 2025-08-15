@@ -2,6 +2,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -10,23 +11,25 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.maxmpz.poweramp.player.PowerampAPI
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PlaybackHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
-import io.github.abhishekabhi789.lyricsforpoweramp.model.PlaybackState
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewModel() {
+class EditorViewmodel(
+    private val playbackHelper: PlaybackHelper,
+    private val translationHelper: TranslationHelper
+) : ViewModel() {
 
     private val undoStack = ArrayDeque<EditorInputState>(50)
     private val redoStack = ArrayDeque<EditorInputState>(50)
@@ -37,11 +40,12 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     private val _inputState = MutableStateFlow(EditorInputState())
     val inputState: StateFlow<EditorInputState> = _inputState.asStateFlow()
 
-    private val _powerampId = MutableStateFlow(PowerampAPI.NO_ID)
-    val powerampId = _powerampId.asStateFlow()
+    private var powerampId = PowerampAPI.NO_ID
 
     private lateinit var lyrics: Lyrics
-    lateinit var filePath: String
+
+    private val _filepath = MutableStateFlow<String?>(null)
+    val filePath = _filepath.asStateFlow()
 
     private val _targetLanguage: MutableStateFlow<String?> = MutableStateFlow(null)
     val targetLanguage = _targetLanguage.asStateFlow()
@@ -94,8 +98,8 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         powerampId: Long, filePath: String, lyrics: Lyrics, preferredLyricsType: LyricsType
     ) {
         this.lyrics = lyrics
-        this.filePath = filePath
-        _powerampId.value = powerampId
+        _filepath.value = filePath
+        this.powerampId = powerampId
         val lyrics =
             (if (preferredLyricsType == LyricsType.SYNCED) lyrics.syncedLyrics else lyrics.plainLyrics)
                 ?: ""
@@ -103,15 +107,19 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
     }
 
     fun sendLyricsToPoweramp(context: Context) {
-        resetSendLyricsState()
         viewModelScope.launch {
-            PowerampApiHelper.sendLyrics(
-                context = context,
-                filePath = filePath,
-                powerampId = _powerampId.value,
-                lyrics = lyrics.copy(syncedLyrics = inputState.value.lyrics),
-                lyricsType = LyricsType.SYNCED,
-            ).collect { state -> _sendLyricsState.value = state }
+            _filepath.value?.let { path: String ->
+                resetSendLyricsState()
+                PowerampApiHelper.sendLyrics(
+                    context = context,
+                    filePath = path,
+                    powerampId = powerampId,
+                    lyrics = lyrics.copy(syncedLyrics = inputState.value.lyrics),
+                    lyricsType = LyricsType.SYNCED,
+                ).collect { state -> _sendLyricsState.value = state }
+            } ?: run {
+                Log.e(TAG, "sendLyricsToPoweramp: filepath is null")
+            }
         }
     }
 
@@ -221,29 +229,33 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
         } ?: lyrics
     }
 
-    private val _playbackState = MutableStateFlow(PlaybackState())
-    val playbackState = _playbackState.asStateFlow()
+    val playerInitialized = playbackHelper.playerInitialized
+    val trackDuration = playbackHelper.trackDurationInSeconds
+    val playbackPosition = playbackHelper.playbackSeconds
+    val isPlaying = playbackHelper.isPlaying
 
-    fun updateNowPlayingTrack(
-        trackId: Long? = null,
-        paused: Boolean? = null,
-        position: Int? = null,
-        duration: Int? = null
-    ) {
-        _playbackState.update { current ->
-            current.copy(
-                trackId = trackId ?: current.trackId,
-                duration = duration ?: current.duration,
-                paused = paused ?: current.paused,
-                position = position ?: current.position
-            )
-        }
+    fun seekTo(seconds: Int) {
+        playbackHelper.seekTo((seconds.toLong().times(1000)))
+    }
+
+    fun togglePlayback(play: Boolean) {
+        playbackHelper.togglePlayback(play)
+    }
+
+    fun setTrackUri(uri: Uri) {
+        playbackHelper.setTrackUri(uri)
     }
 
     init {
         viewModelScope.launch {
-            setChosenTranslator(Translator.getDefault())
+            _chosenTranslator.value = Translator.getDefault()
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d(TAG, "onCleared: stopping playback")
+        playbackHelper.destroy()
     }
 
     companion object {
@@ -252,6 +264,7 @@ class EditorViewmodel(private val translationHelper: TranslationHelper) : ViewMo
             initializer {
                 val context = (this[APPLICATION_KEY] as Application)
                 EditorViewmodel(
+                    PlaybackHelper(context),
                     TranslationHelper(context, RequestHelper.okHttpClient, RequestHelper.gson)
                 )
             }

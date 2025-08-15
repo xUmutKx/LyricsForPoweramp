@@ -2,7 +2,10 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,113 +14,82 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Forward10
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay10
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.maxmpz.poweramp.player.PowerampAPI
-import com.maxmpz.poweramp.player.PowerampAPIHelper
-import com.maxmpz.poweramp.player.RemoteTrackTime
 import io.github.abhishekabhi789.lyricsforpoweramp.R
-import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity.Companion.TAG
-import io.github.abhishekabhi789.lyricsforpoweramp.receivers.TrackChangeReceiver
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getCleanedPath
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
 @Composable
 fun PlaybackControl(modifier: Modifier = Modifier, viewmodel: EditorViewmodel) {
     val context = LocalContext.current
-    val playerState by viewmodel.playbackState.collectAsStateWithLifecycle()
-    val trackId by viewmodel.powerampId.collectAsStateWithLifecycle()
-    val sameSongIsPlaying by remember(trackId, playerState.trackId) {
-        derivedStateOf { trackId == playerState.trackId }
-    }
-    val remoteTrackTime = remember(Unit) { RemoteTrackTime(context) }
-    DisposableEffect(Unit) {
-        val timeChangeListener = object : RemoteTrackTime.TrackTimeListener {
-            override fun onTrackDurationChanged(duration: Int) {
-                viewmodel.updateNowPlayingTrack(duration = duration)
-            }
-
-            override fun onTrackPositionChanged(position: Int) {
-                viewmodel.updateNowPlayingTrack(position = position)
+    val playerInitialized by viewmodel.playerInitialized.collectAsStateWithLifecycle()
+    val trackDuration by viewmodel.trackDuration.collectAsStateWithLifecycle()
+    val playbackPosition by viewmodel.playbackPosition.collectAsStateWithLifecycle()
+    val isPlaying by viewmodel.isPlaying.collectAsStateWithLifecycle()
+    val filePath by viewmodel.filePath.collectAsStateWithLifecycle() // e.g. primary/Music/Folder/File.mp3
+    var askUriAccess by rememberSaveable { mutableStateOf(false) }
+    val highLevelFolder: DocumentFile? by remember(filePath) {
+        derivedStateOf {
+            filePath?.let { path ->
+                AppPreference.getSavedUris(context)
+                    .find { uri -> path.startsWith(uri.getCleanedPath()) }
+                    ?.let { uri -> DocumentFile.fromTreeUri(context, uri) }
             }
         }
-        remoteTrackTime.setTrackTimeListener(timeChangeListener)
-        val receiver = TrackChangeReceiver(
-            onTrackChanged = { realId, duration ->
-                Log.d(TAG, "PlaybackControl: track changed realId $realId duration $duration")
-                // when track changed, no staus update will be sent, so need to reset the position here.
-                viewmodel.updateNowPlayingTrack(trackId = realId, duration = duration, position = 0)
-            },
-            onProgressUpdate = { paused, position ->
-                Log.d(TAG, "PlaybackControl: paused $paused position $position")
-                position?.let { remoteTrackTime.updateTrackPosition(it) }
-                viewmodel.updateNowPlayingTrack(paused = paused)//timeChangeListener will update position
-            }
-        )
-        remoteTrackTime.registerAndLoadStatus()
-        ContextCompat.registerReceiver(
-            context,
-            receiver,
-            TrackChangeReceiver.IntentFilter,
-            ContextCompat.RECEIVER_EXPORTED
-        )
-        Log.d(TAG, "LibraryScreen: observation started")
-        onDispose {
-            Log.d(TAG, "LibraryScreen: disposing observers")
-            context.unregisterReceiver(receiver)
-            remoteTrackTime.setTrackTimeListener(null)
-            remoteTrackTime.unregister()
+    }
+    val fileUri by remember(highLevelFolder) {
+        derivedStateOf {
+            getFileUriFromTreeUri(highLevelFolder?.uri, filePath)
         }
     }
-    LaunchedEffect(sameSongIsPlaying, playerState.paused) {
-        val updateProgress = sameSongIsPlaying && !playerState.paused
-        if (updateProgress) remoteTrackTime.startSongProgress() else remoteTrackTime.stopSongProgress()
-        Log.d(TAG, "PlaybackControl: monitor $updateProgress")
+    val hasUriAccess: Boolean? by remember(filePath, askUriAccess) {
+        derivedStateOf {
+            if (filePath == null) return@derivedStateOf null
+            val savedTreeUri = AppPreference.getSavedUris(context)
+                .find { uri -> filePath?.startsWith(uri.getCleanedPath()) == true }
+            val perms = context.contentResolver.persistedUriPermissions
+            perms.any { perm ->
+                perm.uri == savedTreeUri && perm.isReadPermission
+            }
+        }
     }
 
-    val togglePlayback = { play: Boolean ->
-        val command =
-            if (!sameSongIsPlaying) PowerampAPI.Commands.OPEN_TO_PLAY else {
-                if (play) PowerampAPI.Commands.PAUSE else PowerampAPI.Commands.PLAY
+    LaunchedEffect(hasUriAccess) {
+        hasUriAccess?.let { hasAccess ->
+            if (hasAccess) {
+                fileUri?.let { viewmodel.setTrackUri(it) }
             }
-        val commandIntent = Intent(PowerampAPI.ACTION_API_COMMAND).apply {
-            putExtra(PowerampAPI.EXTRA_COMMAND, command)
-            if (!sameSongIsPlaying) {
-                val uri = Uri.withAppendedPath(PowerampAPI.ROOT_URI, "files/$trackId")
-                setData(uri)
-            }
-            setPackage(PowerampAPIHelper.getPowerampPackageName(context))
+            askUriAccess = !hasAccess
         }
-        PowerampAPIHelper.sendPAIntent(context, commandIntent, true)
     }
-    val onPositionChange = { timeInSeconds: Int ->
-        remoteTrackTime.updateTrackPosition(timeInSeconds)
-        val commandIntent = Intent(PowerampAPI.ACTION_API_COMMAND).apply {
-            putExtra(PowerampAPI.EXTRA_COMMAND, PowerampAPI.Commands.SEEK)
-            putExtra(PowerampAPI.Track.POSITION, timeInSeconds)
-            setPackage(PowerampAPIHelper.getPowerampPackageName(context))
-        }
-        PowerampAPIHelper.sendPAIntent(context, commandIntent, true)
-    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -130,15 +102,15 @@ fun PlaybackControl(modifier: Modifier = Modifier, viewmodel: EditorViewmodel) {
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Timestamp(duration = playerState.position)
+            Timestamp(duration = playbackPosition)
             Slider(
-                enabled = sameSongIsPlaying,
-                value = playerState.position.toFloat(),
-                onValueChange = { onPositionChange(it.toInt()) },
-                valueRange = 0f..playerState.duration.toFloat(),
+                enabled = playerInitialized,
+                value = playbackPosition.toFloat(),
+                onValueChange = { viewmodel.seekTo(it.toInt()) },
+                valueRange = 0f..trackDuration.toFloat(),
                 modifier = Modifier.weight(1f)
             )
-            Timestamp(duration = playerState.duration)
+            Timestamp(duration = trackDuration)
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
@@ -146,25 +118,67 @@ fun PlaybackControl(modifier: Modifier = Modifier, viewmodel: EditorViewmodel) {
             modifier = Modifier.fillMaxWidth()
         ) {
             val changePlayback = { delta: Int ->
-                val newPosition = playerState.position + delta
-                onPositionChange(newPosition)
+                val newPosition = playbackPosition + delta
+                viewmodel.seekTo(newPosition)
             }
-            IconButton(onClick = { changePlayback(-10) }, enabled = sameSongIsPlaying) {
+            IconButton(onClick = { changePlayback(-10) }, enabled = playerInitialized) {
                 Icon(Icons.Default.Replay10, stringResource(R.string.playback_rewind_10s))
             }
-            FilledTonalIconButton(
-                onClick = { togglePlayback(!playerState.paused) },
-                modifier = Modifier.padding()
-            ) {
-                val (icon, label) = if (sameSongIsPlaying && !playerState.paused)
-                    Icons.Default.Pause to stringResource(R.string.playback_pause_button)
+            val onPlayToggle = {
+                if (hasUriAccess == true) viewmodel.togglePlayback(!isPlaying) else askUriAccess =
+                    true
+            }
+            FilledTonalIconButton(onClick = onPlayToggle, modifier = Modifier) {
+                val (icon, label) = if (isPlaying) Icons.Default.Pause to stringResource(R.string.playback_pause_button)
                 else Icons.Default.PlayArrow to stringResource(R.string.playback_play_button)
                 Icon(icon, label)
             }
-            IconButton(onClick = { changePlayback(10) }, enabled = sameSongIsPlaying) {
+            IconButton(onClick = { changePlayback(10) }, enabled = playerInitialized) {
                 Icon(Icons.Default.Forward10, stringResource(R.string.playback_forward_10s))
             }
         }
+    }
+
+    val pickFolderLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let { uri ->
+            context.contentResolver.takePersistableUriPermission(
+                uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+            AppPreference.saveFolderUri(context, uri)
+            getFileUriFromTreeUri(uri, filePath)?.let {
+                Log.d("TAG", "PlaybackControl: uri created $it")
+                viewmodel.setTrackUri(it)
+            }
+            askUriAccess = false
+        }
+    }
+
+    if (filePath != null && askUriAccess) {
+        AlertDialog(
+            onDismissRequest = { askUriAccess = false },
+            confirmButton = {
+                TextButton({ pickFolderLauncher.launch(fileUri) }) {
+                    Text(stringResource(R.string.grant_access))
+                }
+            },
+            dismissButton = {
+                TextButton({ askUriAccess = false }) {
+                    Text(stringResource(R.string.dismiss))
+                }
+            },
+            icon = { Icon(Icons.Default.Info, null) },
+            title = { Text(stringResource(R.string.folder_access_request_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.folder_access_request_explanation,
+                        filePath?.substringBeforeLast("/") ?: ""
+                    )
+                )
+            },
+        )
     }
 }
 
@@ -180,4 +194,20 @@ fun Timestamp(modifier: Modifier = Modifier, duration: Int) {
         }
     }
     Text(text = formattedDuration, modifier = modifier)
+}
+
+fun getFileUriFromTreeUri(treeUri: Uri?, fullPath: String?): Uri? {
+    if (treeUri == null || fullPath == null) return null
+    val treeDocId = DocumentsContract.getTreeDocumentId(treeUri)
+    val normalizedTreePath = treeDocId.replace(":", "/")
+    if (!fullPath.startsWith(normalizedTreePath)) {
+        return null
+    }
+    val relativePath = fullPath.removePrefix(normalizedTreePath).trimStart('/')
+    val fileDocId = if (relativePath.isEmpty()) {
+        treeDocId
+    } else {
+        "$treeDocId/$relativePath"
+    }
+    return DocumentsContract.buildDocumentUriUsingTree(treeUri, fileDocId)
 }
