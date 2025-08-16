@@ -2,10 +2,12 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
 import android.content.Intent
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
@@ -19,12 +21,14 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -84,6 +88,9 @@ fun EditorScreen(
         }
     }
     val timestampDeltaCenti = remember { AppPreference.getTimestampDelta(context) }
+    var saveAsFileEnabled by remember {
+        mutableStateOf(AppPreference.getSaveAsFile(context))
+    }
     BackHandler { onFinish() }
     Scaffold(
         topBar = {
@@ -236,7 +243,28 @@ fun EditorScreen(
                     )
                 }
             }
-
+            AnimatedVisibility(!saveAsFileEnabled) {
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.save_as_file_not_enabled_warning),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        Button(onClick = {
+                            AppPreference.setSaveAsFile(context, true)
+                            saveAsFileEnabled = true
+                        }) {
+                            Text(stringResource(R.string.enable))
+                        }
+                    }
+                }
+            }
             BasicTextField(
                 value = textFieldValue,
                 onValueChange = {

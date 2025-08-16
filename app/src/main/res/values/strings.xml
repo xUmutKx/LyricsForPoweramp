@@ -52,6 +52,7 @@
     <string name="result_type_plain_description">Plain lyrics of this track</string>
     <!--    editor activity-->
     <string name="title_activity_editor">Editor</string>
+    <string name="save_as_file_not_enabled_warning">Edits are saved to Poweramp\'s cache only and can\'t be changed later. Tap below button to enable Save as File.</string>
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
     <string name="save">Save</string>
