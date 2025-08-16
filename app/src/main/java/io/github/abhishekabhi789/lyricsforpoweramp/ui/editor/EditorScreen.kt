@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
@@ -82,14 +83,28 @@ fun EditorScreen(
         mutableStateOf(TextFieldValue(inputState.lyrics, inputState.selection))
     }
     val lyricsContent by remember(inputState) { derivedStateOf { inputState.lyrics } }
-    val showTimestampAdjustButtons by remember {
-        derivedStateOf {
-            getTimeStampsFromRange(textFieldValue.selection, lyricsContent).isNotEmpty()
-        }
-    }
+    val lyricsLines by remember(lyricsContent) { derivedStateOf { lyricsContent.lines() } }
     val timestampDeltaCenti = remember { AppPreference.getTimestampDelta(context) }
     var saveAsFileEnabled by remember {
         mutableStateOf(AppPreference.getSaveAsFile(context))
+    }
+    val selectionLineIndexes by remember(textFieldValue, lyricsContent) {
+        derivedStateOf { getLineIndexesForSelection(textFieldValue) }
+    }
+    val linesInSelection by remember(selectionLineIndexes) {
+        derivedStateOf {
+            val (start, end) = selectionLineIndexes
+            if (lyricsLines.isEmpty()) emptyList()
+            else {
+                val safeStart = start.coerceIn(0, lyricsLines.lastIndex)
+                val safeEnd = end.coerceIn(0, lyricsLines.lastIndex)
+                lyricsLines.slice(safeStart..safeEnd)
+            }
+        }
+    }
+
+    val showTimestampAdjustButtons by remember(linesInSelection) {
+        derivedStateOf { linesInSelection.isNotEmpty() }
     }
     BackHandler { onFinish() }
     Scaffold(
@@ -159,8 +174,12 @@ fun EditorScreen(
                     )
 
                     val offsetTimestamp = { increase: Boolean ->
-                        val timestamps =
-                            getTimeStampsFromRange(textFieldValue.selection, lyricsContent)
+                        val timeStampRegex = Regex("(\\[\\d{2,}:\\d{2}\\.\\d{2}])")
+                        val timestamps = linesInSelection.flatMap { line ->
+                            timeStampRegex.findAll(line).mapNotNull { match ->
+                                Timestamp.fromString(match.value)
+                            }
+                        }
                         val newLyrics = timestamps.fold(lyricsContent) { lyrics, timestamp ->
                             val newTimestamp = if (increase) timestamp.increase(timestampDeltaCenti)
                             else timestamp.decrease(timestampDeltaCenti)
@@ -193,7 +212,7 @@ fun EditorScreen(
                                     .size - 1
                                 ).coerceAtLeast(0)
 
-                        val lines = lyricsContent.lines().toMutableList()
+                        val lines = lyricsLines.toMutableList()
                         val timeStampRegex = Regex("(\\[\\d{2}:\\d{2}\\.\\d{2}])")
                         val currentLine = lines.getOrNull(firstLineIndex) ?: ""
                         val updatedLine = if (timeStampRegex.containsMatchIn(currentLine)) {
@@ -248,9 +267,7 @@ fun EditorScreen(
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                         Text(
                             text = stringResource(R.string.save_as_file_not_enabled_warning),
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -315,8 +332,7 @@ fun EditorScreen(
             )
         }
         if (showTranslator) {
-            TranslationBottomSheet(
-                viewmodel = viewmodel, onDismiss = { showTranslator = false })
+            TranslationBottomSheet(viewmodel = viewmodel, onDismiss = { showTranslator = false })
         }
     }
 }

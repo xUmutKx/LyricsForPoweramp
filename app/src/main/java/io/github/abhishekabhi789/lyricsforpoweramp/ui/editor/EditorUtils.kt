@@ -3,17 +3,16 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.sp
-import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 
 fun transformLyrics(
     text: String,
@@ -80,21 +79,17 @@ fun isValidTimestamp(ts: String): Boolean {
     return minutes >= 0 && seconds in 0..59 && centiseconds in 0..99
 }
 
-fun getTimeStampsFromRange(range: TextRange, lyrics: String): List<Timestamp> {
+fun getLineIndexesForSelection(textFieldValue: TextFieldValue): Pair<Int, Int> {
+    val lyricsContent = textFieldValue.text
+    val range = textFieldValue.selection
     val startIndex = minOf(range.start, range.end)
     val endIndex = maxOf(range.start, range.end)
 
     val firstLine =
-        (lyrics.substring(0, (startIndex - 1).coerceAtLeast(0)).lines().size - 1)
+        (lyricsContent.substring(0, (startIndex).coerceAtLeast(0)).lines().size - 1)
             .coerceAtLeast(0)
     val lastLine =
-        (lyrics.substring(0, (endIndex - 1).coerceAtLeast(0)).lines().size)
+        (lyricsContent.substring(0, (endIndex).coerceAtLeast(0)).lines().size - 1)
             .coerceAtLeast(0)
-    val lines = lyrics.lines().subList(firstLine, lastLine)
-    val timeStampRegex = Regex("(\\[\\d{2,}:\\d{2}\\.\\d{2}])")
-    return lines.flatMap { line ->
-        timeStampRegex.findAll(line).mapNotNull { match ->
-            Timestamp.fromString(match.value)
-        }
-    }
+    return firstLine to lastLine
 }
