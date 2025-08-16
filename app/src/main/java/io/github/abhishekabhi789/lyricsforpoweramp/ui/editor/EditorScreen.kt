@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Translate
@@ -79,7 +80,7 @@ fun EditorScreen(
     val lyricsContent by remember(inputState) { derivedStateOf { inputState.lyrics } }
     val showTimestampAdjustButtons by remember {
         derivedStateOf {
-            getTimeStampFromRange(textFieldValue.selection, lyricsContent).isNotEmpty()
+            getTimeStampsFromRange(textFieldValue.selection, lyricsContent).isNotEmpty()
         }
     }
     val timestampDeltaCenti = remember { AppPreference.getTimestampDelta(context) }
@@ -152,7 +153,7 @@ fun EditorScreen(
 
                     val offsetTimestamp = { increase: Boolean ->
                         val timestamps =
-                            getTimeStampFromRange(textFieldValue.selection, lyricsContent)
+                            getTimeStampsFromRange(textFieldValue.selection, lyricsContent)
                         val newLyrics = timestamps.fold(lyricsContent) { lyrics, timestamp ->
                             val newTimestamp = if (increase) timestamp.increase(timestampDeltaCenti)
                             else timestamp.decrease(timestampDeltaCenti)
@@ -173,6 +174,35 @@ fun EditorScreen(
                         label = stringResource(R.string.increase_timestamp_by, timestampDeltaCenti),
                         onClick = { offsetTimestamp(true) },
                         enabled = showTimestampAdjustButtons
+                    )
+                    val syncLine = {
+                        val newTimestamp = viewmodel.getCurrentTimestamp()
+                        val startIndex = textFieldValue.selection
+                            .let { range -> minOf(range.start, range.end) }
+                        val firstLineIndex = (
+                                lyricsContent
+                                    .substring(0, (startIndex - 1).coerceAtLeast(0))
+                                    .lines()
+                                    .size - 1
+                                ).coerceAtLeast(0)
+
+                        val lines = lyricsContent.lines().toMutableList()
+                        val timeStampRegex = Regex("(\\[\\d{2}:\\d{2}\\.\\d{2}])")
+                        val currentLine = lines.getOrNull(firstLineIndex) ?: ""
+                        val updatedLine = if (timeStampRegex.containsMatchIn(currentLine)) {
+                            timeStampRegex.replace(currentLine) { newTimestamp.toString() }
+                        } else {
+                            "$newTimestamp $currentLine"
+                        }
+                        lines[firstLineIndex] = updatedLine
+                        val newLyrics = lines.joinToString("\n")
+                        viewmodel.updateInputState(inputState.copy(lyrics = newLyrics))
+                    }
+
+                    BottomBarToolButton(
+                        icon = Icons.Default.MoreTime,
+                        label = stringResource(R.string.sync_line_button_descr),
+                        onClick = syncLine,
                     )
                 },
                 floatingActionButton = {

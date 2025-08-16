@@ -80,7 +80,7 @@ fun isValidTimestamp(ts: String): Boolean {
     return minutes >= 0 && seconds in 0..59 && centiseconds in 0..99
 }
 
-fun getTimeStampFromRange(range: TextRange, lyrics: String): List<Timestamp> {
+fun getTimeStampsFromRange(range: TextRange, lyrics: String): List<Timestamp> {
     val startIndex = minOf(range.start, range.end)
     val endIndex = maxOf(range.start, range.end)
 

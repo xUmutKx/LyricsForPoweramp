@@ -9,12 +9,12 @@ data class Timestamp(
 
     fun increase(deltaCentiseconds: Int): Timestamp {
         val total = toTotalCentiseconds() + deltaCentiseconds
-        return fromTotalCentiseconds(total)
+        return fromMillis(total.times(10L))
     }
 
     fun decrease(deltaCentiseconds: Int): Timestamp {
         val total = (toTotalCentiseconds() - deltaCentiseconds).coerceAtLeast(0)
-        return fromTotalCentiseconds(total)
+        return fromMillis(total.times(10L))
     }
 
     private fun toTotalCentiseconds(): Int {
@@ -29,11 +29,14 @@ data class Timestamp(
             return Timestamp(mm.toInt(), ss.toInt(), cc.toInt())
         }
 
-        private fun fromTotalCentiseconds(total: Int): Timestamp {
-            val minutes = total / 6000
-            val seconds = (total % 6000) / 100
-            val centiseconds = total % 100
-            return Timestamp(minutes, seconds, centiseconds)
+        fun fromMillis(ms: Long): Timestamp {
+            return ms.div(10).let { centiseconds ->
+                Timestamp(
+                    minutes = (centiseconds / 6000).toInt(),
+                    seconds = ((centiseconds % 6000) / 100).toInt(),
+                    centiseconds = (centiseconds % 100).toInt()
+                )
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
@@ -245,6 +246,8 @@ class EditorViewmodel(
     fun setTrackUri(uri: Uri) {
         playbackHelper.setTrackUri(uri)
     }
+
+    fun getCurrentTimestamp(): Timestamp = playbackHelper.getCurrentTimestamp()
 
     init {
         viewModelScope.launch {

@@ -70,6 +70,7 @@
     <string name="playback_pause_button">Pausar</string>
     <string name="playback_rewind_10s">Retroceder 10s</string>
     <string name="playback_forward_10s">Avanzar 10s</string>
+    <string name="sync_line_button_descr">Sincronizar esta línea</string>
     <!--    about activity-->
     <string name="about">Acerca de</string>
     <string name="version">Versión</string>

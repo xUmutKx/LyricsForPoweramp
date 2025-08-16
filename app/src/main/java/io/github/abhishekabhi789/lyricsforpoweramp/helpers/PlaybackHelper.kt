@@ -7,6 +7,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -107,6 +108,10 @@ class PlaybackHelper(context: Context) {
      * @param ms position in milliseconds */
     fun seekTo(ms: Long) {
         scope.launch { player.seekTo(ms.coerceIn(0L, player.duration)) }
+    }
+
+    fun getCurrentTimestamp(): Timestamp {
+        return Timestamp.fromMillis(player.currentPosition)
     }
 
     private fun startUpdatingTimeFlow() {
