@@ -1,6 +1,7 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -10,58 +11,68 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.sp
 
 fun transformLyrics(
-    text: String,
-    primaryContainerColor: Color,
-    onPrimaryContainerColor: Color,
+    text: AnnotatedString,
+    selectionLineIndexes: IntRange,
     textColor: Color,
-    errorColor: Color,
-    errorContainerColor: Color
+    selectionContainerColor: Color,
+    onSelectionContainerColor: Color,
+    timestampContainerColor: Color,
+    onTimestampContainerColor: Color,
+    errorContainer: Color,
+    onErrorContainer: Color
 ): TransformedText {
-    val timeStampRegex = Regex("(\\[\\d{2,3}:\\d{2}\\.\\d{2}])")
+    val potentialTimestampRegex = Regex("(^\\[\\d.*])")
+    val validTimestampStyle = SpanStyle(
+        color = onTimestampContainerColor,
+        background = timestampContainerColor
+    )
+    val invalidTimestampStyle = SpanStyle(color = onErrorContainer, background = errorContainer)
+
     val annotatedString = buildAnnotatedString {
-        var lastIndex = 0
-        for (match in timeStampRegex.findAll(text)) {
-            if (match.range.first > lastIndex) {
-                withStyle(SpanStyle(color = textColor)) {
-                    append(text.substring(lastIndex, match.range.first))
-                }
-            }
-            val timestamp = match.value
-            val isValid = isValidTimestamp(timestamp)
-            val contentStart = match.range.last + 1
-            val nextMatchStart =
-                timeStampRegex.find(text, contentStart)?.range?.first ?: text.length
-            val lyricsText = text.substring(contentStart, nextMatchStart)
-            withStyle(
-                ParagraphStyle(
-                    textIndent = TextIndent(restLine = 95.sp),
-                    lineHeight = TextUnit(1f, TextUnitType.Em)
+        text.text.lines().forEachIndexed { lineIndex, line ->
+            val (color, bgColor) = when {
+                lineIndex in selectionLineIndexes -> onSelectionContainerColor to selectionContainerColor.copy(
+                    0.5f
                 )
-            ) {
-                withStyle(
-                    SpanStyle(
-                        fontWeight = FontWeight.Bold,
-                        background = if (isValid) primaryContainerColor else errorContainerColor,
-                        color = if (isValid) onPrimaryContainerColor else errorColor
-                    )
-                ) {
-                    append(timestamp)
-                }
-                withStyle(SpanStyle(color = textColor)) {
-                    append(lyricsText)
-                }
+
+                else -> textColor to Color.Unspecified
             }
-            lastIndex = nextMatchStart
-        }
-        if (lastIndex < text.length) {
-            //any other remaining content
-            withStyle(SpanStyle(color = textColor)) {
-                append(text.substring(lastIndex))
+
+            val lineStyle = SpanStyle(
+                color = color,
+                background = bgColor,
+                fontWeight = if (lineIndex in selectionLineIndexes) FontWeight.Bold else FontWeight.Normal
+            )
+            withStyle(ParagraphStyle(textIndent = TextIndent(restLine = 95.sp))) {
+                var currentIndex = 0
+                potentialTimestampRegex.findAll(line).forEach { match ->
+                    if (match.range.first > currentIndex) {
+                        withStyle(lineStyle) {
+                            append(line.substring(currentIndex, match.range.first))
+                        }
+                    }
+
+                    val tsText = match.value
+                    val tsStyle =
+                        if (isValidTimestamp(tsText)) validTimestampStyle else invalidTimestampStyle
+                    withStyle(tsStyle) {
+                        append(tsText)
+                    }
+
+                    currentIndex = match.range.last + 1
+                }
+                if (currentIndex < line.length) {
+                    withStyle(lineStyle) {
+                        append(line.substring(currentIndex))
+                    }
+                }
+
+                if (lineIndex != text.text.lines().lastIndex) {
+                    append("\n")
+                }
             }
         }
     }
@@ -70,16 +81,15 @@ fun transformLyrics(
 
 fun isValidTimestamp(ts: String): Boolean {
     // Expecting [mm:ss.cc]
-    val match = Regex("\\[(\\d{2}):(\\d{2})\\.(\\d{2})]").matchEntire(ts) ?: return false
+    val match = Regex("\\[(\\d{2,3}):(\\d{2})\\.(\\d{2})]").matchEntire(ts) ?: return false
     val (mm, ss, cc) = match.destructured
-
     val minutes = mm.toIntOrNull() ?: return false
     val seconds = ss.toIntOrNull() ?: return false
     val centiseconds = cc.toIntOrNull() ?: return false
     return minutes >= 0 && seconds in 0..59 && centiseconds in 0..99
 }
 
-fun getLineIndexesForSelection(textFieldValue: TextFieldValue): Pair<Int, Int> {
+fun getLineIndexesForSelection(textFieldValue: TextFieldValue): IntRange {
     val lyricsContent = textFieldValue.text
     val range = textFieldValue.selection
     val startIndex = minOf(range.start, range.end)
@@ -91,5 +101,5 @@ fun getLineIndexesForSelection(textFieldValue: TextFieldValue): Pair<Int, Int> {
     val lastLine =
         (lyricsContent.substring(0, (endIndex).coerceAtLeast(0)).lines().size - 1)
             .coerceAtLeast(0)
-    return firstLine to lastLine
+    return IntRange(firstLine, lastLine)
 }

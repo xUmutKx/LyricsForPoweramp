@@ -93,11 +93,10 @@ fun EditorScreen(
     }
     val linesInSelection by remember(selectionLineIndexes) {
         derivedStateOf {
-            val (start, end) = selectionLineIndexes
             if (lyricsLines.isEmpty()) emptyList()
             else {
-                val safeStart = start.coerceIn(0, lyricsLines.lastIndex)
-                val safeEnd = end.coerceIn(0, lyricsLines.lastIndex)
+                val safeStart = selectionLineIndexes.start.coerceIn(0, lyricsLines.lastIndex)
+                val safeEnd = selectionLineIndexes.endInclusive.coerceIn(0, lyricsLines.lastIndex)
                 lyricsLines.slice(safeStart..safeEnd)
             }
         }
@@ -248,10 +247,12 @@ fun EditorScreen(
                 .consumeWindowInsets(paddingValues)
         ) {
             val textColor = MaterialTheme.colorScheme.onSurface
-            val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer
-            val onPrimaryContainerColor = MaterialTheme.colorScheme.onPrimaryContainer
-            val errorColor = MaterialTheme.colorScheme.onErrorContainer
-            val errorContainerColor = MaterialTheme.colorScheme.errorContainer
+            val selectionContainerColor = MaterialTheme.colorScheme.primaryContainer
+            val onSelectionContainerColor = MaterialTheme.colorScheme.onPrimaryContainer
+            val timestampContainerColor = MaterialTheme.colorScheme.secondaryContainer
+            val onTimestampContainerColor = MaterialTheme.colorScheme.onSecondaryContainer
+            val errorContainer = MaterialTheme.colorScheme.errorContainer
+            val onErrorContainer = MaterialTheme.colorScheme.onErrorContainer
             LaunchedEffect(inputState) {
                 if (inputState.lyrics != textFieldValue.text ||
                     inputState.selection != textFieldValue.selection
@@ -301,12 +302,15 @@ fun EditorScreen(
                 },
                 visualTransformation = {
                     transformLyrics(
-                        text = it.text,
-                        primaryContainerColor = primaryContainerColor,
-                        onPrimaryContainerColor = onPrimaryContainerColor,
+                        text = it,
+                        selectionLineIndexes = selectionLineIndexes,
                         textColor = textColor,
-                        errorColor = errorColor,
-                        errorContainerColor = errorContainerColor
+                        selectionContainerColor = selectionContainerColor,
+                        onSelectionContainerColor = onSelectionContainerColor,
+                        timestampContainerColor = timestampContainerColor,
+                        onTimestampContainerColor = onTimestampContainerColor,
+                        errorContainer = errorContainer,
+                        onErrorContainer = onErrorContainer,
                     )
                 },
                 cursorBrush = SolidColor(Color.Gray),
