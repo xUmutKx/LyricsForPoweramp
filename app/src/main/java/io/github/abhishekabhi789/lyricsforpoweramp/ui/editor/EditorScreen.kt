@@ -235,10 +235,12 @@ fun EditorScreen(
                         Icon(Icons.Default.Save, contentDescription = stringResource(R.string.save))
                     }
                 },
-                modifier = Modifier.imePadding()
+                modifier = Modifier
             )
         },
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .imePadding()
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -283,6 +285,20 @@ fun EditorScreen(
                     }
                 }
             }
+            val playbackPosition by viewmodel.playbackPosition.collectAsStateWithLifecycle()
+            val indexOfCurrentLine by remember(playbackPosition) {
+                derivedStateOf {
+                    val timestampRegex = Regex("\\[(\\d{2,3}):(\\d{2})\\.(\\d{2})]")
+                    lyricsLines.indexOfLast { line ->
+                        timestampRegex.findAll(line).mapNotNull { match ->
+                            Timestamp.fromString(match.value)
+                        }.any { timestamp ->
+                            timestamp.toTotalCentiseconds().div(100) <= playbackPosition
+                        }
+                    }
+                }
+            }
+
             BasicTextField(
                 value = textFieldValue,
                 onValueChange = {
@@ -304,6 +320,7 @@ fun EditorScreen(
                     transformLyrics(
                         text = it,
                         selectionLineIndexes = selectionLineIndexes,
+                        currentPlayingLine = indexOfCurrentLine,
                         textColor = textColor,
                         selectionContainerColor = selectionContainerColor,
                         onSelectionContainerColor = onSelectionContainerColor,
@@ -315,8 +332,9 @@ fun EditorScreen(
                 },
                 cursorBrush = SolidColor(Color.Gray),
                 modifier = Modifier
+                    .fillMaxSize()
                     .padding(horizontal = 12.dp)
-                    .weight(1f)
+                    .weight(1f)//needed to show playback control
             )
             PlaybackControl(viewmodel = viewmodel)
         }

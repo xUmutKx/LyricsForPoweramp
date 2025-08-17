@@ -17,7 +17,7 @@ data class Timestamp(
         return fromMillis(total.times(10L))
     }
 
-    private fun toTotalCentiseconds(): Int {
+    fun toTotalCentiseconds(): Int {
         return (((minutes * 60) + seconds) * 100) + centiseconds
     }
 
