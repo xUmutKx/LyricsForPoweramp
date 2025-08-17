@@ -71,6 +71,7 @@
     <string name="playback_rewind_10s">Back 10s</string>
     <string name="playback_forward_10s">Forward 10s</string>
     <string name="sync_line_button_descr">Sync Line</string>
+    <string name="play_current_line">Play Current Line</string>
     <!--    about activity-->
     <string name="about">About</string>
     <string name="version">Version</string>
