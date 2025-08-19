@@ -37,7 +37,7 @@ fun transformLyrics(
             val (color, bgColor) = when (lineIndex) {
                 currentPlayingLine -> onSelectionContainerColor to selectionContainerColor
                 in selectionLineIndexes ->
-                    onSelectionContainerColor to selectionContainerColor.copy(0.5f)
+                    onSelectionContainerColor to selectionContainerColor.copy(0.3f)
 
                 else -> textColor to Color.Unspecified
             }

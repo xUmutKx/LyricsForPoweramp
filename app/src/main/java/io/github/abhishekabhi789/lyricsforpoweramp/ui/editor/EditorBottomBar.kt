@@ -11,8 +11,14 @@ import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +37,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorBottomBar(
     modifier: Modifier = Modifier,
@@ -141,11 +148,18 @@ fun EditorBottomBar(
             }
         },
         floatingActionButton = {
-            SmallFloatingActionButton(onClick = onSyncLine) {
-                Icon(
-                    Icons.Default.MoreTime,
-                    stringResource(R.string.sync_line_button_descr),
-                )
+            TooltipBox(
+                state = rememberTooltipState(),
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                focusable = false,
+                tooltip = { PlainTooltip { Text(stringResource(R.string.sync_line_button_descr)) } }
+            ) {
+                SmallFloatingActionButton(onClick = onSyncLine) {
+                    Icon(
+                        Icons.Default.MoreTime,
+                        stringResource(R.string.sync_line_button_descr),
+                    )
+                }
             }
         },
         modifier = modifier

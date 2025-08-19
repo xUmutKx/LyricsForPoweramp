@@ -114,15 +114,17 @@ class EditorViewmodel(
     }
 
     fun sendLyricsToPoweramp(context: Context) {
-        viewModelScope.launch {
-            resetSendLyricsState()
-            PowerampApiHelper.sendLyrics(
-                context = context,
-                filePath = _filepath.value,
-                powerampId = powerampId,
-                lyrics = lyrics.copy(syncedLyrics = inputState.value.lyrics),
-                lyricsType = LyricsType.SYNCED,
-            ).collect { state -> _sendLyricsState.value = state }
+        _inputState.value.lyrics.takeIf { it.isNotBlank() }?.let { lyricsContent ->
+            viewModelScope.launch {
+                resetSendLyricsState()
+                PowerampApiHelper.sendLyrics(
+                    context = context,
+                    filePath = _filepath.value,
+                    powerampId = powerampId,
+                    lyrics = lyrics.copy(syncedLyrics = lyricsContent),
+                    lyricsType = LyricsType.SYNCED,
+                ).collect { state -> _sendLyricsState.value = state }
+            }
         }
     }
 

@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -54,9 +55,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun EditorScreen(
-    modifier: Modifier = Modifier,
-    viewmodel: EditorViewmodel,
-    onFinish: () -> Unit
+    modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFinish: () -> Unit
 ) {
     val timeStampRegex = rememberSaveable { Regex("(\\[\\d{2}:\\d{2}\\.\\d{2}])") }
     val context = LocalContext.current
@@ -65,6 +64,7 @@ fun EditorScreen(
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
     val sendLyricsState by viewmodel.sendLyricsState.collectAsState()
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
+    val isPlaying by viewmodel.isPlaying.collectAsStateWithLifecycle()
     var showTranslator by rememberSaveable { mutableStateOf(false) }
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(inputState.lyrics, inputState.selection))
@@ -102,8 +102,7 @@ fun EditorScreen(
                 },
                 title = { Text(stringResource(R.string.title_activity_editor)) },
             )
-        },
-        bottomBar = {
+        }, bottomBar = {
             val offsetTimestamp = { increase: Boolean ->
                 val timestamps = linesInSelection.flatMap { line ->
                     timeStampRegex.findAll(line).mapNotNull { match ->
@@ -115,9 +114,14 @@ fun EditorScreen(
                     else timestamp.decrease(timestampDeltaCenti)
                     lyrics.replace(timestamp.toString(), newTimestamp.toString())
                 }
+                timestamps.firstOrNull()?.let { timestamp ->
+                    viewmodel.seekTo(timestamp.toSeconds())
+                }
+                if (!isPlaying) viewmodel.togglePlayback(true)
                 viewmodel.updateInputState(
                     EditorInputState.fromTextFieldValue(textFieldValue.copy(text = newLyrics))
                 )
+
             }
             val onSyncLine = {
                 val newTimestamp = viewmodel.getCurrentTimestamp()
@@ -155,15 +159,16 @@ fun EditorScreen(
                 onTimestampChange = offsetTimestamp,
                 onSyncLine = onSyncLine,
                 enablePlayLine = timestampOnSelection != null,
-                onPlayLine = { timestampOnSelection?.toSeconds()?.let { viewmodel.seekTo(it) } }
-            )
-        },
-        floatingActionButton = {
+                onPlayLine = { timestampOnSelection?.toSeconds()?.let { viewmodel.seekTo(it) } })
+        }, floatingActionButton = {
             FloatingActionButton(onClick = { viewmodel.sendLyricsToPoweramp(context) }) {
-                Icon(Icons.Default.Save, contentDescription = stringResource(R.string.save))
+                Icon(
+                    imageVector = Icons.Default.Save,
+                    contentDescription = stringResource(R.string.save),
+                    tint = LocalContentColor.current.copy(alpha = if (lyricsContent.isBlank()) 0.4f else 1f)
+                )
             }
-        },
-        modifier = modifier
+        }, modifier = modifier
             .fillMaxSize()
             .imePadding()
     ) { paddingValues ->
@@ -181,12 +186,9 @@ fun EditorScreen(
             val errorContainer = MaterialTheme.colorScheme.errorContainer
             val onErrorContainer = MaterialTheme.colorScheme.onErrorContainer
             LaunchedEffect(inputState) {
-                if (inputState.lyrics != textFieldValue.text ||
-                    inputState.selection != textFieldValue.selection
-                ) {
+                if (inputState.lyrics != textFieldValue.text || inputState.selection != textFieldValue.selection) {
                     textFieldValue = TextFieldValue(
-                        inputState.lyrics,
-                        selection = inputState.selection
+                        inputState.lyrics, selection = inputState.selection
                     )
                 }
             }

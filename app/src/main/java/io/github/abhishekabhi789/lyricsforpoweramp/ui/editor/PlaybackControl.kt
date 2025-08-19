@@ -11,12 +11,17 @@ import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay10
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -30,6 +35,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFileAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaybackControl(modifier: Modifier = Modifier, viewmodel: EditorViewmodel) {
     val playerInitialized by viewmodel.playerInitialized.collectAsStateWithLifecycle()
@@ -73,8 +79,15 @@ fun PlaybackControl(modifier: Modifier = Modifier, viewmodel: EditorViewmodel) {
                 val newPosition = playbackPosition.plus(delta)
                 viewmodel.seekTo(newPosition)
             }
-            IconButton(onClick = { changePlayback(-10) }, enabled = playerInitialized) {
-                Icon(Icons.Default.Replay10, stringResource(R.string.playback_rewind_10s))
+            TooltipBox(
+                state = rememberTooltipState(),
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                focusable = false,
+                tooltip = { PlainTooltip { Text(stringResource(R.string.playback_rewind_10s)) } }
+            ) {
+                IconButton(onClick = { changePlayback(-10) }, enabled = playerInitialized) {
+                    Icon(Icons.Default.Replay10, stringResource(R.string.playback_rewind_10s))
+                }
             }
             val onPlayToggle = {
                 if (fileAccess.hasPermission)
@@ -85,8 +98,15 @@ fun PlaybackControl(modifier: Modifier = Modifier, viewmodel: EditorViewmodel) {
                 else Icons.Default.PlayArrow to stringResource(R.string.playback_play_button)
                 Icon(icon, label)
             }
-            IconButton(onClick = { changePlayback(10) }, enabled = playerInitialized) {
-                Icon(Icons.Default.Forward10, stringResource(R.string.playback_forward_10s))
+            TooltipBox(
+                state = rememberTooltipState(),
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                focusable = false,
+                tooltip = { PlainTooltip { Text(stringResource(R.string.playback_forward_10s)) } }
+            ) {
+                IconButton(onClick = { changePlayback(10) }, enabled = playerInitialized) {
+                    Icon(Icons.Default.Forward10, stringResource(R.string.playback_forward_10s))
+                }
             }
         }
     }
