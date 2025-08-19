@@ -180,7 +180,13 @@ fun LyricsStorageSettings(
                             }
                             IconButton(onClick = {
                                 val success = AppPreference.removeSavedFolder(context, uri)
-                                if (success) savedUris = savedUris - uri
+                                if (success) {
+                                    savedUris = savedUris - uri
+                                    context.contentResolver.releasePersistableUriPermission(
+                                        uri,
+                                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    )
+                                }
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
