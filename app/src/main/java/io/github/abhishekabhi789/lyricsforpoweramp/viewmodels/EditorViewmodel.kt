@@ -31,7 +31,7 @@ class EditorViewmodel(
     private val playbackHelper: PlaybackHelper,
     private val translationHelper: TranslationHelper
 ) : ViewModel() {
-
+    private var isInitialized = false
     private val undoStack = ArrayDeque<EditorInputState>(50)
     private val redoStack = ArrayDeque<EditorInputState>(50)
 
@@ -45,7 +45,7 @@ class EditorViewmodel(
 
     private lateinit var lyrics: Lyrics
 
-    private val _filepath = MutableStateFlow<String?>(null)
+    private val _filepath = MutableStateFlow("")
     val filePath = _filepath.asStateFlow()
 
     private val _targetLanguage: MutableStateFlow<String?> = MutableStateFlow(null)
@@ -98,6 +98,10 @@ class EditorViewmodel(
     fun initialize(
         powerampId: Long, filePath: String, lyrics: Lyrics, preferredLyricsType: LyricsType
     ) {
+        if (isInitialized) {
+            Log.w(TAG, "initialize: viewmodel already initialized")
+            return
+        }
         this.lyrics = lyrics
         _filepath.value = filePath
         this.powerampId = powerampId
@@ -105,22 +109,20 @@ class EditorViewmodel(
             (if (preferredLyricsType == LyricsType.SYNCED) lyrics.syncedLyrics else lyrics.plainLyrics)
                 ?: ""
         this._inputState.value = EditorInputState(lyrics = lyrics)
+        Log.i(TAG, "initialize: viewmodel initialized")
+        isInitialized = true
     }
 
     fun sendLyricsToPoweramp(context: Context) {
         viewModelScope.launch {
-            _filepath.value?.let { path: String ->
-                resetSendLyricsState()
-                PowerampApiHelper.sendLyrics(
-                    context = context,
-                    filePath = path,
-                    powerampId = powerampId,
-                    lyrics = lyrics.copy(syncedLyrics = inputState.value.lyrics),
-                    lyricsType = LyricsType.SYNCED,
-                ).collect { state -> _sendLyricsState.value = state }
-            } ?: run {
-                Log.e(TAG, "sendLyricsToPoweramp: filepath is null")
-            }
+            resetSendLyricsState()
+            PowerampApiHelper.sendLyrics(
+                context = context,
+                filePath = _filepath.value,
+                powerampId = powerampId,
+                lyrics = lyrics.copy(syncedLyrics = inputState.value.lyrics),
+                lyricsType = LyricsType.SYNCED,
+            ).collect { state -> _sendLyricsState.value = state }
         }
     }
 
@@ -244,6 +246,7 @@ class EditorViewmodel(
     }
 
     fun setTrackUri(uri: Uri) {
+        Log.d(TAG, "setTrackUri: newUri $uri ")
         playbackHelper.setTrackUri(uri)
     }
 

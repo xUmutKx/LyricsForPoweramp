@@ -69,7 +69,7 @@ class PlaybackHelper(context: Context) {
     }
 
     private fun updateDuration() {
-        _trackDurationInSeconds.value = getDurationMs().div(1000).toInt()
+        _trackDurationInSeconds.value = getDurationMs().div(1000).toInt().coerceAtLeast(0)
     }
 
     /** Optional: exact duration in milliseconds (0 if unknown) */
@@ -80,6 +80,7 @@ class PlaybackHelper(context: Context) {
 
     fun setTrackUri(trackUri: Uri) {
         scope.launch {
+            if (player.currentMediaItem?.localConfiguration?.uri.toString() == trackUri.toString()) return@launch
             _playerInitialized.value = false
             player.setMediaItem(MediaItem.fromUri(trackUri))
             player.prepare()
@@ -118,7 +119,7 @@ class PlaybackHelper(context: Context) {
         // Poll on main to avoid wrong-thread access
         updateJob = scope.launch {
             while (isActive) {
-                _playbackSeconds.value = (player.currentPosition / 1000L).toInt()
+                _playbackSeconds.value = (player.currentPosition / 1000L).toInt().coerceAtLeast(0)
                 delay(100L)
             }
         }

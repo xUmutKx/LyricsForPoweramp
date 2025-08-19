@@ -5,9 +5,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.LaunchedEffect
+import androidx.activity.viewModels
 import androidx.core.os.BundleCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maxmpz.poweramp.player.PowerampAPI
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
@@ -18,6 +17,8 @@ import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
 class EditorActivity : ComponentActivity() {
+    private val viewmodel: EditorViewmodel by viewModels { EditorViewmodel.FACTORY }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -36,11 +37,8 @@ class EditorActivity : ComponentActivity() {
             finish()
             return
         }
+        viewmodel.initialize(powerampId, filePath, lyrics, preferredLyricsType)
         setContent {
-            val viewmodel: EditorViewmodel = viewModel(factory = EditorViewmodel.FACTORY)
-            LaunchedEffect(Unit) {
-                viewmodel.initialize(powerampId, filePath, lyrics, preferredLyricsType)
-            }
             LyricsForPowerAmpTheme {
                 EditorScreen(viewmodel = viewmodel, onFinish = { finish() })
             }

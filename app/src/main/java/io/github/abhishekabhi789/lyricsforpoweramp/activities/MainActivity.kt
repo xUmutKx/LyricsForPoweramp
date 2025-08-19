@@ -28,6 +28,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.maxmpz.poweramp.player.PowerampAPI
+import io.github.abhishekabhi789.lyricsforpoweramp.BuildConfig
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
@@ -71,10 +72,7 @@ class MainActivity : ComponentActivity() {
                     @StringRes val message =
                         if (isGranted) R.string.settings_permission_toast_granted
                         else R.string.settings_permission_toast_denied
-                    Toast(this@MainActivity).apply {
-                        setText(message)
-                        setDuration(Toast.LENGTH_SHORT)
-                    }.show()
+                    makeToast(message)
                     readyToShowFirstTimeInfo = true
                 }
                 var showPermissionDialog by rememberSaveable { mutableStateOf(!permissionState.status.isGranted) }
@@ -97,22 +95,17 @@ class MainActivity : ComponentActivity() {
                         onDismiss = { disableNotification ->
                             if (disableNotification) {
                                 AppPreference.setShowNotification(this@MainActivity, false)
-                                Toast(this@MainActivity).run {
-                                    setText(R.string.settings_permission_toast_notification_disabled)
-                                    setDuration(Toast.LENGTH_SHORT)
-                                    show()
-                                }
+                                makeToast(R.string.settings_permission_toast_notification_disabled)
                             }
                             showPermissionDialog = false
                             readyToShowFirstTimeInfo = true
                         }
                     )
                 }
-                if (readyToShowFirstTimeInfo && !firstTimeInfoShown)
-                    FirstTimeInfoDialog {
-                        AppPreference.setFirstTimeInfoShown(this@MainActivity, true)
-                        firstTimeInfoShown = true
-                    }
+                if (!BuildConfig.DEBUG && readyToShowFirstTimeInfo && !firstTimeInfoShown) FirstTimeInfoDialog {
+                    AppPreference.setFirstTimeInfoShown(this@MainActivity, true)
+                    firstTimeInfoShown = true
+                }
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.tertiaryContainer,
@@ -141,5 +134,13 @@ class MainActivity : ComponentActivity() {
         super.onRestart()
         val preferredTheme = AppPreference.getTheme(this)
         viewModel.updateTheme(preferredTheme)
+    }
+
+    private fun makeToast(@StringRes resId: Int) {
+        Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
+    }
+
+    companion object {
+        const val TAG = "MainActivity"
     }
 }
