@@ -209,7 +209,11 @@ fun EditorScreen(
                 if (folderAccessState.hasPermission) {
                     for (extension in listOf("lrc", "txt")) {
                         val lyricsPathId = filePath.replaceAfterLast(".", extension)
-                        folderAccessState.getChildUri(lyricsPathId)?.let { fileUri = it;break }
+                        val childUri = folderAccessState.getChildUri(lyricsPathId)
+                        if (childUri != null) {
+                            fileUri = childUri
+                            break
+                        }
                     }
                 }
             }

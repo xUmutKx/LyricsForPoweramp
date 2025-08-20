@@ -173,9 +173,3 @@ fun Uri.getCleanedPath(): String {
     return path?.removePrefix("/tree/")?.replace(":", File.separator)
         ?.trimEnd(File.separatorChar) ?: ""
 }
-
-/**check whether the uri has persisted write permission*/
-fun Uri.hasAccess(context: Context): Boolean {
-    return context.contentResolver.persistedUriPermissions
-        .any { it.uri == this && it.isWritePermission }
-}
