@@ -258,12 +258,22 @@ fun EditorScreen(
 
 
             val playbackPosition by viewmodel.playbackPosition.collectAsStateWithLifecycle()
-            val indexOfCurrentLine by remember(playbackPosition) {
+            val indexesOfCurrentLines: IntArray by remember(playbackPosition) {
                 derivedStateOf {
-                    lyricsLines.indexOfLast { line ->
-                        timeStampRegex.findAll(line).mapNotNull { match ->
-                            Timestamp.fromString(match.value)
-                        }.any { timestamp -> timestamp.toSeconds() <= playbackPosition }
+                    val lastTimestamp = lyricsLines.asSequence()
+                        .flatMap { line ->
+                            timeStampRegex.findAll(line)
+                                .mapNotNull { match -> Timestamp.fromString(match.value) }
+                        }
+                        .filter { it.toSeconds() <= playbackPosition }
+                        .lastOrNull()
+
+                    if (lastTimestamp != null) {
+                        lyricsLines.mapIndexedNotNull { index, line ->
+                            if (line.contains(lastTimestamp.toString())) index else null
+                        }.toIntArray()
+                    } else {
+                        intArrayOf()
                     }
                 }
             }
@@ -287,7 +297,7 @@ fun EditorScreen(
                     transformLyrics(
                         text = it,
                         selectionLineIndexes = selectionLineIndexes,
-                        currentPlayingLine = indexOfCurrentLine,
+                        currentPlayingLines = indexesOfCurrentLines,
                         textColor = textColor,
                         selectionContainerColor = selectionContainerColor,
                         onSelectionContainerColor = onSelectionContainerColor,
@@ -321,7 +331,9 @@ fun EditorScreen(
             )
         }
         if (showTranslator) {
-            TranslationBottomSheet(viewmodel = viewmodel, onDismiss = { showTranslator = false })
+            TranslationBottomSheet(
+                viewmodel = viewmodel,
+                onDismiss = { showTranslator = false })
         }
     }
 }

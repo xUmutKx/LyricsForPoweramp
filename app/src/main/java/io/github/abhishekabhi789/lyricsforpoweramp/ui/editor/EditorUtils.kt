@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 
 fun transformLyrics(
     text: AnnotatedString,
-    currentPlayingLine: Int,
+    vararg currentPlayingLines: Int,
     selectionLineIndexes: IntRange,
     textColor: Color,
     selectionContainerColor: Color,
@@ -35,7 +35,7 @@ fun transformLyrics(
     val annotatedString = buildAnnotatedString {
         text.text.lines().forEachIndexed { lineIndex, line ->
             val (color, bgColor) = when (lineIndex) {
-                currentPlayingLine -> onSelectionContainerColor to selectionContainerColor
+                in currentPlayingLines -> onSelectionContainerColor to selectionContainerColor
                 in selectionLineIndexes ->
                     onSelectionContainerColor to selectionContainerColor.copy(0.3f)
 
@@ -45,7 +45,7 @@ fun transformLyrics(
             val lineStyle = SpanStyle(
                 color = color,
                 background = bgColor,
-                fontWeight = if (lineIndex == currentPlayingLine) FontWeight.Bold else FontWeight.Normal
+                fontWeight = if (lineIndex in currentPlayingLines) FontWeight.Bold else FontWeight.Normal
             )
             withStyle(ParagraphStyle(textIndent = TextIndent(restLine = 95.sp))) {
                 var currentIndex = 0
