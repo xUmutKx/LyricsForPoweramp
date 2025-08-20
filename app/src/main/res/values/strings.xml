@@ -26,6 +26,7 @@
     <string name="folder_access_request_title">Folder Access Needed</string>
     <string name="folder_access_request_explanation">To manage lyrics, this app needs access to the folder: %1$s</string>
     <string name="grant_access">Grant Access</string>
+    <string name="open">Open</string>
     <!--    top bar-->
     <string name="top_bar_menu_descriptions">More Options</string>
     <!--    search ui-->
@@ -53,6 +54,7 @@
     <!--    editor activity-->
     <string name="title_activity_editor">Editor</string>
     <string name="save_as_file_not_enabled_warning">Edits are saved to Poweramp\'s cache only and can\'t be changed later. Tap below button to enable Save as File.</string>
+    <string name="load_saved_lyrics_suggestion">Saved lyrics found. Load them into the editor?</string>
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
     <string name="save">Save</string>

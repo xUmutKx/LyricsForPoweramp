@@ -1,10 +1,13 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
 import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -44,10 +48,12 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity.Companion.TAG
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 import java.io.File
@@ -192,26 +198,65 @@ fun EditorScreen(
                     )
                 }
             }
-            AnimatedVisibility(!saveAsFileEnabled) {
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                        Text(
-                            text = stringResource(R.string.save_as_file_not_enabled_warning),
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Button(onClick = {
-                            AppPreference.setSaveAsFile(context, true)
-                            saveAsFileEnabled = true
-                        }) {
-                            Text(stringResource(R.string.enable))
-                        }
+            var fileUri: Uri? by rememberSaveable(filePath) { mutableStateOf(null) }
+            val folderAccessState = rememberFolderAccess(filePath)
+            LaunchedEffect(folderAccessState) {
+                if (!folderAccessState.hasPermission) {
+                    folderAccessState.requestAccess()
+                }
+            }
+            LaunchedEffect(folderAccessState.hasPermission) {
+                if (folderAccessState.hasPermission) {
+                    for (extension in listOf("lrc", "txt")) {
+                        val lyricsPathId = filePath.replaceAfterLast(".", extension)
+                        folderAccessState.getChildUri(lyricsPathId)?.let { fileUri = it;break }
                     }
                 }
             }
+
+            val lyricsText by produceState<String?>(null, fileUri) {
+                value = fileUri?.let { uri ->
+                    try {
+                        context.contentResolver.openInputStream(uri)
+                            ?.bufferedReader()
+                            ?.use { it.readText() }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to read lyrics", e)
+                        null
+                    }
+                }
+            }
+            lyricsText?.let { lyrics ->
+                EditorSuggestions(
+                    visible = lyrics.isNotBlank() && lyricsContent.isEmpty(),
+                    actionLabel = stringResource(R.string.open),
+                    onAction = { viewmodel.updateInputState(EditorInputState(lyrics)) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(R.string.load_saved_lyrics_suggestion),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+            EditorSuggestions(
+                visible = lyricsContent.isNotEmpty() && !saveAsFileEnabled,
+                actionLabel = stringResource(R.string.enable),
+                onAction = {
+                    AppPreference.setSaveAsFile(context, true)
+                    saveAsFileEnabled = true
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.save_as_file_not_enabled_warning),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+
+
             val playbackPosition by viewmodel.playbackPosition.collectAsStateWithLifecycle()
             val indexOfCurrentLine by remember(playbackPosition) {
                 derivedStateOf {
@@ -258,7 +303,7 @@ fun EditorScreen(
                     .padding(horizontal = 12.dp)
                     .weight(1f)//needed to show playback control
             )
-            PlaybackControl(viewmodel = viewmodel)
+            PlaybackControl(viewmodel = viewmodel, folderAccessState = folderAccessState)
         }
         if (sendLyricsState.progress != 0f) {
             ResultBottomSheet(
@@ -277,6 +322,29 @@ fun EditorScreen(
         }
         if (showTranslator) {
             TranslationBottomSheet(viewmodel = viewmodel, onDismiss = { showTranslator = false })
+        }
+    }
+}
+
+@Composable
+fun EditorSuggestions(
+    modifier: Modifier = Modifier,
+    visible: Boolean,
+    actionLabel: String,
+    onAction: () -> Unit,
+    content: @Composable (ColumnScope.() -> Unit)
+) {
+    AnimatedVisibility(visible = visible, modifier = modifier) {
+        Surface(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                content.invoke(this)
+                Button(onClick = onAction) {
+                    Text(actionLabel)
+                }
+            }
         }
     }
 }

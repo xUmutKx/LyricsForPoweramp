@@ -24,28 +24,37 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getCleanedPath
-import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.FileAccessState.Companion.TAG
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.FolderAccessState.Companion.TAG
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 
-class FileAccessState internal constructor(
-    private val onAskPermission: () -> Unit,
+class FolderAccessState internal constructor(
+    private val onRequestAccess: () -> Unit,
+    private val onRevokeAccess: () -> Unit,
+    private val onChildUriRequest: (documentId: String) -> Uri?,
     val hasPermission: Boolean
 ) {
-    fun askPermission() = onAskPermission()
+    fun requestAccess() = onRequestAccess()
+    fun revokeAccess() = onRevokeAccess()
+    fun getChildUri(documentId: String): Uri? = onChildUriRequest(documentId)
 
     companion object {
         const val TAG = "FileAccessState"
     }
 }
 
-/**
- * @param documentId the id of the document to access. e.g. primary/Music/Folder/File.mp3
- * @param onAccessGranted callback to be invoked when access is granted.*/
+/** @param documentId the id of the folder document to access. e.g. primary/Music/Folder*/
 @Composable
-fun rememberFileAccess(documentId: String, onAccessGranted: (Uri) -> Unit): FileAccessState {
+fun rememberFolderAccess(documentId: String): FolderAccessState {
     val context = LocalContext.current
     val modeFlags = remember {
         Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+    }
+    val documentId by remember(documentId) {
+        derivedStateOf {
+            if (documentId.substringAfterLast("/").contains(".")) {
+                documentId.substringBeforeLast("/")
+            } else documentId
+        }
     }
     var askPermission by rememberSaveable(documentId) { mutableStateOf(false) }
     //askPermission is used as key since it's change when user interacts with permission dialog
@@ -72,17 +81,8 @@ fun rememberFileAccess(documentId: String, onAccessGranted: (Uri) -> Unit): File
 
     LaunchedEffect(accessibleParentFolder, documentId) {
         accessibleParentFolder?.let { uri ->
-            Log.i(TAG, "rememberFileAccess: found parent folder with access $savedParentFolder")
-            getFileUriFromTreeUri(accessibleParentFolder, documentId)?.let {
-                Log.i(TAG, "rememberFileAccess: new file uri $it")
-                askPermission = false
-                onAccessGranted(it)
-            } ?: run {
-                Log.e(
-                    TAG,
-                    "rememberFileAccess: failed to prepare fileUri from parentFolder - $accessibleParentFolder"
-                )
-            }
+            Log.i(TAG, "rememberFolderAccess: found parent folder with access $savedParentFolder")
+            askPermission = false
         }
     }
 
@@ -90,7 +90,7 @@ fun rememberFileAccess(documentId: String, onAccessGranted: (Uri) -> Unit): File
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { pickedUri ->
         if (pickedUri == null) return@rememberLauncherForActivityResult
-        Log.i(TAG, "rememberFileAccess: picked uri $pickedUri")
+        Log.i(TAG, "rememberFolderAccess: picked uri $pickedUri")
         context.contentResolver.takePersistableUriPermission(pickedUri, modeFlags)
         AppPreference.saveFolderUri(context, pickedUri)
         val isValidParentPicked = documentId.startsWith(pickedUri.getCleanedPath())
@@ -127,9 +127,17 @@ fun rememberFileAccess(documentId: String, onAccessGranted: (Uri) -> Unit): File
             })
     }
     return remember(documentId, hasPermission) {
-        FileAccessState(
+        FolderAccessState(
             hasPermission = hasPermission,
-            onAskPermission = { askPermission = true },
+            onRequestAccess = { askPermission = true },
+            onRevokeAccess = {
+                accessibleParentFolder?.let {
+                    context.contentResolver.releasePersistableUriPermission(it, modeFlags)
+                }
+            },
+            onChildUriRequest = { documentId ->
+                getFileUriFromTreeUri(accessibleParentFolder, documentId)
+            }
         )
     }
 }

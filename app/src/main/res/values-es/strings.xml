@@ -27,6 +27,7 @@
     <string name="folder_access_request_title">Acceso de carpeta solicitado</string>
     <string name="folder_access_request_explanation">Para administrar la letra, esta aplicación necesita acceso a la carpeta: %1$s</string>
     <string name="grant_access">Otorgar acceso</string>
+    <string name="open">Abierto</string>
     <!--    top bar-->
     <string name="top_bar_menu_descriptions">Más Opciones</string>
     <!--    search ui-->
@@ -54,6 +55,7 @@
     <!--    editor activity-->
     <string name="title_activity_editor">Editora</string>
     <string name="save_as_file_not_enabled_warning">Las ediciones se guardan solo en la caché de Poweramp y no se pueden cambiar después. Toca abajo para activar Guardar como archivo.</string>
+    <string name="load_saved_lyrics_suggestion">Letras guardadas encontradas. ¿Cargarlos en el editor?</string>
     <string name="undo">Deshacer</string>
     <string name="redo">Rehacer</string>
     <string name="save">ahorrar</string>

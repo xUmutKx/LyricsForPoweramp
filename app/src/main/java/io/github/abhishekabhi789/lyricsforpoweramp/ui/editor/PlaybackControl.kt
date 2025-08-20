@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -32,22 +34,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
-import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFileAccess
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity.Companion.TAG
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.FolderAccessState
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlaybackControl(modifier: Modifier = Modifier, viewmodel: EditorViewmodel) {
+fun PlaybackControl(
+    modifier: Modifier = Modifier,
+    viewmodel: EditorViewmodel,
+    folderAccessState: FolderAccessState
+) {
     val playerInitialized by viewmodel.playerInitialized.collectAsStateWithLifecycle()
     val trackDuration by viewmodel.trackDuration.collectAsStateWithLifecycle()
     val playbackPosition by viewmodel.playbackPosition.collectAsStateWithLifecycle()
     val isPlaying by viewmodel.isPlaying.collectAsStateWithLifecycle()
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
-    val fileAccess = rememberFileAccess(
-        documentId = filePath,
-        onAccessGranted = { viewmodel.setTrackUri(it) }
-    )
-
+    LaunchedEffect(folderAccessState.hasPermission) {
+        if (folderAccessState.hasPermission) {
+            folderAccessState.getChildUri(filePath)?.let {
+                viewmodel.setTrackUri(it)
+            } ?: run {
+                Log.e(TAG, "PlaybackControl: failed to get track uri")
+            }
+        }
+    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -90,8 +101,8 @@ fun PlaybackControl(modifier: Modifier = Modifier, viewmodel: EditorViewmodel) {
                 }
             }
             val onPlayToggle = {
-                if (fileAccess.hasPermission)
-                    viewmodel.togglePlayback(!isPlaying) else fileAccess.askPermission()
+                if (folderAccessState.hasPermission)
+                    viewmodel.togglePlayback(!isPlaying) else folderAccessState.requestAccess()
             }
             FilledTonalIconButton(onClick = onPlayToggle, modifier = Modifier) {
                 val (icon, label) = if (isPlaying) Icons.Default.Pause to stringResource(R.string.playback_pause_button)
