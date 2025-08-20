@@ -28,12 +28,12 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.FolderAccessState.Co
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 
 class FolderAccessState internal constructor(
-    private val onRequestAccess: () -> Unit,
+    private val onRequestAccess: (onResult: ((Uri?) -> Unit)?) -> Unit,
     private val onRevokeAccess: () -> Unit,
     private val onChildUriRequest: (documentId: String) -> Uri?,
     val hasPermission: Boolean
 ) {
-    fun requestAccess() = onRequestAccess()
+    fun requestAccess(onResult: ((Uri?) -> Unit)? = null) = onRequestAccess(onResult)
     fun revokeAccess() = onRevokeAccess()
     fun getChildUri(documentId: String): Uri? = onChildUriRequest(documentId)
 
@@ -57,6 +57,11 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
         }
     }
     var askPermission by rememberSaveable(documentId) { mutableStateOf(false) }
+    var pendingResultCallback by remember { mutableStateOf<((Uri?) -> Unit)?>(null) }
+    val invokePendingResultCallback = { uri: Uri? ->
+        pendingResultCallback?.invoke(uri)
+        pendingResultCallback = null
+    }
     //askPermission is used as key since it's change when user interacts with permission dialog
     val accessibleParentFolder: Uri? by remember(documentId, askPermission) {
         derivedStateOf {
@@ -89,11 +94,16 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
     val pickFolderLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { pickedUri ->
-        if (pickedUri == null) return@rememberLauncherForActivityResult
+        if (pickedUri == null) {
+            Log.w(TAG, "rememberFolderAccess: picked uri is null")
+            invokePendingResultCallback(null)
+            return@rememberLauncherForActivityResult
+        }
         Log.i(TAG, "rememberFolderAccess: picked uri $pickedUri")
         context.contentResolver.takePersistableUriPermission(pickedUri, modeFlags)
         AppPreference.saveFolderUri(context, pickedUri)
         val isValidParentPicked = documentId.startsWith(pickedUri.getCleanedPath())
+        invokePendingResultCallback(pickedUri)
         askPermission = !isValidParentPicked
     }
 
@@ -111,7 +121,10 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
                 }
             },
             dismissButton = {
-                TextButton({ askPermission = false }) {
+                TextButton({
+                    askPermission = false
+                    invokePendingResultCallback(null)
+                }) {
                     Text(stringResource(R.string.dismiss))
                 }
             },
@@ -129,7 +142,10 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
     return remember(documentId, hasPermission) {
         FolderAccessState(
             hasPermission = hasPermission,
-            onRequestAccess = { askPermission = true },
+            onRequestAccess = { onResult ->
+                askPermission = true
+                pendingResultCallback = onResult
+            },
             onRevokeAccess = {
                 accessibleParentFolder?.let {
                     context.contentResolver.releasePersistableUriPermission(it, modeFlags)

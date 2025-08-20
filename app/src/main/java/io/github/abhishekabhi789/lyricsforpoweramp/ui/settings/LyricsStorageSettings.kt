@@ -48,10 +48,10 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity.Companion.TAG
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getCleanedPath
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.hasAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
@@ -125,12 +125,13 @@ fun LyricsStorageSettings(
             ) { uri ->
                 uri?.let {
                     context.contentResolver.takePersistableUriPermission(
-                        it, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        it,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     )
                     AppPreference.saveFolderUri(context, it)
                     savedUris = savedUris.toMutableSet().apply { add(it) }.distinct().toList()
                     //clearing the requested URI
-                    accessRequestedPath?.let { path -> viewmodel.setAccessRequestedPath(null) }
+                    viewmodel.setAccessRequestedPath(null)
                 }
             }
             Column(modifier = modifier.fillMaxWidth()) {
@@ -159,10 +160,18 @@ fun LyricsStorageSettings(
                 if (savedUris.isNotEmpty()) {
                     for ((i, uri) in savedUris.withIndex()) {
                         val path by remember(uri) { derivedStateOf { uri.getCleanedPath() } }
-                        val hasAccess by remember(savedUris) {
-                            derivedStateOf { uri.hasAccess(context) }
-                        }
+                        val folderAccessState = rememberFolderAccess(path)
+                        val onPermissionRequest = {
+                            folderAccessState.requestAccess { uri ->
+                                uri?.let {
+                                    AppPreference.saveFolderUri(context, it)
+                                    savedUris = savedUris.toMutableSet().apply {
+                                        add(it)
+                                    }.distinct().toList()
+                                }
+                            }
 
+                        }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -175,18 +184,16 @@ fun LyricsStorageSettings(
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
-                            if (!hasAccess) TextButton(onClick = { pickFolderLauncher.launch(uri) }) {
-                                Text(stringResource(R.string.settings_save_as_file_button_grant_access))
+                            if (!folderAccessState.hasPermission) {
+                                TextButton(onClick = onPermissionRequest) {
+                                    Text(stringResource(R.string.settings_save_as_file_button_grant_access))
+                                }
                             }
                             IconButton(onClick = {
+                                folderAccessState.revokeAccess()
                                 val success = AppPreference.removeSavedFolder(context, uri)
-                                if (success) {
-                                    savedUris = savedUris - uri
-                                    context.contentResolver.releasePersistableUriPermission(
-                                        uri,
-                                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                    )
-                                }
+                                if (success) savedUris = savedUris - uri
+
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
