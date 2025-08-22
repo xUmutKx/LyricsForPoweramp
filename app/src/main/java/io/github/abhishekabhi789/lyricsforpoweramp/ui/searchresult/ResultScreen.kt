@@ -36,11 +36,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
-import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SearchResultViewmodel
 import kotlinx.coroutines.launch
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,6 +125,8 @@ fun ResultScreen(
         }
 
         if (showBottomSheet) {
+            val path = viewmodel.filePath.substringBeforeLast("/")
+            val permissionState = rememberFolderAccess(path)
             ResultBottomSheet(
                 sendLyricsState = sendLyricsState,
                 onDismiss = {
@@ -133,13 +134,9 @@ fun ResultScreen(
                     viewmodel.clearResultState()
                 },
                 grantAccess = {
-                    showBottomSheet = false
-                    viewmodel.clearResultState()
-                    val path = viewmodel.filePath.substringBeforeLast(File.separatorChar)
-                    Intent(context, SettingsActivity::class.java).apply {
-                        setAction(SettingsActivity.Companion.OPEN_SETTINGS_ACTION)
-                        putExtra(SettingsActivity.EXTRA_REQUIRED_PATH, path)
-                    }.let { context.startActivity(it) }
+                    permissionState.requestAccess {
+                        viewmodel.retrySend(context)
+                    }
                 },
                 onFinish = onFinish
             )

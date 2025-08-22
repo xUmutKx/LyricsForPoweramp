@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
+import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsSendData
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +18,7 @@ import java.util.Collections
 class SearchResultViewmodel : ViewModel() {
 
     private var _searchResults = MutableStateFlow<List<Lyrics>>(Collections.emptyList())
+    private var pendingSend: LyricsSendData? = null
 
     /** Search results as [List]<[Lyrics]>*/
     val searchResults = _searchResults.asStateFlow()
@@ -49,6 +51,7 @@ class SearchResultViewmodel : ViewModel() {
         lyricsType: LyricsType,
         markInstrumental: Boolean = false,
     ) {
+        pendingSend = LyricsSendData(lyrics, lyricsType, markInstrumental)
         clearResultState()
         viewModelScope.launch {
             powerampId?.let { realId ->
@@ -61,6 +64,20 @@ class SearchResultViewmodel : ViewModel() {
                     markInstrumental = markInstrumental
                 ).collect { state -> _sendLyricsState.value = state }
             } ?: Log.e(TAG, "sendLyricsToPoweramp: Poweramp realId is null")
+        }
+    }
+
+    fun retrySend(context: Context) {
+        val request = pendingSend
+        if (request != null) {
+            sendLyricsToPoweramp(
+                context = context,
+                lyrics = request.lyrics,
+                lyricsType = request.type,
+                markInstrumental = request.markInstrumental
+            )
+        } else {
+            Log.w(TAG, "retrySend: Nothing to retry")
         }
     }
 

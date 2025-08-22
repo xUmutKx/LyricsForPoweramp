@@ -65,7 +65,7 @@ object PowerampApiHelper {
                 artistName = processField(context, FilterType.ARTISTS_FILTER, artist),
                 albumName = processField(context, FilterType.ALBUM_FILTER, album),
                 duration = duration,
-                filePath = filePath ?: "",
+                filePath = filePath?.replaceFirst("/", ":") ?: "",
                 realId = realId,
                 lyrics = null
             )

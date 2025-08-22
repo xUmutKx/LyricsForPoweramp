@@ -2,7 +2,6 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.utils
 
 import android.content.Intent
 import android.net.Uri
-import android.provider.DocumentsContract
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,7 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import io.github.abhishekabhi789.lyricsforpoweramp.R
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getCleanedPath
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper.getFileUriFromTreeUri
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getTreeDocumentId
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.FolderAccessState.Companion.TAG
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 
@@ -68,7 +68,7 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
             context.contentResolver.persistedUriPermissions.filterNotNull()
                 .filter { it.isReadPermission }.mapNotNull { it.uri }
                 .maxByOrNull { uri ->
-                    calculateCommonPrefixLength(uri.getCleanedPath(), documentId)
+                    calculateCommonPrefixLength(uri.getTreeDocumentId(), documentId)
                 }
         }
     }
@@ -76,7 +76,7 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
     val savedParentFolder: Uri? by remember(documentId, askPermission) {
         derivedStateOf {
             AppPreference.getSavedUris(context).maxByOrNull { uri ->
-                calculateCommonPrefixLength(uri.getCleanedPath(), documentId)
+                calculateCommonPrefixLength(uri.getTreeDocumentId(), documentId)
             }
         }
     }
@@ -102,7 +102,7 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
         Log.i(TAG, "rememberFolderAccess: picked uri $pickedUri")
         context.contentResolver.takePersistableUriPermission(pickedUri, modeFlags)
         AppPreference.saveFolderUri(context, pickedUri)
-        val isValidParentPicked = documentId.startsWith(pickedUri.getCleanedPath())
+        val isValidParentPicked = documentId.startsWith(pickedUri.getTreeDocumentId())
         invokePendingResultCallback(pickedUri)
         askPermission = !isValidParentPicked
     }
@@ -156,24 +156,6 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
             }
         )
     }
-}
-
-fun getFileUriFromTreeUri(treeUri: Uri?, documentId: String): Uri? {
-    if (treeUri == null) {
-        Log.e(TAG, "getFileUriFromTreeUri: tree uri is null")
-        return null
-    }
-    val treeDocId = DocumentsContract.getTreeDocumentId(treeUri)
-    val normalizedTreePath = treeDocId.replace(":", "/")
-    if (!documentId.startsWith(normalizedTreePath)) {
-        Log.e(TAG, "getFileUriFromTreeUri: document id not starts with normalized path")
-        Log.d(TAG, "getFileUriFromTreeUri: documentId $documentId")
-        Log.d(TAG, "getFileUriFromTreeUri: normalized path $normalizedTreePath")
-        return null
-    }
-    val relativePath = documentId.removePrefix(normalizedTreePath).trimStart('/')
-    val fileDocId = if (relativePath.isEmpty()) treeDocId else "$treeDocId/$relativePath"
-    return DocumentsContract.buildDocumentUriUsingTree(treeUri, fileDocId)
 }
 
 fun calculateCommonPrefixLength(a: String, b: String): Int {

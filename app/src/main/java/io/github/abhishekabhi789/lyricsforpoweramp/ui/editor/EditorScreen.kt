@@ -1,6 +1,5 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -49,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity.Companion.TAG
-import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
@@ -320,16 +318,15 @@ fun EditorScreen(
             PlaybackControl(viewmodel = viewmodel, folderAccessState = folderAccessState)
         }
         if (sendLyricsState.progress != 0f) {
+            val path = filePath.substringBeforeLast(File.separatorChar)
+            val pathAccess = rememberFolderAccess(path)
             ResultBottomSheet(
                 sendLyricsState = sendLyricsState,
                 onDismiss = viewmodel::resetSendLyricsState,
                 grantAccess = {
-                    viewmodel.resetSendLyricsState()
-                    val path = filePath.substringBeforeLast(File.separatorChar)
-                    Intent(context, SettingsActivity::class.java).apply {
-                        setAction(SettingsActivity.Companion.OPEN_SETTINGS_ACTION)
-                        putExtra(SettingsActivity.EXTRA_REQUIRED_PATH, path)
-                    }.let { context.startActivity(it) }
+                    pathAccess.requestAccess {
+                        viewmodel.sendLyricsToPoweramp(context)
+                    }
                 },
                 onFinish = onFinish
             )

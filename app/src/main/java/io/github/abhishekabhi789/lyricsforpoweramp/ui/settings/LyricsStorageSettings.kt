@@ -47,7 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity.Companion.TAG
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getCleanedPath
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getTreeDocumentId
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
@@ -159,7 +159,7 @@ fun LyricsStorageSettings(
                 }
                 if (savedUris.isNotEmpty()) {
                     for ((i, uri) in savedUris.withIndex()) {
-                        val path by remember(uri) { derivedStateOf { uri.getCleanedPath() } }
+                        val path by remember(uri) { derivedStateOf { uri.getTreeDocumentId() } }
                         val folderAccessState = rememberFolderAccess(path)
                         val onPermissionRequest = {
                             folderAccessState.requestAccess { uri ->
@@ -217,7 +217,7 @@ fun LyricsStorageSettings(
                 PermissionDialog(
                     explanation = stringResource(
                         R.string.settings_save_as_file_permission_explanation,
-                        pathUri.getCleanedPath()
+                        pathUri.getTreeDocumentId()
                     ),
                     allowToSuppress = false,
                     onConfirm = { pickFolderLauncher.launch(pathUri) },
