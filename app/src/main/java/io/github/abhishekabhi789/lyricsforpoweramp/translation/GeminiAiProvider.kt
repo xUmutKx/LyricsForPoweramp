@@ -105,16 +105,14 @@ class GeminiAiProvider(
                             response.use {
                                 when (response.code) {
                                     HttpURLConnection.HTTP_OK -> {
-                                        response.body?.let { responseBody ->
-                                            val output = parseResponse(responseBody.string())
-                                            if (output != null) {
-                                                val result = if (output.trim() == "FAILED")
-                                                    Result.Failure("Failed")
-                                                else Result.Success(output)
-                                                continuation.resume(result)
-                                            } else {
-                                                continuation.resume(Result.Failure("No response"))
-                                            }
+                                        val output = parseResponse(response.body.string())
+                                        if (!output.isNullOrBlank()) {
+                                            val result = if (output.trim() == "FAILED")
+                                                Result.Failure("Failed")
+                                            else Result.Success(output)
+                                            continuation.resume(result)
+                                        } else {
+                                            continuation.resume(Result.Failure("No response"))
                                         }
                                     }
 

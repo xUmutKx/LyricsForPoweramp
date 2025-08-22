@@ -75,6 +75,9 @@ fun TranslationBottomSheet(
             } else emptyList()
         }
     }
+    LaunchedEffect(Unit) {
+        viewmodel.fetchSupportedLanguages()
+    }
 
     LaunchedEffect(translatorState) {
         if (translatorState is RequestState.Failure) {

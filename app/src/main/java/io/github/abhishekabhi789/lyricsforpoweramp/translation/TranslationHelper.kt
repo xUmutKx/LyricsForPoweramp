@@ -6,7 +6,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import okhttp3.OkHttpClient
 
-class TranslationHelper(context: Context, client: OkHttpClient, gson: Gson) {
+class TranslationHelper(private val context: Context, client: OkHttpClient, gson: Gson) {
 
     private val geminiApiKey = AppPreference.getTranslationApiKey(context, Translator.GEMINI)
     private val gemini = GeminiAiProvider(client, gson, geminiApiKey)
@@ -14,7 +14,7 @@ class TranslationHelper(context: Context, client: OkHttpClient, gson: Gson) {
     fun getAvailableTranslators(): List<Translator> = Translator.entries
 
     suspend fun getSupportedLanguages(translator: Translator, lyrics: String): RequestState {
-        if (geminiApiKey.isBlank()) {
+        if (!translator.isConfigured(context)) {
             return RequestState.Failure("No API Key")
         }
         val result = when (translator) {
@@ -38,7 +38,7 @@ class TranslationHelper(context: Context, client: OkHttpClient, gson: Gson) {
         targetLanguage: String,
         translator: Translator
     ): RequestState {
-        if (geminiApiKey.isBlank()) {
+        if (!translator.isConfigured(context)) {
             return RequestState.Failure("No API Key")
         }
         val result = when (translator) {

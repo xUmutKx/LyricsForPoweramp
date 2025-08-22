@@ -31,6 +31,8 @@ class EditorViewmodel(
     private val playbackHelper: PlaybackHelper,
     private val translationHelper: TranslationHelper
 ) : ViewModel() {
+    private val timestampRegex = Regex("\\[\\d{2,3}:\\d{2}\\.\\d{2}]")
+
     private var isInitialized = false
     private val undoStack = ArrayDeque<EditorInputState>(50)
     private val redoStack = ArrayDeque<EditorInputState>(50)
@@ -144,9 +146,11 @@ class EditorViewmodel(
 
     fun fetchSupportedLanguages() {
         _supportedLanguageState.value = RequestState.Processing
+        val lyrics = getOriginalLyrics(_inputState.value.lyrics)
         viewModelScope.launch {
             val result = translationHelper.getSupportedLanguages(
-                translator = _chosenTranslator.value, lyrics = _inputState.value.lyrics
+                translator = _chosenTranslator.value,
+                lyrics = lyrics
             )
             Log.d(TAG, "fetchSupportedLanguages: result- $result")
             _supportedLanguageState.value = result
@@ -228,10 +232,20 @@ class EditorViewmodel(
     }
 
     private fun getOriginalLyrics(lyrics: String): String {
-        val matchResult = Regex("^\\[#?.*Original.*]", RegexOption.IGNORE_CASE).find(lyrics)
-        return matchResult?.let { result ->
-            lyrics.substringAfter(result.value).substringBefore("[# Translated")
-        } ?: lyrics
+        //if the lyrics file contains more than one translation
+        val matchOriginalLyricsTag =
+            Regex("^\\[#?.*Original.*]", RegexOption.IGNORE_CASE).find(lyrics)
+        if (matchOriginalLyricsTag != null) {
+            return lyrics.substringAfter(matchOriginalLyricsTag.value)
+                .substringBefore("[# Translated")
+        }
+        //if the lyrics file contains extra metadata tags
+        val matchFirstTimestamp = timestampRegex.find(lyrics)
+        if (matchFirstTimestamp != null) {
+            return lyrics.substring(matchFirstTimestamp.range.first)
+        }
+
+        return lyrics
     }
 
     val playerInitialized = playbackHelper.playerInitialized
