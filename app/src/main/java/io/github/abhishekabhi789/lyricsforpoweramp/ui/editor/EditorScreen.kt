@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -22,6 +23,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -32,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -40,10 +43,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -63,6 +69,7 @@ fun EditorScreen(
 ) {
     val timeStampRegex = rememberSaveable { Regex("(\\[\\d{2}:\\d{2}\\.\\d{2}])") }
     val context = LocalContext.current
+    val defaultFontSize = LocalTextStyle.current.fontSize.value
     val inputState by viewmodel.inputState.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
@@ -76,6 +83,9 @@ fun EditorScreen(
     val lyricsContent by remember(inputState) { derivedStateOf { inputState.lyrics } }
     val lyricsLines by remember(lyricsContent) { derivedStateOf { lyricsContent.lines() } }
     val timestampDeltaCenti = remember { AppPreference.getTimestampDelta(context) }
+    var fontSize by rememberSaveable {
+        mutableFloatStateOf(AppPreference.getEditorFontSize(context) ?: defaultFontSize)
+    }
     var saveAsFileEnabled by remember {
         mutableStateOf(AppPreference.getSaveAsFile(context))
     }
@@ -288,7 +298,10 @@ fun EditorScreen(
                         viewmodel.updateInputState(EditorInputState.fromTextFieldValue(it))
                     }
                 },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = TextUnit(fontSize, TextUnitType.Sp)
+                ),
                 decorationBox = { innerTextField ->
                     if (lyricsContent.isEmpty()) {
                         Text(stringResource(R.string.editor_placeholder), color = Color.Gray)
@@ -313,9 +326,21 @@ fun EditorScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 12.dp)
-                    .weight(1f)//needed to show playback control
+                    .weight(1f) //needed to show playback control
+                    .pointerInput(Unit) {
+                        detectTransformGestures { _, _, zoom, _ ->
+                            val newSize = (fontSize * (zoom)).coerceIn(9f, 30f)
+                            if (newSize != fontSize) {
+                                fontSize = newSize
+                                AppPreference.setEditorFontSize(context, newSize)
+                            }
+                        }
+                    },
             )
             PlaybackControl(viewmodel = viewmodel, folderAccessState = folderAccessState)
+        }
+        LaunchedEffect(fontSize) {
+            Log.d(TAG, "EditorScreen: fontsize $fontSize")
         }
         if (sendLyricsState.progress != 0f) {
             val path = filePath.substringBeforeLast(File.separatorChar)

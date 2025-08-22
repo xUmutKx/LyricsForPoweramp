@@ -28,6 +28,7 @@ object AppPreference {
     private const val MARK_INSTRUMENTAL_LYRICS = "mark_instrumental_lyrics"
     private const val GEMINI_API_KEY = "ai_key_gemini"
     private const val TIMESTAMP_DELTA = "timestamp_delta_in_centi_seconds"
+    private const val EDITOR_FONT_SIZE_SP = "editor_font_size_sp"
 
     private fun getSharedPreference(context: Context, prefName: String): SharedPreferences? {
         return context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
@@ -192,6 +193,16 @@ object AppPreference {
     fun getTimestampDelta(context: Context): Int {
         val sharedPreference = getSharedPreference(context, OTHER_PREF)
         return sharedPreference?.getInt(TIMESTAMP_DELTA, 10) ?: 10
+    }
+
+    fun setEditorFontSize(context: Context, fontSize: Float) {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        sharedPreferences?.edit { putFloat(EDITOR_FONT_SIZE_SP, fontSize) }
+    }
+
+    fun getEditorFontSize(context: Context): Float? {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        return sharedPreferences?.getFloat(EDITOR_FONT_SIZE_SP, 0f)?.takeIf { it > 0f }
     }
 
     @Composable
