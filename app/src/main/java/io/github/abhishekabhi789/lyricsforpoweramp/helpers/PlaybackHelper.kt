@@ -3,6 +3,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.helpers
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -21,7 +22,14 @@ import kotlinx.coroutines.launch
 
 class PlaybackHelper(context: Context) {
 
-    private val player: ExoPlayer = ExoPlayer.Builder(context).build()
+    private val player = ExoPlayer.Builder(context)
+        .setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                .build(), true
+        )
+        .build()
 
     // Always interact with the player on the main thread
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
