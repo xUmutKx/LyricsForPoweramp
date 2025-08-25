@@ -9,3 +9,12 @@ buildscript {
         classpath(libs.oss.licenses.plugin)
     }
 }
+subprojects {
+    // Align Kotlin with Java 17 globally
+    plugins.withId("org.jetbrains.kotlin.android") {
+        the<org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension>().jvmToolchain(17)
+    }
+    plugins.withId("org.jetbrains.kotlin.jvm") {
+        the<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension>().jvmToolchain(17)
+    }
+}

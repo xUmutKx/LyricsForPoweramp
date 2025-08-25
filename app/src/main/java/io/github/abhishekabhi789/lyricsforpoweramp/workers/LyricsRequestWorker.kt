@@ -37,7 +37,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
     private var mLrclibApiHelper = LrclibApiHelper(RequestHelper.okHttpClient, RequestHelper.gson)
     private lateinit var mNotificationHelper: NotificationHelper
     private lateinit var mTrack: Track
-    private var powerampTrackId = PowerampAPI.NO_ID
+    private var powerampTrackId = PowerampAPI.ID_NO_ID
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
         val notification = createWorkerNotification()
@@ -46,7 +46,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
 
     override suspend fun doWork(): Result {
         mNotificationHelper = NotificationHelper(mContext)
-        powerampTrackId = inputData.getLong(Track.KEY_REAL_ID, PowerampAPI.NO_ID)
+        powerampTrackId = inputData.getLong(Track.KEY_REAL_ID, PowerampAPI.ID_NO_ID)
         inputData.getString(Track.KEY_TRACK_NAME)?.let { trackName ->
             mTrack = Track(
                 trackName = trackName,

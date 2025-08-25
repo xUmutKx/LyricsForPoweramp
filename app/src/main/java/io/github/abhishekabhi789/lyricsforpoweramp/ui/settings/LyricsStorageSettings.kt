@@ -3,6 +3,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -143,15 +144,26 @@ fun LyricsStorageSettings(
                         .padding(horizontal = 8.dp)
                         .padding(bottom = 8.dp)
                 )
+                val onPermissionRequest = {
+                    runCatching { pickFolderLauncher.launch(null) }.exceptionOrNull()?.let {
+                        Log.e(TAG, "LyricsStorageSettings: request failed", it)
+                        Toast(context).run {
+                            setText(R.string.failed_to_open_folder_picker)
+                            duration = Toast.LENGTH_SHORT
+                            show()
+                        }
+                    }
+                    Unit
+                }
                 BasicSettings(label = stringResource(R.string.settings_save_as_file_folder_list_title)) { interactionSource ->
                     LaunchedEffect(interactionSource) {
                         interactionSource.interactions.collect { interaction ->
                             if (interaction is PressInteraction.Release) {
-                                pickFolderLauncher.launch(null)
+                                onPermissionRequest()
                             }
                         }
                     }
-                    TextButton(onClick = { pickFolderLauncher.launch(null) }) {
+                    TextButton(onClick = { onPermissionRequest() }) {
                         Icon(Icons.Default.AddCircle, null)
                         Spacer(Modifier.width(4.dp))
                         Text(stringResource(R.string.settings_save_as_file_choose_new_folder))
@@ -170,7 +182,6 @@ fun LyricsStorageSettings(
                                     }.distinct().toList()
                                 }
                             }
-
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -201,7 +212,6 @@ fun LyricsStorageSettings(
                                     tint = Color.Red.copy(alpha = 0.7f)
                                 )
                             }
-
                         }
                     }
                 } else {

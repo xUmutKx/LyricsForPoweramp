@@ -26,7 +26,7 @@ class EditorActivity : ComponentActivity() {
             BundleCompat.getParcelableArrayList(it, Track.KEY_LYRICS, Lyrics::class.java)
                 ?.firstOrNull()
         }
-        val powerampId = intent.getLongExtra(Track.KEY_REAL_ID, PowerampAPI.NO_ID)
+        val powerampId = intent.getLongExtra(Track.KEY_REAL_ID, PowerampAPI.ID_NO_ID)
         val filePath = intent.getStringExtra(Track.KEY_FILE_PATH)
         val preferredLyricsType = intent.getStringExtra(KEY_PREFERRED_TYPE)
             ?.let { name -> LyricsType.valueOf(name) }

@@ -44,7 +44,7 @@ object PowerampApiHelper {
     fun makeTrack(context: Context, intent: Intent): Track? {
         val realId = intent.getLongExtra(PowerampAPI.Track.REAL_ID, PowerampAPI.NO_ID)
         val title = intent.getStringExtra(PowerampAPI.Track.TITLE)
-        if (realId == PowerampAPI.NO_ID || title.isNullOrEmpty()) {
+        if (realId == PowerampAPI.ID_NO_ID || title.isNullOrEmpty()) {
             Log.e(
                 TAG,
                 buildString {

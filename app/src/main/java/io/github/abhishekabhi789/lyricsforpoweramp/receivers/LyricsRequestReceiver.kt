@@ -26,7 +26,8 @@ class LyricsRequestReceiver : BroadcastReceiver() {
             Log.d(TAG, "onReceive: received intent ${intent.action}")
             when (intent.action) {
                 PowerampAPI.Lyrics.ACTION_NEED_LYRICS -> {
-                    val realId = intent.getLongExtra(PowerampAPI.Track.REAL_ID, PowerampAPI.NO_ID)
+                    val realId =
+                        intent.getLongExtra(PowerampAPI.Track.REAL_ID, PowerampAPI.ID_NO_ID)
                     val track = PowerampApiHelper.makeTrack(context, intent)
                     val workData = Data.Builder().run {
                         putLong(Track.KEY_REAL_ID, realId)

@@ -43,7 +43,7 @@ class EditorViewmodel(
     private val _inputState = MutableStateFlow(EditorInputState())
     val inputState: StateFlow<EditorInputState> = _inputState.asStateFlow()
 
-    private var powerampId = PowerampAPI.NO_ID
+    private var powerampId = PowerampAPI.ID_NO_ID
 
     private lateinit var lyrics: Lyrics
 
