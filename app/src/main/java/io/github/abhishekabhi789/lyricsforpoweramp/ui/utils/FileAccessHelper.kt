@@ -3,6 +3,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.utils
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
@@ -113,10 +114,21 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
                 getFileUriFromTreeUri(savedParentFolder, documentId)
             }
         }
+        val onPermissionRequest = {
+            runCatching { pickFolderLauncher.launch(launchInput) }.exceptionOrNull()?.let {
+                Log.e(TAG, "rememberFolderAccess: request failed", it)
+                Toast(context).run {
+                    setText(R.string.failed_to_open_folder_picker)
+                    duration = Toast.LENGTH_SHORT
+                    show()
+                }
+            }
+            Unit
+        }
         AlertDialog(
             onDismissRequest = { askPermission = false },
             confirmButton = {
-                TextButton({ pickFolderLauncher.launch(launchInput) }) {
+                TextButton(onClick = onPermissionRequest) {
                     Text(stringResource(R.string.grant_access))
                 }
             },

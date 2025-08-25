@@ -27,6 +27,7 @@
     <string name="folder_access_request_title">Acceso de carpeta solicitado</string>
     <string name="folder_access_request_explanation">Para administrar la letra, esta aplicación necesita acceso a la carpeta: %1$s</string>
     <string name="grant_access">Otorgar acceso</string>
+    <string name="failed_to_open_folder_picker">No se puede abrir el selector de carpetas</string>
     <string name="open">Abierto</string>
     <!--    top bar-->
     <string name="top_bar_menu_descriptions">Más Opciones</string>

@@ -26,6 +26,7 @@
     <string name="folder_access_request_title">Folder Access Needed</string>
     <string name="folder_access_request_explanation">To manage lyrics, this app needs access to the folder: %1$s</string>
     <string name="grant_access">Grant Access</string>
+    <string name="failed_to_open_folder_picker">Unable to open folder picker</string>
     <string name="open">Open</string>
     <!--    top bar-->
     <string name="top_bar_menu_descriptions">More Options</string>
