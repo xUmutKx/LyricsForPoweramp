@@ -19,7 +19,7 @@ data class Timestamp(
 
     fun toSeconds(): Int = ((minutes * 60) + seconds)
 
-    private fun toTotalCentiseconds(): Int = (toSeconds() * 100) + centiseconds
+    fun toTotalCentiseconds(): Long = (toSeconds().toLong() * 100) + centiseconds
 
     companion object {
         fun fromString(timestamp: String): Timestamp? {

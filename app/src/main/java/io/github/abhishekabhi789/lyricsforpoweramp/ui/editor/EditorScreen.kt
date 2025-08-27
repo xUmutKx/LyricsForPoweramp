@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.TextUnit
@@ -129,7 +130,7 @@ fun EditorScreen(
                     lyrics.replace(timestamp.toString(), newTimestamp.toString())
                 }
                 timestamps.firstOrNull()?.let { timestamp ->
-                    viewmodel.seekTo(timestamp.toSeconds())
+                    viewmodel.seekTo(timestamp.toTotalCentiseconds())
                 }
                 if (!isPlaying) viewmodel.togglePlayback(true)
                 viewmodel.updateInputState(
@@ -150,8 +151,15 @@ fun EditorScreen(
                 }
                 lines[firstLineIndex] = updatedLine
                 val newLyrics = lines.joinToString("\n")
+                val nextLineIndex = firstLineIndex + 1
+                val newCursorPosition = if (nextLineIndex < lines.size) {
+                    val newPosition = lines.take(nextLineIndex).sumOf { it.length + 1 }
+                    timeStampRegex.findAll(lines[nextLineIndex]).lastOrNull()?.let {
+                        newPosition + it.range.endInclusive + 1
+                    } ?: newPosition
+                } else newLyrics.length
                 viewmodel.updateInputState(
-                    EditorInputState.fromTextFieldValue(textFieldValue.copy(text = newLyrics))
+                    EditorInputState(newLyrics, TextRange(newCursorPosition))
                 )
             }
             val timestampOnSelection by remember(linesInSelection) {
@@ -173,7 +181,12 @@ fun EditorScreen(
                 onTimestampChange = offsetTimestamp,
                 onSyncLine = onSyncLine,
                 enablePlayLine = timestampOnSelection != null,
-                onPlayLine = { timestampOnSelection?.toSeconds()?.let { viewmodel.seekTo(it) } })
+                onPlayLine = {
+                    timestampOnSelection?.toTotalCentiseconds()?.let {
+                        viewmodel.seekTo(it)
+                        viewmodel.togglePlayback(true)
+                    }
+                })
         }, floatingActionButton = {
             FloatingActionButton(onClick = { viewmodel.sendLyricsToPoweramp(context) }) {
                 Icon(

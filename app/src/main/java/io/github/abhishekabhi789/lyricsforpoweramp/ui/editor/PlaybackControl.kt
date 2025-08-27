@@ -75,7 +75,7 @@ fun PlaybackControl(
             Slider(
                 enabled = playerInitialized,
                 value = playbackPosition.toFloat(),
-                onValueChange = { viewmodel.seekTo(it.toInt()) },
+                onValueChange = { viewmodel.seekTo(it.toLong().times(100L)) },
                 valueRange = 0f..trackDuration.toFloat(),
                 modifier = Modifier.weight(1f)
             )
@@ -87,8 +87,8 @@ fun PlaybackControl(
             modifier = Modifier.fillMaxWidth()
         ) {
             val changePlayback = { delta: Int ->
-                val newPosition = playbackPosition.plus(delta)
-                viewmodel.seekTo(newPosition)
+                val newPositionCenti = playbackPosition.toLong().plus(delta).times(100)
+                viewmodel.seekTo(newPositionCenti)
             }
             TooltipBox(
                 state = rememberTooltipState(),

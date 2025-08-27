@@ -253,8 +253,8 @@ class EditorViewmodel(
     val playbackPosition = playbackHelper.playbackSeconds
     val isPlaying = playbackHelper.isPlaying
 
-    fun seekTo(seconds: Int) {
-        playbackHelper.seekTo((seconds.toLong().times(1000)))
+    fun seekTo(centiSeconds: Long) {
+        playbackHelper.seekTo(centiSeconds.times(10))
     }
 
     fun togglePlayback(play: Boolean) {
