@@ -66,7 +66,8 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
     //askPermission is used as key since it's change when user interacts with permission dialog
     val accessibleParentFolder: Uri? by remember(documentId, askPermission) {
         derivedStateOf {
-            context.contentResolver.persistedUriPermissions.filterNotNull()
+            val uriPermissions = context.contentResolver.persistedUriPermissions
+            uriPermissions.filterNotNull()
                 .filter { it.isReadPermission }.mapNotNull { it.uri }
                 .maxByOrNull { uri ->
                     calculateCommonPrefixLength(uri.getTreeDocumentId(), documentId)
@@ -159,8 +160,28 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
                 pendingResultCallback = onResult
             },
             onRevokeAccess = {
-                accessibleParentFolder?.let {
-                    context.contentResolver.releasePersistableUriPermission(it, modeFlags)
+                if (hasPermission) {
+                    accessibleParentFolder?.let { uri ->
+                        val uriPermissions = context.contentResolver.persistedUriPermissions
+                        val persisted = uriPermissions.firstOrNull { it.uri == uri }
+                        if (persisted != null) {
+                            var flagsToRelease = 0
+                            if (persisted.isReadPermission) {
+                                flagsToRelease =
+                                    flagsToRelease or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            }
+                            if (persisted.isWritePermission) {
+                                flagsToRelease =
+                                    flagsToRelease or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            }
+                            if (flagsToRelease != 0) {
+                                context.contentResolver.releasePersistableUriPermission(
+                                    uri,
+                                    flagsToRelease
+                                )
+                            }
+                        }
+                    }
                 }
             },
             onChildUriRequest = { documentId ->
