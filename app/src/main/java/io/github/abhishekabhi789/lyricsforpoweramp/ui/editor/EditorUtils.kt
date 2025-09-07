@@ -26,14 +26,13 @@ fun transformLyrics(
     onErrorContainer: Color
 ): TransformedText {
     val potentialTimestampRegex = Regex("(^\\[\\d.*])")
-    val validTimestampStyle = SpanStyle(
-        color = onTimestampContainerColor,
-        background = timestampContainerColor
-    )
+    val validTimestampStyle =
+        SpanStyle(color = onTimestampContainerColor, background = timestampContainerColor)
     val invalidTimestampStyle = SpanStyle(color = onErrorContainer, background = errorContainer)
 
     val annotatedString = buildAnnotatedString {
-        text.text.lines().forEachIndexed { lineIndex, line ->
+        val lines = text.text.lines()
+        lines.forEachIndexed { lineIndex, line ->
             val (color, bgColor) = when (lineIndex) {
                 in currentPlayingLines -> onSelectionContainerColor to selectionContainerColor
                 in selectionLineIndexes ->
@@ -48,10 +47,7 @@ fun transformLyrics(
                 fontWeight = if (lineIndex in currentPlayingLines) FontWeight.Bold else FontWeight.Normal
             )
             withStyle(
-                ParagraphStyle(
-                    textIndent = TextIndent(restLine = 6.5.em),
-                    lineHeight = 1.4.em
-                )
+                ParagraphStyle(textIndent = TextIndent(restLine = 6.5.em), lineHeight = 1.4.em)
             ) {
                 var currentIndex = 0
                 potentialTimestampRegex.findAll(line).forEach { match ->
@@ -75,13 +71,14 @@ fun transformLyrics(
                         append(line.substring(currentIndex))
                     }
                 }
-
-                if (lineIndex != text.text.lines().lastIndex) {
+                if (lineIndex < lines.lastIndex) {
                     append("\n")
                 }
             }
         }
     }
+
+    check(text.text == annotatedString.text) { "Mismatch between original and transformed text!" }
     return TransformedText(annotatedString, OffsetMapping.Identity)
 }
 
