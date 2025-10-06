@@ -110,7 +110,8 @@ class EditorViewmodel(
         val lyrics =
             (if (preferredLyricsType == LyricsType.SYNCED) lyrics.syncedLyrics else lyrics.plainLyrics)
                 ?: ""
-        this._inputState.value = EditorInputState(lyrics = lyrics)
+        val normalizedLyrics = lyrics.replace("\r\n", "\n")
+        this._inputState.value = EditorInputState(lyrics = normalizedLyrics)
         Log.i(TAG, "initialize: viewmodel initialized")
         isInitialized = true
     }

@@ -244,7 +244,7 @@ fun EditorScreen(
                     try {
                         context.contentResolver.openInputStream(uri)
                             ?.bufferedReader()
-                            ?.use { it.readText() }
+                            ?.use { it.readText().replace("\r\n", "\n") }
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to read lyrics", e)
                         null
