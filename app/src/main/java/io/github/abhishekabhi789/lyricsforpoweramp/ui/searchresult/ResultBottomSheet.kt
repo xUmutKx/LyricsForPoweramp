@@ -67,6 +67,7 @@ fun ResultBottomSheet(
     val timeout = remember { 3.seconds }
     val sendToPoweramp by remember(sendLyricsState) { derivedStateOf { sendLyricsState.sendToPoweramp } }
     val saveToStorage by remember(sendLyricsState) { derivedStateOf { sendLyricsState.saveAsFile } }
+    val embedIntoFile by remember(sendLyricsState) { derivedStateOf { sendLyricsState.embedIntoFile } }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Row(
@@ -82,7 +83,7 @@ fun ResultBottomSheet(
             Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 StepIndicator(stringResource(R.string.lyrics_save_search_result), true)
-                if (!sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform) {
+                if (!sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform && !embedIntoFile.shouldPerform) {
                     StepIndicator(
                         stringResource(R.string.notification_no_saving_method_description),
                         false
@@ -101,14 +102,34 @@ fun ResultBottomSheet(
                     }
                 }
                 if (saveToStorage.shouldPerform) {
-                    val label = saveToStorage.result?.messageResId?.let { stringResource(it) }
+                    val label = when (saveToStorage.result) {
+                        StorageHelper.Result.SUCCESS -> R.string.lyrics_saved_to_storage
+                        else -> saveToStorage.result?.messageResId
+                    }
+
+                    saveToStorage.result?.messageResId?.let { stringResource(it) }
                     StepIndicator(
-                        text = label ?: stringResource(R.string.settings_save_as_file_label),
+                        text = stringResource(label ?: R.string.settings_save_as_file_label),
                         isCompleted = saveToStorage.result?.let { it == StorageHelper.Result.SUCCESS },
                         actionLabel = if (saveToStorage.result == StorageHelper.Result.NO_PERMISSION)
-                            stringResource(R.string.settings_save_as_file_button_grant_access) else null,
+                            stringResource(R.string.settings_add_folder_button_grant_access) else null,
                         onAction = if (saveToStorage.result == StorageHelper.Result.NO_PERMISSION)
                             grantAccess else null
+                    )
+                }
+                if (embedIntoFile.shouldPerform) {
+                    val label = when (embedIntoFile.result) {
+                        StorageHelper.Result.SUCCESS -> R.string.lyrics_embedded_to_track
+                        else -> embedIntoFile.result?.messageResId
+                    }
+                    StepIndicator(
+                        text = stringResource(
+                            label ?: R.string.settings_embed_into_song_file_label
+                        ),
+                        isCompleted = embedIntoFile.result?.let { it == StorageHelper.Result.SUCCESS },
+                        actionLabel = if (embedIntoFile.result == StorageHelper.Result.NO_PERMISSION)
+                            stringResource(R.string.settings_add_folder_button_grant_access) else null,
+                        onAction = if (embedIntoFile.result == StorageHelper.Result.NO_PERMISSION) grantAccess else null
                     )
                 }
                 val completed: Boolean? by remember(sendLyricsState) {
@@ -116,10 +137,12 @@ fun ResultBottomSheet(
                         val send = !sendToPoweramp.shouldPerform || sendToPoweramp.result == true
                         val saved =
                             !saveToStorage.shouldPerform || saveToStorage.result == StorageHelper.Result.SUCCESS
+                        val embedded =
+                            !embedIntoFile.shouldPerform || embedIntoFile.result == StorageHelper.Result.SUCCESS
                         when {
-                            !sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform -> false
+                            !sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform && !embedIntoFile.shouldPerform -> false
                             sendLyricsState.progress == 1f -> true
-                            (sendToPoweramp.result != null && !send) || (saveToStorage.result != null && !saved) -> false
+                            (sendToPoweramp.result != null && !send) || (saveToStorage.result != null && !saved) || (embedIntoFile.result != null && !embedded) -> false
                             else -> null
                         }
                     }

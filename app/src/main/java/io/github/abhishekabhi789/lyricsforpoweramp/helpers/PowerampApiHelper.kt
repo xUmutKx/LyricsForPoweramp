@@ -57,7 +57,9 @@ object PowerampApiHelper {
         val album = intent.getStringExtra(PowerampAPI.Track.ALBUM)
         val artist = intent.getStringExtra(PowerampAPI.Track.ARTIST)
         val durationMs = intent.getIntExtra(PowerampAPI.Track.DURATION, 0)
-        val filePath = intent.getStringExtra(PowerampAPI.Track.PATH)
+        val filePath = intent.getStringExtra(PowerampAPI.Track.PATH)?.let { path ->
+            if (!path.contains(":")) path.replaceFirst("/", ":") else path
+        }
         val duration: Int? = (durationMs / 1000).let { if (it == 0) null else it }
         return processField(context, FilterType.TITLE_FILTER, title)?.let {
             Track(
@@ -65,7 +67,7 @@ object PowerampApiHelper {
                 artistName = processField(context, FilterType.ARTISTS_FILTER, artist),
                 albumName = processField(context, FilterType.ALBUM_FILTER, album),
                 duration = duration,
-                filePath = filePath?.replaceFirst("/", ":") ?: "",
+                filePath = filePath ?: "",
                 realId = realId,
                 lyrics = null
             )
@@ -109,15 +111,17 @@ object PowerampApiHelper {
         var progress = 0.1f
         val shouldSendToPA = AppPreference.getSendLyricsToPoweramp(context)
         val shouldSaveAsFile = AppPreference.getSaveAsFile(context)
+        val embedIntoFile = AppPreference.getEmbedLyricsAsTag(context)
 
         var state = SendLyricsState(
             progress = progress,
             sendToPoweramp = SendLyricsState.Operation(shouldPerform = shouldSendToPA),
-            saveAsFile = SendLyricsState.Operation(shouldPerform = shouldSaveAsFile)
+            saveAsFile = SendLyricsState.Operation(shouldPerform = shouldSaveAsFile),
+            embedIntoFile = SendLyricsState.Operation(shouldPerform = embedIntoFile)
         )
         emit(state)
 
-        val totalSteps = listOf(shouldSendToPA, shouldSaveAsFile).count { it }
+        val totalSteps = listOf(shouldSendToPA, shouldSaveAsFile, embedIntoFile).count { it }
         val stepSize = 0.5f / totalSteps
 
         val lyricsText: String? = when (lyricsType) {
@@ -148,12 +152,12 @@ object PowerampApiHelper {
                 progress += stepSize
                 val sentToPa = state.sendToPoweramp.copy(result = sent)
                 state = state.copy(progress = progress, sendToPoweramp = sentToPa)
-                emit(state)
             } catch (e: Throwable) {
                 Log.e(TAG, "sendLyrics: failed to send to PA", e)
                 e.printStackTrace()
                 val sentToPa = state.sendToPoweramp.copy(result = false)
                 state = state.copy(progress = progress, sendToPoweramp = sentToPa)
+            } finally {
                 emit(state)
             }
         }
@@ -181,7 +185,6 @@ object PowerampApiHelper {
                 progress += stepSize
                 val savedToFile = state.saveAsFile.copy(result = saveResult)
                 state = state.copy(progress = progress, saveAsFile = savedToFile)
-                emit(state)
             } else {
                 Log.w(TAG, "sendLyricResponse: lyrics is null")
                 val result = if (lyrics.instrumental == true)
@@ -189,13 +192,45 @@ object PowerampApiHelper {
                 val savedToFile =
                     state.saveAsFile.copy(result = result)
                 state = state.copy(progress = progress, saveAsFile = savedToFile)
-                emit(state)
             }
+            emit(state)
         }
+        if (embedIntoFile) {
+            if (lyricsText != null) {
+                val tagLibHelper = TaglibHelper(context)
+                val filePrepared = tagLibHelper.prepareFile(filePath) { error ->
+                    state = state.copy(
+                        progress = progress,
+                        embedIntoFile = state.embedIntoFile.copy(result = error)
+                    )
+                }
+                progress += stepSize
+                if (filePrepared) {
+                    tagLibHelper.updateLyricsTag(lyricsText)
+                    tagLibHelper.saveModifiedFile()
+                    Log.i(TAG, "sendLyrics: embedded into song tag")
+                    state = state.copy(
+                        progress = progress,
+                        embedIntoFile = state.embedIntoFile.copy(result = StorageHelper.Result.SUCCESS)
+                    )
+                }
+            } else {
+                Log.w(TAG, "sendLyricResponse: lyrics is null")
+                val result = if (lyrics.instrumental == true)
+                    StorageHelper.Result.SUCCESS else StorageHelper.Result.INVALID_LYRICS
+                val embedded =
+                    state.embedIntoFile.copy(result = result)
+                state = state.copy(progress = progress, saveAsFile = embedded)
+            }
+            emit(state)
+        }
+
         val sent = !state.sendToPoweramp.shouldPerform || state.sendToPoweramp.result == true
         val saved =
             !state.saveAsFile.shouldPerform || state.saveAsFile.result == StorageHelper.Result.SUCCESS
-        if (sent && saved) {
+        val embedded =
+            !state.embedIntoFile.shouldPerform || state.embedIntoFile.result == StorageHelper.Result.SUCCESS
+        if (sent && saved && embedded) {
             state = state.copy(progress = 1f)
             emit(state)
         }
@@ -221,7 +256,8 @@ object PowerampApiHelper {
 data class SendLyricsState(
     val progress: Float = 0f,
     val sendToPoweramp: Operation<Boolean?> = Operation(shouldPerform = false),
-    val saveAsFile: Operation<StorageHelper.Result?> = Operation(shouldPerform = false)
+    val saveAsFile: Operation<StorageHelper.Result?> = Operation(shouldPerform = false),
+    val embedIntoFile: Operation<StorageHelper.Result?> = Operation(shouldPerform = false)
 ) {
     data class Operation<T>(val shouldPerform: Boolean = false, val result: T? = null)
 }

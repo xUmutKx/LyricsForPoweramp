@@ -50,6 +50,7 @@
     <string name="lyrics_send_to_pa">Sending lyrics to Poweramp</string>
     <string name="lyrics_sent_to_pa">Lyrics sent to Poweramp</string>
     <string name="lyrics_saved_to_storage">Saved as lyrics file</string>
+    <string name="lyrics_embedded_to_track">Embedded to song file</string>
     <string name="result_type_synced_description">Synced lyrics of this track</string>
     <string name="result_type_plain_description">Plain lyrics of this track</string>
     <!--    editor activity-->
@@ -117,13 +118,15 @@
     <string name="settings_send_to_poweramp_description">Lyrics will be stored in Poweramp\'s cache, allowing updates directly from the Poweramp UI.</string>
     <string name="settings_save_as_file_label">Save Lyrics as Files</string>
     <string name="settings_save_as_file_description">Store lyrics as text files in the same folder as the music file. Ensure you select the correct folders below.</string>
-    <string name="settings_save_as_file_info">Select folders where your music files are stored to save lyrics in the same location.</string>
-    <string name="settings_save_as_file_folder_list_title">Selected Folders</string>
-    <string name="settings_save_as_file_choose_new_folder">Choose Folder</string>
-    <string name="settings_save_as_file_button_grant_access">Grant Access</string>
-    <string name="settings_save_as_file_button_remove_folder">Remove</string>
-    <string name="settings_save_as_file_no_folders">No folders selected</string>
-    <string name="settings_save_as_file_permission_explanation">"You need to grant permission to access %1$s to save lyrics files.</string>
+    <string name="settings_embed_into_song_file_label">Embed Lyrics into File</string>
+    <string name="settings_embed_into_song_file_description">Embed the lyrics directly into the music file.</string>
+    <string name="settings_add_folder">Select folders where your music files are stored.</string>
+    <string name="settings_add_folder_list_title">Selected Folders</string>
+    <string name="settings_add_folder_add_new">Choose Folder</string>
+    <string name="settings_add_folder_button_grant_access">Grant Access</string>
+    <string name="settings_add_folder_button_remove">Remove</string>
+    <string name="settings_add_folder_empty_list">No folders selected</string>
+    <string name="settings_add_folder_permission_explanation">"You need to grant permission to access %1$s to save lyrics.</string>
     <string name="settings_editor_label">Lyrics Editor</string>
     <string name="settings_editor_api_keys_list">API Keys</string>
     <string name="settings_editor_api_keys_disclaimer">You need to add your own API key to enable translation. This keeps the app free and avoids paid usage limits. Your key is stored only on your device — it’s never collected or shared.</string>

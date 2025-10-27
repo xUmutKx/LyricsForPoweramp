@@ -118,7 +118,31 @@ fun LyricsStorageSettings(
                 checked = saveAsFile, onCheckedChange = onSwitchToggle,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
-        AnimatedVisibility(visible = saveAsFile) {
+        var embedIntoFile by remember { mutableStateOf(AppPreference.getEmbedLyricsAsTag(context)) }
+        BasicSettings(
+            label = stringResource(R.string.settings_embed_into_song_file_label),
+            description = stringResource(R.string.settings_embed_into_song_file_description)
+        ) { interactionSource ->
+            val onSwitchToggle = { enabled: Boolean ->
+                AppPreference.setEmbedLyricsAsTag(context, enabled)
+                embedIntoFile = enabled
+            }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        onSwitchToggle(!embedIntoFile)
+                    }
+                }
+            }
+            val accessibilityLabel =
+                stringResource(if (embedIntoFile) R.string.disable else R.string.enable).let {
+                    "$it ${stringResource(R.string.settings_embed_into_song_file_label)}"
+                }
+            Switch(
+                checked = embedIntoFile, onCheckedChange = onSwitchToggle,
+                modifier = Modifier.semantics { contentDescription = accessibilityLabel })
+        }
+        AnimatedVisibility(visible = saveAsFile || embedIntoFile) {
             val accessRequestedPath by viewmodel.accessRequestedPath.collectAsState()
             var savedUris by rememberSaveable { mutableStateOf(AppPreference.getSavedUris(context)) }
             val pickFolderLauncher = rememberLauncherForActivityResult(
@@ -138,7 +162,7 @@ fun LyricsStorageSettings(
             Column(modifier = modifier.fillMaxWidth()) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 Text(
-                    text = stringResource(R.string.settings_save_as_file_info),
+                    text = stringResource(R.string.settings_add_folder),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
@@ -155,7 +179,7 @@ fun LyricsStorageSettings(
                     }
                     Unit
                 }
-                BasicSettings(label = stringResource(R.string.settings_save_as_file_folder_list_title)) { interactionSource ->
+                BasicSettings(label = stringResource(R.string.settings_add_folder_list_title)) { interactionSource ->
                     LaunchedEffect(interactionSource) {
                         interactionSource.interactions.collect { interaction ->
                             if (interaction is PressInteraction.Release) {
@@ -166,7 +190,7 @@ fun LyricsStorageSettings(
                     TextButton(onClick = { onPermissionRequest() }) {
                         Icon(Icons.Default.AddCircle, null)
                         Spacer(Modifier.width(4.dp))
-                        Text(stringResource(R.string.settings_save_as_file_choose_new_folder))
+                        Text(stringResource(R.string.settings_add_folder_add_new))
                     }
                 }
                 if (savedUris.isNotEmpty()) {
@@ -197,7 +221,7 @@ fun LyricsStorageSettings(
                             )
                             if (!folderAccessState.hasPermission) {
                                 TextButton(onClick = onPermissionRequest) {
-                                    Text(stringResource(R.string.settings_save_as_file_button_grant_access))
+                                    Text(stringResource(R.string.settings_add_folder_button_grant_access))
                                 }
                             }
                             IconButton(onClick = {
@@ -208,7 +232,7 @@ fun LyricsStorageSettings(
                             }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = stringResource(R.string.settings_save_as_file_button_remove_folder),
+                                    contentDescription = stringResource(R.string.settings_add_folder_button_remove),
                                     tint = Color.Red.copy(alpha = 0.7f)
                                 )
                             }
@@ -216,7 +240,7 @@ fun LyricsStorageSettings(
                     }
                 } else {
                     Disclaimer(
-                        textContent = stringResource(R.string.settings_save_as_file_no_folders),
+                        textContent = stringResource(R.string.settings_add_folder_empty_list),
                         icon = Icons.Default.Error,
                         foregroundColor = MaterialTheme.colorScheme.onErrorContainer,
                         backgroundColor = MaterialTheme.colorScheme.errorContainer
@@ -226,7 +250,7 @@ fun LyricsStorageSettings(
             accessRequestedPath?.let { pathUri ->
                 PermissionDialog(
                     explanation = stringResource(
-                        R.string.settings_save_as_file_permission_explanation,
+                        R.string.settings_add_folder_permission_explanation,
                         pathUri.getTreeDocumentId()
                     ),
                     allowToSuppress = false,

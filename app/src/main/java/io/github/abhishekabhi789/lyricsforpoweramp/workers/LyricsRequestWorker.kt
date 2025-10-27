@@ -66,7 +66,8 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
         Log.i(TAG, "handleLyricsRequest: request for $mTrack")
         val sendToPoweramp = AppPreference.getSendLyricsToPoweramp(mContext)
         val saveToStorage = AppPreference.getSaveAsFile(mContext)
-        if (!sendToPoweramp && !saveToStorage) {
+        val embedIntoFile = AppPreference.getEmbedLyricsAsTag(mContext)
+        if (!sendToPoweramp && !saveToStorage && !embedIntoFile) {
             Log.e(TAG, "sendLyrics: both saving options are disabled")
             mNotificationHelper.launchSettings(
                 title = getString(R.string.notification_no_saving_method_title),

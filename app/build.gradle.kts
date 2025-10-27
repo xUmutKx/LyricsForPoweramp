@@ -1,3 +1,5 @@
+import jdk.tools.jlink.resources.plugins
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -12,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.abhishekabhi789.lyricsforpoweramp"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = 19
         versionName = "1.9"
@@ -82,6 +84,7 @@ android {
 dependencies {
     implementation(project(":poweramp_api_lib"))
     implementation(libs.okhttp)
+    implementation(libs.taglib)
     implementation(libs.accompanist.permissions)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)

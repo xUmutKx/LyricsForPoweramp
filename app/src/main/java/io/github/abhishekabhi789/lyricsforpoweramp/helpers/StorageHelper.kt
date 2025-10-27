@@ -23,44 +23,17 @@ object StorageHelper {
         lyricsContent: String,
         lyricsType: LyricsType,
     ): Result = withContext(Dispatchers.IO) {
-        val filePath = normalizeToDocumentId(filePath)
-        Log.d(TAG, "writeLyricsFile: track file path $filePath")
-        if (filePath.isNullOrBlank()) return@withContext Result.INVALID_FILEPATH
         if (lyricsContent.isBlank()) {
             Log.e(TAG, "writeLyricsFile: aborting lyrics write due to null lyrics")
             return@withContext Result.INVALID_LYRICS
         }
-
-        val savedUris = context.contentResolver.persistedUriPermissions
-            .filter { it.isWritePermission }
-            .mapNotNull { it.uri }
-
-        val permittedParentFolderUri =
-            savedUris.find { filePath.startsWith(it.getTreeDocumentId()) }
-        if (permittedParentFolderUri == null) {
-            Log.e(TAG, "writeLyricsFile: no access ${filePath.substringBeforeLast("/")}")
-            return@withContext Result.NO_PERMISSION
-        }
-
-        val permittedFolder = DocumentFile.fromTreeUri(context, permittedParentFolderUri)
-        if (permittedFolder == null) {
-            Log.e(
-                TAG,
-                "writeLyricsFile: failed to get permitted folder from uri $permittedParentFolderUri",
-            )
-        }
-
-        val segments = filePath.removePrefix(permittedParentFolderUri.getTreeDocumentId())
-            .trimStart('/')
-            .split('/').dropLast(1)
-        var parentFolder: DocumentFile? = permittedFolder
-        for (segment in segments) {
-            parentFolder = parentFolder?.findFile(segment)
-            if (parentFolder == null) break
-        }
+        val filePath = normalizeToDocumentId(filePath)
+        Log.d(TAG, "writeLyricsFile: track file path $filePath")
+        if (filePath.isNullOrBlank()) return@withContext Result.INVALID_FILEPATH
+        val parentFolder = getParentFolder(context, filePath)
         if (parentFolder == null || !parentFolder.isDirectory) {
             Log.e(TAG, "writeLyricsFile: failed to resolve parent folder for $filePath")
-            return@withContext Result.INVALID_FILEPATH
+            return@withContext Result.NO_PERMISSION //no access
         }
 
         val (mimeType, extension) = if (lyricsType == LyricsType.SYNCED) {
@@ -118,6 +91,39 @@ object StorageHelper {
 
             else -> null
         }
+    }
+
+    fun getParentFolder(context: Context, filePath: String): DocumentFile? {
+        val savedUris = context.contentResolver.persistedUriPermissions
+            .filter { it.isWritePermission }
+            .mapNotNull { it.uri }
+
+        val permittedParentFolderUri =
+            savedUris.find { filePath.startsWith(it.getTreeDocumentId()) }
+        if (permittedParentFolderUri == null) {
+            Log.e(TAG, "writeLyricsFile: no access ${filePath.substringBeforeLast("/")}")
+            return null
+        }
+
+        val permittedFolder = DocumentFile.fromTreeUri(context, permittedParentFolderUri)
+        if (permittedFolder == null) {
+            Log.e(
+                TAG,
+                "writeLyricsFile: failed to get permitted folder from uri $permittedParentFolderUri",
+            )
+        }
+        Log.d(TAG, "getParentFolder: permitted folder ${permittedFolder?.uri}")
+        val segments = filePath.removePrefix(permittedParentFolderUri.getTreeDocumentId())
+            .trimStart('/')
+            .split('/')
+            .dropLast(1)
+        var parentFolder: DocumentFile? = permittedFolder
+        for (segment in segments) {
+            parentFolder = parentFolder?.findFile(segment)
+            if (parentFolder == null) break
+        }
+        Log.d(TAG, "getParentFolder: parent folder found ${parentFolder?.uri}")
+        return parentFolder
     }
 
     enum class Result(val messageResId: Int) {
