@@ -112,6 +112,7 @@ object PowerampApiHelper {
         val shouldSendToPA = AppPreference.getSendLyricsToPoweramp(context)
         val shouldSaveAsFile = AppPreference.getSaveAsFile(context)
         val embedIntoFile = AppPreference.getEmbedLyricsAsTag(context)
+        val fixMetadata = AppPreference.getFixMetadata(context)
 
         var state = SendLyricsState(
             progress = progress,
@@ -207,6 +208,11 @@ object PowerampApiHelper {
                 progress += stepSize
                 if (filePrepared) {
                     tagLibHelper.updateLyricsTag(lyricsText)
+                    if (fixMetadata) {
+                        if (tagLibHelper.fixMetadata(lyrics))
+                            Log.i(TAG, "sendLyrics: metadata updated")
+                        else Log.e(TAG, "sendLyrics: failed to update metadata")
+                    }
                     tagLibHelper.saveModifiedFile()
                     Log.i(TAG, "sendLyrics: embedded into song tag")
                     state = state.copy(

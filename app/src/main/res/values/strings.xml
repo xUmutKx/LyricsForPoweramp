@@ -120,6 +120,8 @@
     <string name="settings_save_as_file_description">Store lyrics as text files in the same folder as the music file. Ensure you select the correct folders below.</string>
     <string name="settings_embed_into_song_file_label">Embed Lyrics into File</string>
     <string name="settings_embed_into_song_file_description">Embed the lyrics directly into the music file.</string>
+    <string name="settings_fix_metadata_with_lyrics_info_label">Fix Song Metadata</string>
+    <string name="settings_fix_metadata_with_lyrics_info_description">Update song details with information from the lyrics.</string>
     <string name="settings_add_folder">Select folders where your music files are stored.</string>
     <string name="settings_add_folder_list_title">Selected Folders</string>
     <string name="settings_add_folder_add_new">Choose Folder</string>

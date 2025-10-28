@@ -143,6 +143,32 @@ fun LyricsStorageSettings(
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
         AnimatedVisibility(visible = saveAsFile || embedIntoFile) {
+            var fixMetadata by remember { mutableStateOf(AppPreference.getFixMetadata(context)) }
+            BasicSettings(
+                label = stringResource(R.string.settings_fix_metadata_with_lyrics_info_label),
+                description = stringResource(R.string.settings_fix_metadata_with_lyrics_info_description),
+            ) { interactionSource ->
+                val onSwitchToggle = { enabled: Boolean ->
+                    AppPreference.setFixMetadata(context, enabled)
+                    fixMetadata = enabled
+                }
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
+                            onSwitchToggle(!fixMetadata)
+                        }
+                    }
+                }
+                val accessibilityLabel =
+                    stringResource(if (fixMetadata) R.string.disable else R.string.enable).let {
+                        "$it ${stringResource(R.string.settings_fix_metadata_with_lyrics_info_label)}"
+                    }
+                Switch(
+                    checked = fixMetadata, onCheckedChange = onSwitchToggle,
+                    modifier = Modifier.semantics { contentDescription = accessibilityLabel })
+            }
+        }
+        AnimatedVisibility(visible = saveAsFile || embedIntoFile) {
             val accessRequestedPath by viewmodel.accessRequestedPath.collectAsState()
             var savedUris by rememberSaveable { mutableStateOf(AppPreference.getSavedUris(context)) }
             val pickFolderLauncher = rememberLauncherForActivityResult(

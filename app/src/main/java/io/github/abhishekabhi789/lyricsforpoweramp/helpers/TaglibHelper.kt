@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import com.kyant.taglib.PropertyMap
 import com.kyant.taglib.TagLib
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import okhttp3.internal.closeQuietly
 import java.io.File
 
@@ -47,7 +48,7 @@ class TaglibHelper(private val context: Context) {
         }
     }
 
-    fun getMetadata(): PropertyMap? {
+    private fun getMetadata(): PropertyMap? {
         if (fd == null) {
             Log.e(TAG, "getMetadata: fd is null; returning")
             return null
@@ -56,7 +57,7 @@ class TaglibHelper(private val context: Context) {
         return metadata?.propertyMap
     }
 
-    fun setMetadata(newMetadata: PropertyMap): Boolean {
+    private fun setMetadata(newMetadata: PropertyMap): Boolean {
         if (fd == null) {
             Log.e(TAG, "setMetadata: fd is null; returning")
             return false
@@ -67,6 +68,14 @@ class TaglibHelper(private val context: Context) {
     fun updateLyricsTag(lyrics: String): Boolean {
         val metadata = getMetadata() ?: PropertyMap()
         metadata["LYRICS"] = arrayOf(lyrics)
+        return setMetadata(metadata)
+    }
+
+    fun fixMetadata(lyrics: Lyrics): Boolean {
+        val metadata = getMetadata() ?: PropertyMap()
+        metadata["TITLE"] = arrayOf(lyrics.trackName)
+        lyrics.artistName?.let { metadata["ARTIST"] = arrayOf(it) }
+        lyrics.albumName?.let { metadata["ALBUM"] = arrayOf(it) }
         return setMetadata(metadata)
     }
 

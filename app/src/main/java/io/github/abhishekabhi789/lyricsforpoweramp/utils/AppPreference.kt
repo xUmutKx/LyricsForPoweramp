@@ -25,6 +25,7 @@ object AppPreference {
     private const val SEND_LYRICS_TO_POWERAMP = "send_lyrics_to_poweramp"
     private const val SAVE_LYRICS_IN_FILE = "save_lyrics_in_file"
     private const val EMBED_LYRICS_AS_TAG = "embed_lyrics_as_tag"
+    private const val FIX_METADATA = "fix_metadata_from_result"
     private const val FOLDER_URIS = "folder_uri_list"
     private const val MARK_INSTRUMENTAL_LYRICS = "mark_instrumental_lyrics"
     private const val GEMINI_API_KEY = "ai_key_gemini"
@@ -155,6 +156,16 @@ object AppPreference {
     fun setEmbedLyricsAsTag(context: Context, value: Boolean) {
         val sharedPreference = getSharedPreference(context, OTHER_PREF)
         sharedPreference?.edit { putBoolean(EMBED_LYRICS_AS_TAG, value) }
+    }
+
+    fun getFixMetadata(context: Context): Boolean {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        return sharedPreferences?.getBoolean(FIX_METADATA, false) == true
+    }
+
+    fun setFixMetadata(context: Context, value: Boolean) {
+        val sharedPreference = getSharedPreference(context, OTHER_PREF)
+        sharedPreference?.edit { putBoolean(FIX_METADATA, value) }
     }
 
     fun getSavedUris(context: Context): List<Uri> {
