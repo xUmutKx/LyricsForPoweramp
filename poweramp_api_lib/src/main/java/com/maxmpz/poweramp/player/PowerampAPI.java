@@ -30,7 +30,7 @@ import org.eclipse.jdt.annotation.NonNull;
 /**
  * Poweramp Intent based API.
  * <br><br>
- *
+ * 
  * Most API intents defined here can be sent to various targets:
  * <ul>
  * <li>broadcast receiver via Context.sendBroadcast to {@link #API_RECEIVER_NAME}
@@ -54,7 +54,7 @@ import org.eclipse.jdt.annotation.NonNull;
  * <li>android.content.Intent.ACTION_SEARCH (android.intent.action.SEARCH)
  * <li>android.intent.action.MEDIA_SEARCH
  * </ul>
- *
+ * 
  * Starting from build 853 Poweramp also supports android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH
  * (android.media.action.MEDIA_PLAY_FROM_SEARCH) as
  * broadcast intent for {@link #API_RECEIVER_NAME} (recommended), or PlayerService intent {@link #PLAYER_SERVICE_NAME},
@@ -66,7 +66,7 @@ import org.eclipse.jdt.annotation.NonNull;
  *   - Poweramp will attempt to play track matching query<br>
  *   - Poweramp also looks to keywords such as playlist, album, artist, genre in the query in the local language and if found, Poweramp will
  *     attempt to play the found category<br><br>
- *
+ *   
  * - <b>focused query via MediaStore.EXTRA_MEDIA_FOCUS query
  *   (https://developer.android.com/reference/android/provider/MediaStore#EXTRA_MEDIA_FOCUS):</b><br>
  *   - when EXTRA_MEDIA_FOCUS == MediaStore.Audio.GenresGenres.ENTRY_CONTENT_TYPE (vnd.android.cursor.item/genre):<br>
@@ -84,7 +84,7 @@ import org.eclipse.jdt.annotation.NonNull;
  *   - when EXTRA_MEDIA_FOCUS is anything else:<br>
  *   &nbsp;&nbsp;-> Poweramp tries to search for SearchManager.QUERY or MediaStore.EXTRA_MEDIA_TITLE in tracks, genres, and playlists and
  *   play the found result<br><br>
- *
+ *   
  * Actions supported (name -> target components):
  * <ul>
  * <li>{@link #ACTION_API_COMMAND} -> {@link #API_RECEIVER_NAME}, {@link #API_ACTIVITY_NAME}, {@link #PLAYER_SERVICE_NAME}
@@ -119,9 +119,9 @@ public final class PowerampAPI {
 	@Deprecated
 	public static final long NO_ID = 0L;
 
-	/**
-	 * No id value (for id-related fields, for example, {@link PowerampAPI.Track#ID})
-	 */
+    /**
+     * No id value (for id-related fields, for example, {@link PowerampAPI.Track#ID})
+     */
 	public static final long ID_NO_ID = 0L;
 
 	/**
@@ -134,7 +134,7 @@ public final class PowerampAPI {
 	 * Special {@link PowerampAPI.Track#ID} value indicating missing file - for example playlist entry which can't be found
 	 */
 	public static final long MISSING_TRACK_ID = -3L;
-
+	
 	/**
 	 * Authority used for data provider
 	 */
@@ -163,7 +163,7 @@ public final class PowerampAPI {
 	 * AA_AUTHORITY accepted parameter - try to download image. Default is false.
 	 */
 	public static final String PARAM_AA_DOWNLOAD = "dl";
-
+	
 	/**
 	 * Uri query parameter - shuffle mode
 	 */
@@ -177,7 +177,7 @@ public final class PowerampAPI {
 	 * Previously this was executed directly by service and though this is still supported it's deprecated.<br>
 	 * The issue with sending intents to service is foreground processing, which on current Androids 8-10 can't be 100% reliable processed
 	 * and may cause unexpected ANR errors<br><br>
-	 *
+	 * 
 	 * Extras:<br>
 	 * {@link #EXTRA_COMMAND} - command to execute. Since build 867 can be a string matching {@link Commands} field name, e.g.
 	 * "TOGGLE_PLAY_PAUSE" (case insensitive)<br>
@@ -186,7 +186,7 @@ public final class PowerampAPI {
 	 * {@link #EXTRA_SOURCE} - optional - the source of command, e.g. "widget", "UI", etc. - for the debugging purposes<br>
 	 */
 	public static final String ACTION_API_COMMAND = "com.maxmpz.audioplayer.API_COMMAND";
-
+	
 
 	/**
 	 * Poweramp service name<br>
@@ -206,7 +206,7 @@ public final class PowerampAPI {
 
 	/**
 	 * Poweramp API activity name. Can be used for intents which can't be sent as broadcast, where activity target is required.<br>
-	 * Supports {@link #ACTION_API_COMMAND}, {@link Scanner#ACTION_SCAN_DIRS}, {@link Scanner#ACTION_SCAN_TAGS}
+     * Supports {@link #ACTION_API_COMMAND}, {@link Scanner#ACTION_SCAN_DIRS}, {@link Scanner#ACTION_SCAN_TAGS}
 	 * @since 855
 	 */
 	public static final String API_ACTIVITY_NAME = "com.maxmpz.audioplayer.PowerampAPIActivity";
@@ -244,17 +244,17 @@ public final class PowerampAPI {
 	 * {@link Commands}
 	 */
 	public static final String EXTRA_COMMAND = "cmd";
-	/**
-	 * Set one, or multiple preferences<br>
-	 * contentResolver().call => CALL_SET_PREFERENCE with extra bundle, containing preference names and values to set<br>
-	 * NOTE: Poweramp allows limited subset of preferences to be set this way<br>
-	 * Depending on preference Poweramp may immediately apply it, apply for the next track, for the next activity restart, or for the next
-	 * Poweramp process restart.<br>
-	 * <b>Experimental: this part of API is currently under development and may change in the future</b><br>
-	 * Returns bundle with the old values for the preferences which were set, or null on error<br>
-	 * @since 862
-	 */
-	public static final String CALL_SET_PREFERENCE = "set_preference";
+    /**
+     * Set one, or multiple preferences<br>
+     * contentResolver().call => CALL_SET_PREFERENCE with extra bundle, containing preference names and values to set<br>
+     * NOTE: Poweramp allows limited subset of preferences to be set this way<br>
+     * Depending on preference Poweramp may immediately apply it, apply for the next track, for the next activity restart, or for the next
+     * Poweramp process restart.<br>
+     * <b>Experimental: this part of API is currently under development and may change in the future</b><br>
+     * Returns bundle with the old values for the preferences which were set, or null on error<br>
+     * @since 862
+     */
+    public static final String CALL_SET_PREFERENCE = "set_preference";
 
 	/**
 	 * Extra<br>
@@ -277,26 +277,24 @@ public final class PowerampAPI {
 	public static final String CALL_PREFERENCE = "preference";
 	/**
 	 * Sent by Poweramp to your app<br>
-	 * Poweramp track changed intent<br>
-	 * Sticky intent (can be queried for permanently stored data).<br><br>
-	 * <b>NOTE: on Android 8+, you'll receive this intent only if your app is on foreground (some activity started or some foreground
-	 * service is active).</b><br>
-	 * Use *_EXPLICIT version to receive this action in background app.<br><br>
-	 *
-	 * <ul>
-	 * <li>sent when the user manually changes the track in any way
-	 * <li>sent when the player finishes playing one track, and begins another
-	 * <li>sent when the player starts again after being in the stopped state
-	 * <ul><li>may be sent multiple times in this case</ul>
+     * Poweramp track changed intent<br>
+     * Sticky intent (can be queried for permanently stored data).<br><br>
+     * <b>NOTE: on Android 8+, you'll receive this intent only if your app is on foreground (some activity started or some foreground
+     * service is active).</b><br>
+     * Use *_EXPLICIT version to receive this action in background app.<br><br>
+     *
+     * <ul>
+     * <li>sent when the user manually changes the track in any way
+     * <li>sent when the player finishes playing one track, and begins another
+     * <li>sent when the player starts again after being in the stopped state
+     * <ul><li>may be sent multiple times in this case</ul>
 	 * </ul>
-	 * <p>
-	 * Extras:<br>
-	 * {@link #EXTRA_TRACK} - Bundle - Track bundle<br>
-	 * {@link #EXTRA_TIMESTAMP} - long - timestamp of the event (System.currentTimeMillis())
-	 *
-	 * @see PowerampAPI.Track
-	 */
-	public static final String ACTION_TRACK_CHANGED = "com.maxmpz.audioplayer.TRACK_CHANGED";
+     * Extras:<br>
+     * {@link #EXTRA_TRACK} - Bundle - Track bundle<br>
+     * {@link #EXTRA_TIMESTAMP} - long - timestamp of the event (System.currentTimeMillis())
+     * @see PowerampAPI.Track
+     */
+    public static final String ACTION_TRACK_CHANGED = "com.maxmpz.audioplayer.TRACK_CHANGED";
 
 	/**
 	 * Extra<br>
@@ -346,7 +344,7 @@ public final class PowerampAPI {
 	 * {@code boolean}
 	 */
 	public static final String EXTRA_TONE = "tone";
-
+	
 	/**
 	 * Extra<br>
 	 * {@code boolean}
@@ -365,14 +363,14 @@ public final class PowerampAPI {
 	 * @since 795
 	 */
 	public static final String EXTRA_TABLE = "table";
-	/**
+    /**
+     * Sent by Poweramp to your app<br>
+     * NON sticky intent<br>
 	 * Sent by Poweramp to your app<br>
-	 * NON sticky intent<br>
-	 * Sent by Poweramp to your app<br>
-	 * Extras:<br>
-	 * {@code int pos} - current in-track position in seconds
-	 */
-	public static final String ACTION_TRACK_POS_SYNC = "com.maxmpz.audioplayer.TPOS_SYNC";
+     * Extras:<br>
+     * {@code int pos} - current in-track position in seconds
+     */
+    public static final String ACTION_TRACK_POS_SYNC = "com.maxmpz.audioplayer.TPOS_SYNC";
 
 	/**
 	 * Sent by Poweramp to your app<br>
@@ -488,22 +486,22 @@ public final class PowerampAPI {
 	 * @since 798
 	 */
 	public static final String ACTION_STATUS_CHANGED_EXPLICIT = "com.maxmpz.audioplayer.STATUS_CHANGED_EXPLICIT";
-	/**
-	 * <b>Experimental!</b><br>
-	 * Sent by Poweramp to your app<br>
-	 * Poweramp just ignored media button press due to the Respond To Buttons option disabled.<br><br>
-	 *
-	 * <b>NOTE: on Android 8+, you'll receive this intent only if your app is on foreground (some activity started or some foreground
-	 * service is active).</b><br><br>
-	 *
-	 * Extras:<br>
-	 * - same extras as in {@link Intent#ACTION_MEDIA_BUTTON}
-	 * - or just single boolean {@link #EXTRA_LONG_PRESS} extra, when Poweramp is set to receive long presses instead of voice search AND
-	 *   Poweramp is on background
+    /**
+     * <b>Experimental!</b><br>
+     * Sent by Poweramp to your app<br>
+     * Poweramp just ignored media button press due to the Respond To Buttons option disabled.<br><br>
+     *
+     * <b>NOTE: on Android 8+, you'll receive this intent only if your app is on foreground (some activity started or some foreground
+     * service is active).</b><br><br>
+     *
+     * Extras:<br>
+     * - same extras as in {@link Intent#ACTION_MEDIA_BUTTON}
+     * - or just single boolean {@link #EXTRA_LONG_PRESS} extra, when Poweramp is set to receive long presses instead of voice search AND
+     *   Poweramp is on background
 	 * @since 875
-	 *
-	 */
-	public static final String ACTION_MEDIA_BUTTON_IGNORED = "com.maxmpz.audioplayer.MEDIA_BUTTON_IGNORED";
+     *
+     */
+    public static final String ACTION_MEDIA_BUTTON_IGNORED = "com.maxmpz.audioplayer.MEDIA_BUTTON_IGNORED";
 
 	/**
 	 * Sent by Poweramp to your app<br>
@@ -541,17 +539,16 @@ public final class PowerampAPI {
 	 * {@code long ts} - timestamp of the event (System.currentTimeMillis())
 	 */
 	public static final String ACTION_EQU_CHANGED = "com.maxmpz.audioplayer.EQU_CHANGED";
-	/**
-	 * Sent by your app to Poweramp<br>
-	 * Grants sender a permission for content provider data access<br>
-	 * Should be sent to {@link #API_RECEIVER_NAME}, or {@link #API_ACTIVITY_NAME} with the appropriate methods (sendBroadcast,
-	 * startActivity)
-	 * Extras:<br>
-	 * {@code String package} - the package name of app trying to get access<br>
-	 *
-	 * @since 797
-	 */
-	public static final String ACTION_ASK_FOR_DATA_PERMISSION = "com.maxmpz.audioplayer.ACTION_ASK_FOR_DATA_PERMISSION";
+    /**
+     * Sent by your app to Poweramp<br>
+     * Grants sender a permission for content provider data access<br>
+     * Should be sent to {@link #API_RECEIVER_NAME}, or {@link #API_ACTIVITY_NAME} with the appropriate methods (sendBroadcast,
+     * startActivity)
+     * Extras:<br>
+     * {@code String package} - the package name of app trying to get access<br>
+     * @since 797
+     */
+    public static final String ACTION_ASK_FOR_DATA_PERMISSION = "com.maxmpz.audioplayer.ACTION_ASK_FOR_DATA_PERMISSION";
 
 	/**
 	 * Sent by your app to Poweramp<br>
@@ -596,12 +593,12 @@ public final class PowerampAPI {
 	 * Should be sent with Context.startActivity
 	 */
 	public static final String ACTION_OPEN_MAIN = "com.maxmpz.audioplayer.ACTION_OPEN_MAIN";
-	/**
-	 * Extra<br>
-	 * {@code Mixed}
-	 * @since 700
-	 */
-	public static final String EXTRA_DATA = "data";
+    /**
+     * Extra<br>
+     * {@code Mixed}
+     * @since 700
+     */
+    public static final String EXTRA_DATA = "data";
 
 	/**
 	 * Sent by your app to Poweramp<br>
@@ -615,10 +612,10 @@ public final class PowerampAPI {
 	 * @since 797
 	 */
 	public static final String ACTION_RELOAD_DATA = "com.maxmpz.audioplayer.ACTION_RELOAD_DATA";
-	/**
-	 * Poweramp startup/main activity
-	 */
-	public static final String ACTIVITY_STARTUP = "com.maxmpz.audioplayer.MainActivity";
+    /**
+     * Poweramp startup/main activity
+     */
+    public static final String ACTIVITY_STARTUP = "com.maxmpz.audioplayer.MainActivity";
 
 	/**
 	 * Sent by your app to Poweramp<br>
@@ -632,7 +629,7 @@ public final class PowerampAPI {
 	 * @since 700
 	 */
 	public static final String ACTION_NATIVE_PLUGIN_COMMAND = "com.maxmpz.audioplayer.NATIVE_PLUGIN_COMMAND";
-
+	
 	/**
 	 * Sent by your app to Poweramp<br>
 	 * Generic search command<br>
@@ -672,11 +669,12 @@ public final class PowerampAPI {
 	 * Poweramp settings activity
 	 */
 	public static final String ACTIVITY_SETTINGS = "com.maxmpz.audioplayer.preference.SettingsActivity";
-	/**
-	 * Open last user opened eq tab
-	 * @see PowerampAPI#EXTRA_EQ_TAB
-	 */
-	public static final int EQ_TAB_DEFAULT = -1;
+    /**
+     * Open last user opened eq tab
+     *
+     * @see PowerampAPI#EXTRA_EQ_TAB
+     */
+    public static final int EQ_TAB_DEFAULT = -1;
 
 	/**
 	 * Extra for ACTION_API_COMMAND, RESUME command, ACTION_PLAYING_MODE_CHANGED message<br>
@@ -718,12 +716,13 @@ public final class PowerampAPI {
 	 * @see PowerampAPI#EXTRA_EQ_TAB
 	 */
 	public static final int EQ_TAB_REVERB = 2;
-	/**
-	 * Extra<br>
-	 * {@code int} in range [0..5]
-	 * @since 955
-	 */
-	public static final String EXTRA_RATING = "rating";
+    /**
+     * Extra<br>
+     * {@code int} in range [0..5]
+     *
+     * @since 955
+     */
+    public static final String EXTRA_RATING = "rating";
 
 
 	/**
@@ -818,14 +817,14 @@ public final class PowerampAPI {
 	 * @since 868
 	 */
 	public static final String EXTRA_RELATIVE_POSITION = "rel_pos";
-
+	
 	/**
 	 * Extra<br>
 	 * {@code boolean}
 	 * @since 868
 	 */
 	public static final String EXTRA_LOCK = "lock";
-
+	
 	/**
 	 * Extra<br>
 	 * {@code boolean}
@@ -835,7 +834,6 @@ public final class PowerampAPI {
 	/**
 	 * Poweramp package name.<br>
 	 * NOTE: some Poweramp editions may have different package name (e.g. com.maxmpz.audioplayer.huawei)
-	 *
 	 * @deprecated see PowerampAPIHelper.getPowerampPackageName
 	 */
 	@Deprecated
@@ -843,475 +841,474 @@ public final class PowerampAPI {
 	/**
 	 * Poweramp service ComponentName. This is fallback component name for Play/website builds. This won't work with Poweramp
 	 * editions which have modified package name (such as Huawei AppGallery edition)
-	 *
 	 * @deprecated see {@link PowerampAPIHelper#getPlayerServiceComponentName}
 	 */
 	@SuppressWarnings("deprecation")
 	@Deprecated
 	public static final ComponentName PLAYER_SERVICE_COMPONENT_NAME = new ComponentName(PACKAGE_NAME, PLAYER_SERVICE_NAME);
 
-	/**
-	 * Command values for {@link #EXTRA_COMMAND} extra.<br>
-	 * Alternatively, Commands field name (as a string) can be used instead of integer value, e.g. "PAUSE", instead of 2
-	 */
-	public static final class Commands {
-		/**
-		 * Extras:<br>
-		 * {@code boolean keepService} - (optional) if true, Poweramp won't unload player service. Notification will be appropriately
-		 * updated<br>
-		 * {@code boolean beep} - (optional) if true, Poweramp will beep on playback command
-		 */
-		public static final int TOGGLE_PLAY_PAUSE = 1;
+    /**
+     * Command values for {@link #EXTRA_COMMAND} extra.<br>
+     * Alternatively, Commands field name (as a string) can be used instead of integer value, e.g. "PAUSE", instead of 2
+     */
+    public static final class Commands {
+        /**
+         * Extras:<br>
+         * {@code boolean keepService} - (optional) if true, Poweramp won't unload player service. Notification will be appropriately
+         * updated<br>
+         * {@code boolean beep} - (optional) if true, Poweramp will beep on playback command
+         */
+        public static final int TOGGLE_PLAY_PAUSE = 1;
 
-		/**
-		 * Extras:<br>
-		 * {@code boolean keepService} - (optional) if true, Poweramp won't unload player service. Notification will be appropriately
-		 * updated<br>
-		 * {@code boolean beep} - (optional) if true, Poweramp will beep on playback command
-		 */
-		public static final int PAUSE = 2;
+        /**
+         * Extras:<br>
+         * {@code boolean keepService} - (optional) if true, Poweramp won't unload player service. Notification will be appropriately
+         * updated<br>
+         * {@code boolean beep} - (optional) if true, Poweramp will beep on playback command
+         */
+        public static final int PAUSE = 2;
 
-		/**
-		 * Extras:<br>
-		 * {@code int shuffle} - (optional) if set, shuffle mode to set (even if Poweramp is already playing)
-		 */
-		public static final int RESUME = 3;
+        /**
+         * Extras:<br>
+         * {@code int shuffle} - (optional) if set, shuffle mode to set (even if Poweramp is already playing)
+         */
+        public static final int RESUME = 3;
 
-		/**
-		 * Same as {@link #RESUME}
-		 */
-		public static final int PLAY = 3;
+        /**
+         * Same as {@link #RESUME}
+         */
+        public static final int PLAY = 3;
 
-		/**
-		 * NOTE: subject to 200ms throttling
-		 */
-		public static final int NEXT = 4;
+        /**
+         * NOTE: subject to 200ms throttling
+         */
+        public static final int NEXT = 4;
 
-		/**
-		 * NOTE: subject to 200ms throttling
-		 */
-		public static final int PREVIOUS = 5;
+        /**
+         * NOTE: subject to 200ms throttling
+         */
+        public static final int PREVIOUS = 5;
 
-		/**
-		 * Same as {@link #PREVIOUS}
-		 */
-		public static final int PREV = 5;
+        /**
+         * Same as {@link #PREVIOUS}
+         */
+        public static final int PREV = 5;
 
-		/**
-		 * Next category<br>
-		 * NOTE: subject to 200ms throttling
-		 */
-		public static final int NEXT_IN_CAT = 6;
+        /**
+         * Next category<br>
+         * NOTE: subject to 200ms throttling
+         */
+        public static final int NEXT_IN_CAT = 6;
 
-		/**
-		 * Previous category<br>
-		 * NOTE: subject to 200ms throttling
-		 */
-		public static final int PREVIOUS_IN_CAT = 7;
+        /**
+         * Previous category<br>
+         * NOTE: subject to 200ms throttling
+         */
+        public static final int PREVIOUS_IN_CAT = 7;
 
-		/**
-		 * Set repeat mode<br>
-		 * Extras:<br>
-		 * {@code int repeat} {@link PowerampAPI#EXTRA_REPEAT} - (optional) if exists, appropriate mode will be directly selected, otherwise
-		 * modes will be cycled
-		 * @see PowerampAPI.RepeatMode
-		 */
-		public static final int REPEAT = 8;
+        /**
+         * Set repeat mode<br>
+         * Extras:<br>
+         * {@code int repeat} {@link PowerampAPI#EXTRA_REPEAT} - (optional) if exists, appropriate mode will be directly selected, otherwise
+         * modes will be cycled
+         * @see PowerampAPI.RepeatMode
+         */
+        public static final int REPEAT = 8;
 
-		/**
-		 * Set shuffle mode<br>
-		 * Extras:<br>
-		 * {@code int shuffle} {@link PowerampAPI#EXTRA_SHUFFLE}- (optional) if exists, appropriate mode will be directly selected,
-		 * otherwise modes will be cycled
-		 * @see PowerampAPI.ShuffleMode
-		 */
-		public static final int SHUFFLE = 9;
+        /**
+         * Set shuffle mode<br>
+         * Extras:<br>
+         * {@code int shuffle} {@link PowerampAPI#EXTRA_SHUFFLE}- (optional) if exists, appropriate mode will be directly selected,
+         * otherwise modes will be cycled
+         * @see PowerampAPI.ShuffleMode
+         */
+        public static final int SHUFFLE = 9;
 
-		/**
-		 * Poweramp starts constantly seeking forward until {@link #END_FAST_FORWARD} received
-		 */
-		public static final int BEGIN_FAST_FORWARD = 10;
+        /**
+         * Poweramp starts constantly seeking forward until {@link #END_FAST_FORWARD} received
+         */
+        public static final int BEGIN_FAST_FORWARD = 10;
 
-		/**
-		 * Stops {@link #BEGIN_FAST_FORWARD} or {@link #BEGIN_REWIND}
-		 */
-		public static final int END_FAST_FORWARD = 11;
+        /**
+         * Stops {@link #BEGIN_FAST_FORWARD} or {@link #BEGIN_REWIND}
+         */
+        public static final int END_FAST_FORWARD = 11;
 
-		/**
-		 * Poweramp starts constantly seeking backward until {@link #END_REWIND} received
-		 */
-		public static final int BEGIN_REWIND = 12;
+        /**
+         * Poweramp starts constantly seeking backward until {@link #END_REWIND} received
+         */
+        public static final int BEGIN_REWIND = 12;
 
-		/**
-		 * Stops {@link #BEGIN_REWIND} or {@link #BEGIN_FAST_FORWARD}
-		 */
-		public static final int END_REWIND = 13;
+        /**
+         * Stops {@link #BEGIN_REWIND} or {@link #BEGIN_FAST_FORWARD}
+         */
+        public static final int END_REWIND = 13;
 
-		/**
-		 * Stops playback, resets progress, unloads track
-		 */
-		public static final int STOP = 14;
+        /**
+         * Stops playback, resets progress, unloads track
+         */
+        public static final int STOP = 14;
 
-		/**
-		 * Extras:<br>
-		 * {@link #EXTRA_POSITION} - int - seek position in seconds<br>
-		 * {@link #EXTRA_RELATIVE_POSITION} - int - (since 868) if exists, defines relative seek position in seconds and can be both a
-		 * negative and a positive value.
-		 * EXTRA_POSITION is ignored. Seeking past track end or prior track start will cause track change to the next/previous one<br>
-		 * {@link #EXTRA_LOCK} - boolean - if true, seeking start of track with {@link #EXTRA_RELATIVE_POSITION} will just reset track
-		 * position to 0, and seeking past end will do nothing
-		 * (track continues to play normally)
-		 */
-		public static final int SEEK = 15;
+        /**
+         * Extras:<br>
+         * {@link #EXTRA_POSITION} - int - seek position in seconds<br>
+         * {@link #EXTRA_RELATIVE_POSITION} - int - (since 868) if exists, defines relative seek position in seconds and can be both a
+         * negative and a positive value.
+         * EXTRA_POSITION is ignored. Seeking past track end or prior track start will cause track change to the next/previous one<br>
+         * {@link #EXTRA_LOCK} - boolean - if true, seeking start of track with {@link #EXTRA_RELATIVE_POSITION} will just reset track
+         * position to 0, and seeking past end will do nothing
+         * (track continues to play normally)
+         */
+        public static final int SEEK = 15;
 
-		/**
-		 * Request for Poweramp current track position. In response, {@link #ACTION_TRACK_POS_SYNC} is sent
-		 */
-		public static final int POS_SYNC = 16;
+        /**
+         * Request for Poweramp current track position. In response, {@link #ACTION_TRACK_POS_SYNC} is sent
+         */
+        public static final int POS_SYNC = 16;
 
-		/**
-		 * Stop {@link #BEGIN_FAST_FORWARD} or {@link #BEGIN_REWIND}
-		 */
-		public static final int END_FF_OR_RW = 11;
+        /**
+         * Stop {@link #BEGIN_FAST_FORWARD} or {@link #BEGIN_REWIND}
+         */
+        public static final int END_FF_OR_RW = 11;
 
-		/**
-		 * Sets or disables sleep timer<br>
-		 * Extras:<br>
-		 * {@link PowerampAPI#EXTRA_SECONDS} - if 0, disables sleep timer<br>
-		 * {@link PowerampAPI#EXTRA_PLAY_TO_END} - if true, Poweramp will play last track to end prior pausing<br>
-		 * @since 862
-		 */
-		public static final int SLEEP_TIMER = 17;
+        /**
+         * Sets or disables sleep timer<br>
+         * Extras:<br>
+         * {@link PowerampAPI#EXTRA_SECONDS} - if 0, disables sleep timer<br>
+         * {@link PowerampAPI#EXTRA_PLAY_TO_END} - if true, Poweramp will play last track to end prior pausing<br>
+         * @since 862
+         */
+        public static final int SLEEP_TIMER = 17;
 
-		/**
-		 * Set/unset "like" rating for the current track
-		 * @since 966
-		 */
-		public static final int LIKE = 18;
+        /**
+         * Set/unset "like" rating for the current track
+         * @since 966
+         */
+        public static final int LIKE = 18;
 
-		/**
-		 * Set/unset "unlike" rating for the current track
-		 * @since 966
-		 */
-		public static final int UNLIKE = 19;
+        /**
+         * Set/unset "unlike" rating for the current track
+         * @since 966
+         */
+        public static final int UNLIKE = 19;
 
-		/**
-		 * Switches between like/unlike/no rating for the current track
-		 * @since 966
-		 */
-		public static final int TOGGLE_RATING = 21;
+        /**
+         * Switches between like/unlike/no rating for the current track
+         * @since 966
+         */
+        public static final int TOGGLE_RATING = 21;
 
-		/**
-		 * Sets specific {@link #EXTRA_RATING} to the track in range [0..5], where 0 - no rating, 1 - unlike, 5 - like, 2-4 star ratings
-		 * @since 995
-		 */
-		public static final int SET_RATING = 24;
+        /**
+         * Sets specific {@link #EXTRA_RATING} to the track in range [0..5], where 0 - no rating, 1 - unlike, 5 - like, 2-4 star ratings
+         * @since 995
+         */
+        public static final int SET_RATING = 24;
 
-		/**
-		 * Seek for +10s
-		 * @since 966
-		 */
-		public static final int SEEK_JUMP_FORWARD = 22;
+        /**
+         * Seek for +10s
+         * @since 966
+         */
+        public static final int SEEK_JUMP_FORWARD = 22;
 
-		/**
-		 * Seel for -10s
-		 * @since 966
-		 */
-		public static final int SEEK_JUMP_BACKWARD = 23;
+        /**
+         * Seel for -10s
+         * @since 966
+         */
+        public static final int SEEK_JUMP_BACKWARD = 23;
 
-		/**
-		 * Data:<br>
-		 * - uri, following URIs are recognized:<br>
-		 * 	- file://path (NOTE: depending on Android version, uris like this can fail due to missing filesystem permissions)<br>
-		 * 	- content://com.maxmpz.audioplayer.data/... (see below)<br><br>
-		 *  - any other content:// uri compatible with ContentResolver.openFile<br>
-		 *  - http/https url (stream or remote track file)<br><br>
-		 *
-		 * # means some numeric id (track id for queries ending with /files, otherwise - appropriate category id).<br>
-		 * If track id (in place of #) is not specified, Poweramp plays whole list starting from the specified track,<br>
-		 * or from first one, or from random one in shuffle mode.<br><br>
-		 *
-		 * NOTE: for Playlist and Queue tracks the item id differs from other file categories. As the same track be added into Playlist or
-		 * Queue multiple times,
-		 * folder_files._id can't be used as unique id there. Instead, playlist_entries._id and queue._id are used.
-		 * Make sure to pass playlist_entries._id/queue._id as id to start track from, not the folder_files._id<br><br>
-		 *
-		 * All queries support following params (added as URL encoded params, e.g. content://com.maxmpz.audioplayer.data/files?lim=10):<br>
-		 * {@code int lim} - SQL LIMIT, which limits number of rows returned<br>
-		 * {@code int shf} - shuffle mode (see ShuffleMode class)<br>
-		 <pre>
-		 - All tracks:
-		 content://com.maxmpz.audioplayer.data/files
-		 content://com.maxmpz.audioplayer.data/files/#
+        /**
+         * Data:<br>
+         * - uri, following URIs are recognized:<br>
+         * 	- file://path (NOTE: depending on Android version, uris like this can fail due to missing filesystem permissions)<br>
+         * 	- content://com.maxmpz.audioplayer.data/... (see below)<br><br>
+         *  - any other content:// uri compatible with ContentResolver.openFile<br>
+         *  - http/https url (stream or remote track file)<br><br>
+         *
+         * # means some numeric id (track id for queries ending with /files, otherwise - appropriate category id).<br>
+         * If track id (in place of #) is not specified, Poweramp plays whole list starting from the specified track,<br>
+         * or from first one, or from random one in shuffle mode.<br><br>
+         *
+         * NOTE: for Playlist and Queue tracks the item id differs from other file categories. As the same track be added into Playlist or
+         * Queue multiple times,
+         * folder_files._id can't be used as unique id there. Instead, playlist_entries._id and queue._id are used.
+         * Make sure to pass playlist_entries._id/queue._id as id to start track from, not the folder_files._id<br><br>
+         *
+         * All queries support following params (added as URL encoded params, e.g. content://com.maxmpz.audioplayer.data/files?lim=10):<br>
+         * {@code int lim} - SQL LIMIT, which limits number of rows returned<br>
+         * {@code int shf} - shuffle mode (see ShuffleMode class)<br>
+         <pre>
+         - All tracks:
+         content://com.maxmpz.audioplayer.data/files
+         content://com.maxmpz.audioplayer.data/files/#
 
-		 - Most Played
-		 content://com.maxmpz.audioplayer.data/most_played
-		 content://com.maxmpz.audioplayer.data/most_played/#
+         - Most Played
+         content://com.maxmpz.audioplayer.data/most_played
+         content://com.maxmpz.audioplayer.data/most_played/#
 
-		 - Top Rated
-		 content://com.maxmpz.audioplayer.data/top_rated
-		 content://com.maxmpz.audioplayer.data/top_rated/#
+         - Top Rated
+         content://com.maxmpz.audioplayer.data/top_rated
+         content://com.maxmpz.audioplayer.data/top_rated/#
 
-		 - Recently Added
-		 content://com.maxmpz.audioplayer.data/recently_added
-		 content://com.maxmpz.audioplayer.data/recently_added/#
+         - Recently Added
+         content://com.maxmpz.audioplayer.data/recently_added
+         content://com.maxmpz.audioplayer.data/recently_added/#
 
-		 - Recently Played
-		 content://com.maxmpz.audioplayer.data/recently_played
-		 content://com.maxmpz.audioplayer.data/recently_played/#
+         - Recently Played
+         content://com.maxmpz.audioplayer.data/recently_played
+         content://com.maxmpz.audioplayer.data/recently_played/#
 
-		 - Long
-		 content://com.maxmpz.audioplayer.data/long
-		 content://com.maxmpz.audioplayer.data/long/#
+         - Long
+         content://com.maxmpz.audioplayer.data/long
+         content://com.maxmpz.audioplayer.data/long/#
 
-		 - Plain folders view (just files in plain folders list)
-		 content://com.maxmpz.audioplayer.data/folders
-		 content://com.maxmpz.audioplayer.data/folders/#
-		 content://com.maxmpz.audioplayer.data/folders/#/files
-		 content://com.maxmpz.audioplayer.data/folders/#/files/#
+         - Plain folders view (just files in plain folders list)
+         content://com.maxmpz.audioplayer.data/folders
+         content://com.maxmpz.audioplayer.data/folders/#
+         content://com.maxmpz.audioplayer.data/folders/#/files
+         content://com.maxmpz.audioplayer.data/folders/#/files/#
 
-		 - Hierarchy folders view
-		 content://com.maxmpz.audioplayer.data/folders_hier
-		 _id => 0 is the "root" folder, never contains files)
-		 Root folders:          content://com.maxmpz.audioplayer.data/folders_hier/0/subfolders
-		 Any other sub-folders: content://com.maxmpz.audioplayer.data/folders_hier/#/subfolders
-		 Sub-folder files:      content://com.maxmpz.audioplayer.data/folders_hier/#/files
+         - Hierarchy folders view
+         content://com.maxmpz.audioplayer.data/folders_hier
+         _id => 0 is the "root" folder, never contains files)
+         Root folders:          content://com.maxmpz.audioplayer.data/folders_hier/0/subfolders
+         Any other sub-folders: content://com.maxmpz.audioplayer.data/folders_hier/#/subfolders
+         Sub-folder files:      content://com.maxmpz.audioplayer.data/folders_hier/#/files
 
-		 - Genres
-		 content://com.maxmpz.audioplayer.data/genres
-		 content://com.maxmpz.audioplayer.data/genres/#/files
-		 content://com.maxmpz.audioplayer.data/genres/#/files/#
-		 content://com.maxmpz.audioplayer.data/genres/files
+         - Genres
+         content://com.maxmpz.audioplayer.data/genres
+         content://com.maxmpz.audioplayer.data/genres/#/files
+         content://com.maxmpz.audioplayer.data/genres/#/files/#
+         content://com.maxmpz.audioplayer.data/genres/files
 
-		 - Years
-		 content://com.maxmpz.audioplayer.data/years
-		 content://com.maxmpz.audioplayer.data/years/#/files
-		 content://com.maxmpz.audioplayer.data/years/#/files/#
-		 content://com.maxmpz.audioplayer.data/years/files
+         - Years
+         content://com.maxmpz.audioplayer.data/years
+         content://com.maxmpz.audioplayer.data/years/#/files
+         content://com.maxmpz.audioplayer.data/years/#/files/#
+         content://com.maxmpz.audioplayer.data/years/files
 
-		 - Artists
-		 content://com.maxmpz.audioplayer.data/artists
-		 content://com.maxmpz.audioplayer.data/artists/#
-		 content://com.maxmpz.audioplayer.data/artists/#/files
-		 content://com.maxmpz.audioplayer.data/artists/#/files/#
-		 content://com.maxmpz.audioplayer.data/artists/files
+         - Artists
+         content://com.maxmpz.audioplayer.data/artists
+         content://com.maxmpz.audioplayer.data/artists/#
+         content://com.maxmpz.audioplayer.data/artists/#/files
+         content://com.maxmpz.audioplayer.data/artists/#/files/#
+         content://com.maxmpz.audioplayer.data/artists/files
 
-		 - Composers
-		 content://com.maxmpz.audioplayer.data/composers
-		 content://com.maxmpz.audioplayer.data/composers/#
-		 content://com.maxmpz.audioplayer.data/composers/#/files
-		 content://com.maxmpz.audioplayer.data/composers/#/files/#
-		 content://com.maxmpz.audioplayer.data/composers/files
+         - Composers
+         content://com.maxmpz.audioplayer.data/composers
+         content://com.maxmpz.audioplayer.data/composers/#
+         content://com.maxmpz.audioplayer.data/composers/#/files
+         content://com.maxmpz.audioplayer.data/composers/#/files/#
+         content://com.maxmpz.audioplayer.data/composers/files
 
-		 - Albums
-		 content://com.maxmpz.audioplayer.data/albums
-		 content://com.maxmpz.audioplayer.data/albums/#/files
-		 content://com.maxmpz.audioplayer.data/albums/#/files/#
-		 content://com.maxmpz.audioplayer.data/albums/files
+         - Albums
+         content://com.maxmpz.audioplayer.data/albums
+         content://com.maxmpz.audioplayer.data/albums/#/files
+         content://com.maxmpz.audioplayer.data/albums/#/files/#
+         content://com.maxmpz.audioplayer.data/albums/files
 
-		 - Album Artists
-		 content://com.maxmpz.audioplayer.data/album_artists
-		 content://com.maxmpz.audioplayer.data/album_artists/#/files
-		 content://com.maxmpz.audioplayer.data/album_artists/#/files/#
-		 content://com.maxmpz.audioplayer.data/album_artists/files
+         - Album Artists
+         content://com.maxmpz.audioplayer.data/album_artists
+         content://com.maxmpz.audioplayer.data/album_artists/#/files
+         content://com.maxmpz.audioplayer.data/album_artists/#/files/#
+         content://com.maxmpz.audioplayer.data/album_artists/files
 
-		 - Albums by Genres
-		 content://com.maxmpz.audioplayer.data/genres/#/albums
-		 content://com.maxmpz.audioplayer.data/genres/#/albums/#/files
-		 content://com.maxmpz.audioplayer.data/genres/#/albums/#/files/#
-		 content://com.maxmpz.audioplayer.data/genres/#/albums/files
-		 content://com.maxmpz.audioplayer.data/genres/albums
+         - Albums by Genres
+         content://com.maxmpz.audioplayer.data/genres/#/albums
+         content://com.maxmpz.audioplayer.data/genres/#/albums/#/files
+         content://com.maxmpz.audioplayer.data/genres/#/albums/#/files/#
+         content://com.maxmpz.audioplayer.data/genres/#/albums/files
+         content://com.maxmpz.audioplayer.data/genres/albums
 
-		 - Albums by Years
-		 content://com.maxmpz.audioplayer.data/genres/#/years
-		 content://com.maxmpz.audioplayer.data/genres/#/years/#/files
-		 content://com.maxmpz.audioplayer.data/genres/#/years/#/files/#
-		 content://com.maxmpz.audioplayer.data/genres/#/years/files
-		 content://com.maxmpz.audioplayer.data/genres/years
+         - Albums by Years
+         content://com.maxmpz.audioplayer.data/genres/#/years
+         content://com.maxmpz.audioplayer.data/genres/#/years/#/files
+         content://com.maxmpz.audioplayer.data/genres/#/years/#/files/#
+         content://com.maxmpz.audioplayer.data/genres/#/years/files
+         content://com.maxmpz.audioplayer.data/genres/years
 
-		 - Albums by Artists
-		 content://com.maxmpz.audioplayer.data/artists/#/albums
-		 content://com.maxmpz.audioplayer.data/artists/#/albums/#/files
-		 content://com.maxmpz.audioplayer.data/artists/#/albums/#/files/#
-		 content://com.maxmpz.audioplayer.data/artists/#/albums/files
-		 content://com.maxmpz.audioplayer.data/artists/albums
+         - Albums by Artists
+         content://com.maxmpz.audioplayer.data/artists/#/albums
+         content://com.maxmpz.audioplayer.data/artists/#/albums/#/files
+         content://com.maxmpz.audioplayer.data/artists/#/albums/#/files/#
+         content://com.maxmpz.audioplayer.data/artists/#/albums/files
+         content://com.maxmpz.audioplayer.data/artists/albums
 
-		 - Albums by Composers
-		 content://com.maxmpz.audioplayer.data/composers/#/albums
-		 content://com.maxmpz.audioplayer.data/composers/#/albums/#/files
-		 content://com.maxmpz.audioplayer.data/composers/#/albums/#/files/#
-		 content://com.maxmpz.audioplayer.data/composers/#/albums/files
-		 content://com.maxmpz.audioplayer.data/composers/albums
+         - Albums by Composers
+         content://com.maxmpz.audioplayer.data/composers/#/albums
+         content://com.maxmpz.audioplayer.data/composers/#/albums/#/files
+         content://com.maxmpz.audioplayer.data/composers/#/albums/#/files/#
+         content://com.maxmpz.audioplayer.data/composers/#/albums/files
+         content://com.maxmpz.audioplayer.data/composers/albums
 
-		 - Albums by Artist
-		 content://com.maxmpz.audioplayer.data/artists_albums
-		 content://com.maxmpz.audioplayer.data/artists_albums/#/files
-		 content://com.maxmpz.audioplayer.data/artists_albums/#/files/#
-		 content://com.maxmpz.audioplayer.data/artists_albums/files
+         - Albums by Artist
+         content://com.maxmpz.audioplayer.data/artists_albums
+         content://com.maxmpz.audioplayer.data/artists_albums/#/files
+         content://com.maxmpz.audioplayer.data/artists_albums/#/files/#
+         content://com.maxmpz.audioplayer.data/artists_albums/files
 
-		 - Playlists
-		 content://com.maxmpz.audioplayer.data/playlists
-		 content://com.maxmpz.audioplayer.data/playlists/#
-		 content://com.maxmpz.audioplayer.data/playlists/#/files
-		 content://com.maxmpz.audioplayer.data/playlists/#/files/#
-		 content://com.maxmpz.audioplayer.data/playlists/files
+         - Playlists
+         content://com.maxmpz.audioplayer.data/playlists
+         content://com.maxmpz.audioplayer.data/playlists/#
+         content://com.maxmpz.audioplayer.data/playlists/#/files
+         content://com.maxmpz.audioplayer.data/playlists/#/files/#
+         content://com.maxmpz.audioplayer.data/playlists/files
 
-		 - Search
-		 content://com.maxmpz.audioplayer.data/search?flt=search string
+         - Search
+         content://com.maxmpz.audioplayer.data/search?flt=search string
 
-		 - Equalizer Presets
-		 content://com.maxmpz.audioplayer.data/eq_presets
-		 content://com.maxmpz.audioplayer.data/eq_presets/#
+         - Equalizer Presets
+         content://com.maxmpz.audioplayer.data/eq_presets
+         content://com.maxmpz.audioplayer.data/eq_presets/#
 
-		 - Reverb Presets
-		 content://com.maxmpz.audioplayer.data/reverb_presets
-		 content://com.maxmpz.audioplayer.data/reverb_presets/#
+         - Reverb Presets
+         content://com.maxmpz.audioplayer.data/reverb_presets
+         content://com.maxmpz.audioplayer.data/reverb_presets/#
 
-		 - Queue
-		 content://com.maxmpz.audioplayer.data/queue
-		 content://com.maxmpz.audioplayer.data/queue/#
+         - Queue
+         content://com.maxmpz.audioplayer.data/queue
+         content://com.maxmpz.audioplayer.data/queue/#
 
-		 - Streams
-		 content://com.maxmpz.audioplayer.data/streams
-		 content://com.maxmpz.audioplayer.data/streams/#
+         - Streams
+         content://com.maxmpz.audioplayer.data/streams
+         content://com.maxmpz.audioplayer.data/streams/#
 
-		 - Bookmarks
-		 content://com.maxmpz.audioplayer.data/bookmarks
-		 content://com.maxmpz.audioplayer.data/bookmarks/#
+         - Bookmarks
+         content://com.maxmpz.audioplayer.data/bookmarks
+         content://com.maxmpz.audioplayer.data/bookmarks/#
 
-		 </pre><br>
-		 * Extras<br>
-		 * {@code boolean paused} - (optional) default false. OPEN_TO_PLAY command starts playing the file immediately, unless "paused"
-		 * extra is true<br>
-		 * {@code int pos}- (optional) seek to this position in track before playing
-		 * @see PowerampAPI.Track#POSITION
-		 * @see PowerampAPI#EXTRA_PAUSED
-		 */
-		public static final int OPEN_TO_PLAY = 20;
+         </pre><br>
+         * Extras<br>
+         * {@code boolean paused} - (optional) default false. OPEN_TO_PLAY command starts playing the file immediately, unless "paused"
+         * extra is true<br>
+         * {@code int pos}- (optional) seek to this position in track before playing
+         * @see PowerampAPI.Track#POSITION
+         * @see PowerampAPI#EXTRA_PAUSED
+         */
+        public static final int OPEN_TO_PLAY = 20;
 
-		/**
-		 * Same as @{link #OPEN_TO_PLAY}
-		 */
-		public static final int OPEN = 20;
+        /**
+         * Same as @{link #OPEN_TO_PLAY}
+         */
+        public static final int OPEN = 20;
 
-		/**
-		 * Extras:<br>
-		 * {@link #EXTRA_ID} - long - preset ID
-		 */
-		public static final int SET_EQU_PRESET = 50;
+        /**
+         * Extras:<br>
+         * {@link #EXTRA_ID} - long - preset ID
+         */
+        public static final int SET_EQU_PRESET = 50;
 
-		/**
-		 * Extras:<br>
-		 * {@link #EXTRA_VALUE} - String - equalizer values,
-		 * @see PowerampAPI#ACTION_EQU_CHANGED
-		 */
-		public static final int SET_EQU_STRING = 51;
+        /**
+         * Extras:<br>
+         * {@link #EXTRA_VALUE} - String - equalizer values,
+         * @see PowerampAPI#ACTION_EQU_CHANGED
+         */
+        public static final int SET_EQU_STRING = 51;
 
-		/**
-		 * Extras:<br>
-		 * {@code String name} - equalizer band (bass/treble/preamp/31/62../8K/16K) name
-		 * {@code float value} - equalizer band value (bass/treble/, 31/62../8K/16K => -1.0...1.0, preamp => 0..2.0)
-		 */
-		public static final int SET_EQU_BAND = 52;
+        /**
+         * Extras:<br>
+         * {@code String name} - equalizer band (bass/treble/preamp/31/62../8K/16K) name
+         * {@code float value} - equalizer band value (bass/treble/, 31/62../8K/16K => -1.0...1.0, preamp => 0..2.0)
+         */
+        public static final int SET_EQU_BAND = 52;
 
-		/**
-		 * Extras:<br>
-		 * {@code boolean equ}- if exists and true, equalizer is enabled<br>
-		 * {@code boolean tone} - if exists and true, tone is enabled<br>
-		 */
-		public static final int SET_EQU_ENABLED = 53;
+        /**
+         * Extras:<br>
+         * {@code boolean equ}- if exists and true, equalizer is enabled<br>
+         * {@code boolean tone} - if exists and true, tone is enabled<br>
+         */
+        public static final int SET_EQU_ENABLED = 53;
 
-		/**
-		 * Used by Notification controls to stop pending/paused service/playback and unload/remove notification
-		 */
-		public static final int STOP_SERVICE = 100;
+        /**
+         * Used by Notification controls to stop pending/paused service/playback and unload/remove notification
+         */
+        public static final int STOP_SERVICE = 100;
 
-		/**
-		 * Set as active and/or import visualization preset<br><br>
-		 * Depending on extras, preset will be:<br>
-		 * - EXTRA_ID - set the preset identified by ID as active (selected)<br>
-		 * - EXTRA_NAME - set the preset identified by NAME as active (selected)<br>
-		 * - EXTRA_NAME (no such preset exists) and EXTRA_DATA - import EXTRA_DATA preset text into the newly created preset named
-		 *   EXTRA_NAME<br>
-		 * - EXTRA_NAME (preset exists) and EXTRA_DATA - import EXTRA_DATA preset text into the preset identified by EXTRA_NAME<br><br>
-		 *
-		 * Imported presets are stored as file in Poweramp app data directory<br><br>
-		 * Extras:<br>
-		 * {@link #EXTRA_ID} - long - if exists, the preset identified by this id will be set as active and/or imported into. If this extra
-		 * is missing, a new visualization preset will be added<br>
-		 * {@link #EXTRA_NAME} - String - preset file name. Should follow "[artist name] - [preset name].milk" format. ".milk" extension is
-		 * optional<br>
-		 * {@link #EXTRA_DATA} - String - the preset data to import<br>
-		 * @since 867
-		 */
-		public static final int SET_VIS_PRESET = 200;
+        /**
+         * Set as active and/or import visualization preset<br><br>
+         * Depending on extras, preset will be:<br>
+         * - EXTRA_ID - set the preset identified by ID as active (selected)<br>
+         * - EXTRA_NAME - set the preset identified by NAME as active (selected)<br>
+         * - EXTRA_NAME (no such preset exists) and EXTRA_DATA - import EXTRA_DATA preset text into the newly created preset named
+         *   EXTRA_NAME<br>
+         * - EXTRA_NAME (preset exists) and EXTRA_DATA - import EXTRA_DATA preset text into the preset identified by EXTRA_NAME<br><br>
+         *
+         * Imported presets are stored as file in Poweramp app data directory<br><br>
+         * Extras:<br>
+         * {@link #EXTRA_ID} - long - if exists, the preset identified by this id will be set as active and/or imported into. If this extra
+         * is missing, a new visualization preset will be added<br>
+         * {@link #EXTRA_NAME} - String - preset file name. Should follow "[artist name] - [preset name].milk" format. ".milk" extension is
+         * optional<br>
+         * {@link #EXTRA_DATA} - String - the preset data to import<br>
+         * @since 867
+         */
+        public static final int SET_VIS_PRESET = 200;
 
 
-		public static @NonNull String cmdToString(int cmd) {
-			switch (cmd) {
-				case TOGGLE_PLAY_PAUSE:
-					return "TOGGLE_PLAY_PAUSE";
-				case PAUSE:
-					return "PAUSE";
-				case RESUME:
-					return "RESUME";
-				case NEXT:
-					return "NEXT";
-				case PREVIOUS:
-					return "PREVIOUS";
-				case NEXT_IN_CAT:
-					return "NEXT_IN_CAT";
-				case PREVIOUS_IN_CAT:
-					return "PREVIOUS_IN_CAT";
-				case REPEAT:
-					return "REPEAT";
-				case SHUFFLE:
-					return "SHUFFLE";
-				case BEGIN_FAST_FORWARD:
-					return "BEGIN_FAST_FORWARD";
-				case END_FAST_FORWARD:
-					return "END_FAST_FORWARD";
-				case BEGIN_REWIND:
-					return "BEGIN_REWIND";
-				case END_REWIND:
-					return "END_REWIND";
-				case STOP:
-					return "STOP";
-				case SEEK:
-					return "SEEK";
-				case POS_SYNC:
-					return "POS_SYNC";
-				case OPEN_TO_PLAY:
-					return "OPEN_TO_PLAY";
-				case SET_EQU_PRESET:
-					return "SET_EQU_PRESET";
-				case SET_EQU_STRING:
-					return "SET_EQU_STRING";
-				case SET_EQU_BAND:
-					return "SET_EQU_BAND";
-				case SET_EQU_ENABLED:
-					return "SET_EQU_ENABLED";
-				case STOP_SERVICE:
-					return "STOP_SERVICE";
-				case SLEEP_TIMER:
-					return "SLEEP_TIMER";
-				case SET_VIS_PRESET:
-					return "SET_VIS_PRESET";
-				case LIKE:
-					return "LIKE";
-				case UNLIKE:
-					return "UNLIKE";
-				case TOGGLE_RATING:
-					return "TOGGLE_RATING";
-				case SET_RATING:
-					return "SET_RATING";
-				case SEEK_JUMP_FORWARD:
-					return "SEEK_JUMP_FORWARD";
-				case SEEK_JUMP_BACKWARD:
-					return "SEEK_JUMP_BACKWARD";
+        public static @NonNull String cmdToString(int cmd) {
+            switch (cmd) {
+                case TOGGLE_PLAY_PAUSE:
+                    return "TOGGLE_PLAY_PAUSE";
+                case PAUSE:
+                    return "PAUSE";
+                case RESUME:
+                    return "RESUME";
+                case NEXT:
+                    return "NEXT";
+                case PREVIOUS:
+                    return "PREVIOUS";
+                case NEXT_IN_CAT:
+                    return "NEXT_IN_CAT";
+                case PREVIOUS_IN_CAT:
+                    return "PREVIOUS_IN_CAT";
+                case REPEAT:
+                    return "REPEAT";
+                case SHUFFLE:
+                    return "SHUFFLE";
+                case BEGIN_FAST_FORWARD:
+                    return "BEGIN_FAST_FORWARD";
+                case END_FAST_FORWARD:
+                    return "END_FAST_FORWARD";
+                case BEGIN_REWIND:
+                    return "BEGIN_REWIND";
+                case END_REWIND:
+                    return "END_REWIND";
+                case STOP:
+                    return "STOP";
+                case SEEK:
+                    return "SEEK";
+                case POS_SYNC:
+                    return "POS_SYNC";
+                case OPEN_TO_PLAY:
+                    return "OPEN_TO_PLAY";
+                case SET_EQU_PRESET:
+                    return "SET_EQU_PRESET";
+                case SET_EQU_STRING:
+                    return "SET_EQU_STRING";
+                case SET_EQU_BAND:
+                    return "SET_EQU_BAND";
+                case SET_EQU_ENABLED:
+                    return "SET_EQU_ENABLED";
+                case STOP_SERVICE:
+                    return "STOP_SERVICE";
+                case SLEEP_TIMER:
+                    return "SLEEP_TIMER";
+                case SET_VIS_PRESET:
+                    return "SET_VIS_PRESET";
+                case LIKE:
+                    return "LIKE";
+                case UNLIKE:
+                    return "UNLIKE";
+                case TOGGLE_RATING:
+                    return "TOGGLE_RATING";
+                case SET_RATING:
+                    return "SET_RATING";
+                case SEEK_JUMP_FORWARD:
+                    return "SEEK_JUMP_FORWARD";
+                case SEEK_JUMP_BACKWARD:
+                    return "SEEK_JUMP_BACKWARD";
 
-				default:
-					return "unknown cmd=" + cmd;
+                default:
+                    return "unknown cmd=" + cmd;
 			}
 		}
 	}
@@ -1342,13 +1339,13 @@ public final class PowerampAPI {
 		public static final int SHUFFLE_SONGS_AND_CATS = 4;
 		/**
 		 * Max possible shuffle value
-		 */
+         */
 		public static final int MAX_SHUFFLE			   = 4;
 
 		/**
 		 * Pseudo mode just for the UI, not used as mode directly (SHUFFLE_SONGS is used internally)
 		 */
-		public static final int SHUFFLE_SONGS_HIER     = 5;
+        public static final int SHUFFLE_SONGS_HIER     = 5;
 
 		public static boolean areSongsShuffled(int shuffle) {
 			return shuffle == SHUFFLE_ALL || shuffle == SHUFFLE_SONGS || shuffle == SHUFFLE_SONGS_AND_CATS;
@@ -1371,10 +1368,10 @@ public final class PowerampAPI {
 		/**
 		 * Current selected category repeated
 		 */
-		public static final int REPEAT_ON	   = 1;
+        public static final int REPEAT_ON = 1;
 
-		/**
-		 * Category will be advanced to next one after the last song played
+        /**
+         * Category will be advanced to next one after the last song played. When finished, we restart with the first cat
 		 */
 		public static final int REPEAT_ADVANCE = 2;
 
@@ -1385,13 +1382,18 @@ public final class PowerampAPI {
 
 		/**
 		 * Current song is played once, then player pauses
-		 */
-		public static final int SINGLE_SONG    = 4;
+         */
+        public static final int SINGLE_SONG = 4;
 
-		/**
-		 * Max possible repeat value
+        /**
+         * Same as REPEAT_ADVANCE, but when finished we stop
+         */
+		public static final int REPEAT_ADVANCE_AND_STOP = 5;
+
+        /**
+         * Max possible repeat value
 		 */
-		public static final int MAX_REPEAT     = 4;
+		public static final int MAX_REPEAT     = 5;
 	}
 
 	/**
@@ -1410,10 +1412,420 @@ public final class PowerampAPI {
 
 		/**
 		 * Full screen visualization
+         */
+        public static final int VIS_FULL_SCREEN = 2;
+    }
+
+    /**
+     * {@link #ACTION_TRACK_CHANGED} and {@link #ACTION_TRACK_CHANGED_EXPLICIT} extra field {@link #EXTRA_TRACK}.<br><br>
+     * <p>
+     * Since build 948 all these fields are also exposed to {@link #ACTION_TRACK_CHANGED} and {@link #ACTION_TRACK_CHANGED_EXPLICIT}
+     * extras directly.
+     */
+    public static final class Track {
+        /**
+         * Max number to use for filename numbers, e.g. 1-track.mp3 is considered a track #1, but 100-track.mp3 is not
+         */
+        public static final int MAX_FILE_NUMBER = 99;
+
+        /**
+         * Max track tag number to use/show
+         */
+        public static final int MAX_TRACK_NUMBER = 999;
+
+        /**
+         * Rating value for the "unlike" icon
+         */
+        public static final int RATING_UNLIKE = 1;
+
+        /**
+         * Rating value for the "like" icon
+         */
+        public static final int RATING_LIKE = 5;
+
+        /**
+         * Rating value for the unset like-ness
+         */
+        public static final int RATING_NOT_SET = 0;
+
+
+        /**
+         * Id of the current track.
+         * Can be a playlist entry id<br>
+         * {@code long}
+         */
+        public static final String ID = "id";
+
+        /**
+         * "Real" id. In case of playlist entry, this is always resolved to Poweramp folder_files table row ID<nt>
+         * {@code long}
+         */
+        public static final String REAL_ID = "realId";
+
+        /**
+         * Category URI match<br>
+         * {@code int}
+         */
+        public static final String CAT = "cat";
+
+        /**
+         * {@code boolean}
+         */
+        public static final String IS_CUE = "isCue";
+
+        /**
+         * Category URI<br>
+         * {@code Uri}
+         */
+        public static final String CAT_URI = "catUri";
+
+        /**
+         * True if category navigation (<<< >>>) is possible<br>
+         * {@code boolean}
+         */
+        public static final String SUPPORTS_CAT_NAV = "supportsCatNav";
+
+        /**
+         * File type<br>
+         * {@code integer}
+         *
+         * @see FileType
+         */
+        public static final String FILE_TYPE = "fileType";
+
+        /**
+         * Track file path<br>
+         * {@code String}
+         */
+        public static final String PATH = "path";
+
+        /**
+         * Track title<br>
+         * {@code String}
+         */
+        public static final String TITLE = "title";
+
+        /**
+         * Track album<br>
+         * {@code String}
+         */
+        public static final String ALBUM = "album";
+
+        /**
+         * Track artist<br>
+         * {@code String}
+         */
+        public static final String ARTIST = "artist";
+
+        /**
+         * Track duration in seconds<br>
+         * {@code int}
+         */
+        public static final String DURATION = "dur";
+
+        /**
+         * Track duration in milliseconds<br>
+         * {@code int}
+         *
+         * @since 948
+         */
+        public static final String DURATION_MS = "durMs";
+
+        /**
+         * Rating in range [0..5]<br>
+         * {@code int}
+         *
+         * @since 995
+         */
+        public static final String RATING = "rating";
+
+        /**
+         * Position in track in seconds<br>
+         * NOTE: while this extra is defined within this Track class, it's always exposed as top level extra, not the
+         * track bundle extra.<br>
+         * {@code int}
+         */
+        public static final String POSITION = "pos";
+
+        /**
+         * Position in a list<br>
+         * {@code int}
+         */
+        public static final String POS_IN_LIST = "posInList";
+
+        /**
+         * List size<br>
+         * {@code int}
+         */
+        public static final String LIST_SIZE = "listSize";
+
+        /**
+         * Track sample rate<br>
+         * {@code int}
+         */
+        public static final String SAMPLE_RATE = "sampleRate";
+
+        /**
+         * Track number of channels<br>
+         * {@code int}
+         */
+        public static final String CHANNELS = "channels";
+
+        /**
+         * Track average bitrate<br>
+         * {@code int}
+         */
+        public static final String BITRATE = "bitRate";
+
+        /**
+         * Resolved codec name for the track<br>
+         * {@code String}
+         */
+        public static final String CODEC = "codec";
+
+        /**
+         * Track bits per sample<br>
+         * {@code int}
+         */
+        public static final String BITS_PER_SAMPLE = "bitsPerSample";
+
+        /**
+         * Track flags<br>
+         * {@code int}
+         */
+        public static final String FLAGS = "flags";
+
+        /**
+         * One of the {@link LyricsState} values
+         *
+         * @since 941
+         */
+        public static final String LYRICS_STATE = "lyricsState";
+        /**
+         * @deprecated not used anymore
+         */
+        @Deprecated
+        public static final String TYPE = "type";
+
+        /**
+         * {@link PowerampAPI.Track} {@link #FLAGS} bitset values. First 3 bits = FLAG_ADVANCE_*
+         */
+        public interface Flags {
+            /**
+             * Track wasn't advanced
+             */
+            int FLAG_ADVANCE_NONE = 0;
+
+            /**
+             * Track was advanced forward
+             */
+            int FLAG_ADVANCE_FORWARD = 0x1;
+
+            /**
+             * Track was advanced backward
+             */
+            int FLAG_ADVANCE_BACKWARD = 0x2;
+
+            /**
+             * Track category was advanced forward
+             */
+            int FLAG_ADVANCE_FORWARD_CAT = 0x3;
+
+            /**
+             * Track category was advanced backward
+             */
+            int FLAG_ADVANCE_BACKWARD_CAT = 0x4;
+
+            /**
+             * Track is manually selected by user from the list
+             */
+            int FLAG_ADVANCE_BY_USER = 0x5;
+
+            /**
+             * Mask for FLAG_ADVANCE_* values
+             */
+            int FLAG_ADVANCE_MASK = 0x7;
+
+            /**
+             * Track was advanced from the notification.<br>
+             * If set, event comes from the notification ui and we will animate aa update then
+             */
+            int FLAG_NOTIFICATION_UI = 0x20;
+
+            /**
+             * Indicates the track is the first in Poweramp service session
+             */
+            int FLAG_FIRST_IN_PLAYER_SESSION = 0x40;
+
+            /**
+             * The track failed to load for any reason
+             *
+             * @since 948
+             */
+            int FLAG_FAILED = 0x80;
+        }
+
+        /**
+         * {@link PowerampAPI.Track} {@link #FILE_TYPE} values
+         */
+        public static class FileType {
+            public static final int TYPE_UNKNOWN = -1;
+            public static final int FIRST_TYPE = 0;
+            public static final int TYPE_MP3 = 0;
+            public static final int TYPE_FLAC = 1;
+            public static final int TYPE_M4A = 2;
+            public static final int TYPE_MP4 = 3;
+            public static final int TYPE_OGG = 4;
+            public static final int TYPE_WMA = 5;
+            public static final int TYPE_WAV = 6;
+            public static final int TYPE_TTA = 7;
+            public static final int TYPE_APE = 8;
+            public static final int TYPE_WV = 9;
+            public static final int TYPE_AAC = 10;
+            public static final int TYPE_MPGA = 11;
+            @Deprecated
+            public static final int TYPE_AMR = 12;
+            public static final int TYPE_3GP = 13;
+            public static final int TYPE_MPC = 14;
+            public static final int TYPE_AIFF = 15;
+            public static final int TYPE_AIF = 16;
+            public static final int TYPE_FLV = 17;
+            public static final int TYPE_OPUS = 18;
+            public static final int TYPE_DFF = 19;
+            public static final int TYPE_DSF = 20;
+            public static final int TYPE_MKA = 21;
+            public static final int TYPE_TAK = 22;
+            public static final int TYPE_STREAM = 23;
+            public static final int TYPE_MKV = 24;
+            public static final int TYPE_MOD = 25;
+            public static final int TYPE_XM = 26;
+            public static final int TYPE_S3M = 27;
+            public static final int TYPE_IT = 28;
+            public static final int TYPE_MPTM = 29;
+            public static final int TYPE_OGA = 30;
+
+            public static final int LAST_TYPE = 30;
+        }
+
+        public static final class TagStatus {
+            public static final int TAG_NOT_SCANNED = 0;
+            public static final int TAG_SCANNED = 1;
+
+            /**
+             * Currently used only for LRC files
+             */
+            public static final int TAG_FAILED = 2;
+        }
+
+        // Deprecated
+
+        /**
+         * Values for {@link #LYRICS_STATE}
+         *
+         * @since 948
+         */
+        public static final class LyricsState {
+            /**
+             * No lyrics detected or cached for the track
+             *
+             * @since 948
+             */
+            public static final int LYRICS_STATE_NONE = 0;
+
+            /**
+             * Some local or previously cached plugin lyrics are available
+             *
+             * @since 948
+             */
+            public static final int LYRICS_STATE_HAS_DATA = 1;
+        }
+    }
+	
+	/**
+	 * Describes Poweramp Milk (visualization) scanner related actions.<br>
+	 * Use {@link PowerampAPIHelper#getScannerServiceComponentName} to get component name for the intent. Intents should be send with
+	 * Context#startService<br>
+	 * Please note that service won't start/scan if your application is not foreground, or if Poweramp is not in the foreground, or if
+	 * Poweramp is not actively playing.
+	 */
+	public static class MilkScanner {
+		/**
+		 * Sent by your app to Poweramp. Should be sent to {@link PowerampAPIHelper#getMilkScannerServiceComponentName} service via
+		 * startService (deprecated),
+		 * or (since 868) to {@link #API_ACTIVITY_NAME} via startActivity or {@link #API_RECEIVER_NAME} via sendBroadcast<br>
+		 * Extras:<br>
+		 * {@link #EXTRA_CAUSE}
 		 */
-		public static final int VIS_FULL_SCREEN = 2;
+		public static final String ACTION_SCAN = "com.maxmpz.milk.ACTION_SCAN";
+
+		/**
+		 * Extra<br>
+		 * {@code String} - cause of the scan (e.g. user request, auto scan, etc.). Useful for debugging, visible in logcat
+		 */
+		public static final String EXTRA_CAUSE = "cause";
+
+		/**
+		 * Extra<br>
+		 * {@code String} - your app package name
+		 */
+		public static final String EXTRA_PACKAGE = "pak";
+
+		@Deprecated
+		public static final String MILK_SCANNER_SERVICE_NAME = "com.maxmpz.milk.scanner.MilkScanService";
 	}
 
+    /**
+     * {@link PowerampAPI.Track} {@link PowerampAPI.Track#CAT} categories
+     */
+    public static final class Cats {
+        /** Root library category. Not used in Poweramp v3. */
+        @Deprecated
+        public static final int ROOT = 0;
+
+        /** All Songs */
+        public static final int FILES = 30;
+        public static final int FOLDERS = 10;
+        public static final int FOLDERS_HIER = 20;
+        public static final int ALBUMS = 200;
+        public static final int ARTISTS = 500;
+
+        /** Albums for given artist id */
+        public static final int ARTISTS_ID_ALBUMS = 220;
+        public static final int ALBUM_ARTISTS = 520;
+
+        /** Albums for given album_artist id */
+        public static final int ALBUM_ARTISTS_ID_ALBUMS = 256;
+
+        /** Albums for given albums split by artists */
+        public static final int ARTISTS__ALBUMS = 250;
+        public static final int GENRES = 320;
+        public static final int YEARS = 330;
+
+        /** Albums for given genre id */
+        public static final int GENRES_ID_ALBUMS = 210;
+
+        /** Albums for given year id */
+        public static final int YEARS_ID_ALBUMS = 340;
+        public static final int COMPOSERS = 600;
+
+        /** Albums for given composer id */
+        public static final int COMPOSERS_ID_ALBUMS = 230;
+        public static final int PLAYLISTS = 100;
+        public static final int QUEUE = 800;
+
+        /** @since 877 */
+        public static final int BOOKMARKS = 810;
+        public static final int STREAM_FILES = 60;
+        public static final int MOST_PLAYED = 43;
+        public static final int TOP_RATED = 48;
+        public static final int LOW_RATED = 50;
+        public static final int RECENTLY_PLAYED = 58;
+        public static final int RECENTLY_ADDED = 53;
+        public static final int LONG                    = 55;
+
+		private Cats() {}
+	}
+	
 	/**
 	 * Describes Poweramp scanner related actions.<br>
 	 * Use {@link PowerampAPIHelper#getScannerServiceComponentName} to get component name for the intent. Intents should be send with
@@ -1655,38 +2067,8 @@ public final class PowerampAPI {
 		public static final String SCANNER_SERVICE_NAME = "com.maxmpz.audioplayer.scanner.ScanDispatcherService";
 	}
 
-	/**
-	 * Describes Poweramp Milk (visualization) scanner related actions.<br>
-	 * Use {@link PowerampAPIHelper#getScannerServiceComponentName} to get component name for the intent. Intents should be send with
-	 * Context#startService<br>
-	 * Please note that service won't start/scan if your application is not foreground, or if Poweramp is not in the foreground, or if
-	 * Poweramp is not actively playing.
-	 */
-	public static class MilkScanner {
-		/**
-		 * Sent by your app to Poweramp. Should be sent to {@link PowerampAPIHelper#getMilkScannerServiceComponentName} service via
-		 * startService (deprecated),
-		 * or (since 868) to {@link #API_ACTIVITY_NAME} via startActivity or {@link #API_RECEIVER_NAME} via sendBroadcast<br>
-		 * Extras:<br>
-		 * {@link #EXTRA_CAUSE}
-		 */
-		public static final String ACTION_SCAN = "com.maxmpz.milk.ACTION_SCAN";
 
-		/**
-		 * Extra<br>
-		 * {@code String} - cause of the scan (e.g. user request, auto scan, etc.). Useful for debugging, visible in logcat
-		 */
-		public static final String EXTRA_CAUSE = "cause";
-
-		/**
-		 * Extra<br>
-		 * {@code String} - your app package name
-		 */
-		public static final String EXTRA_PACKAGE = "pak";
-
-		@Deprecated
-		public static final String MILK_SCANNER_SERVICE_NAME = "com.maxmpz.milk.scanner.MilkScanService";
-	}
+	// Deprecated =============================================
 
 	/**
 	 * Describes simple Poweramp Lyrics API for lyrics loading plugin.<br><br>
@@ -1781,364 +2163,6 @@ public final class PowerampAPI {
 		 * {@code String}
 		 */
 		public static final String EXTRA_INFO_LINE = "info_line";
-	}
-
-	/**
-	 * {@link #ACTION_TRACK_CHANGED} and {@link #ACTION_TRACK_CHANGED_EXPLICIT} extra field {@link #EXTRA_TRACK}.<br><br>
-	 *
-	 * Since build 948 all these fields are also exposed to {@link #ACTION_TRACK_CHANGED} and {@link #ACTION_TRACK_CHANGED_EXPLICIT}
-	 * extras directly.
-	 */
-	public static final class Track {
-		/**
-		 * Max number to use for filename numbers, e.g. 1-track.mp3 is considered a track #1, but 100-track.mp3 is not
-		 */
-		public static final int MAX_FILE_NUMBER = 99;
-
-		/**
-		 * Max track tag number to use/show
-		 */
-		public static final int MAX_TRACK_NUMBER = 999;
-
-		/**
-		 * Rating value for the "unlike" icon
-		 */
-		public static final int RATING_UNLIKE = 1;
-
-		/**
-		 * Rating value for the "like" icon
-		 */
-		public static final int RATING_LIKE = 5;
-
-		/**
-		 * Rating value for the unset like-ness
-		 */
-		public static final int RATING_NOT_SET = 0;
-
-
-		/**
-		 * Id of the current track.
-		 * Can be a playlist entry id<br>
-		 * {@code long}
-		 */
-		public static final String ID = "id";
-
-		/**
-		 * "Real" id. In case of playlist entry, this is always resolved to Poweramp folder_files table row ID<nt>
-		 * {@code long}
-		 */
-		public static final String REAL_ID = "realId";
-
-		/**
-		 * Category URI match<br>
-		 * {@code int}
-		 */
-		public static final String CAT = "cat";
-
-		/**
-		 * {@code boolean}
-		 */
-		public static final String IS_CUE = "isCue";
-
-		/**
-		 * Category URI<br>
-		 * {@code Uri}
-		 */
-		public static final String CAT_URI = "catUri";
-
-		/**
-		 * True if category navigation (<<< >>>) is possible<br>
-		 * {@code boolean}
-		 */
-		public static final String SUPPORTS_CAT_NAV = "supportsCatNav";
-
-		/**
-		 * File type<br>
-		 * {@code integer}
-		 * @see FileType
-		 */
-		public static final String FILE_TYPE = "fileType";
-
-		/**
-		 * Track file path<br>
-		 * {@code String}
-		 */
-		public static final String PATH = "path";
-
-		/**
-		 * Track title<br>
-		 * {@code String}
-		 */
-		public static final String TITLE = "title";
-
-		/**
-		 * Track album<br>
-		 * {@code String}
-		 */
-		public static final String ALBUM = "album";
-
-		/**
-		 * Track artist<br>
-		 * {@code String}
-		 */
-		public static final String ARTIST = "artist";
-
-		/**
-		 * Track duration in seconds<br>
-		 * {@code int}
-		 */
-		public static final String DURATION = "dur";
-
-		/**
-		 * Track duration in milliseconds<br>
-		 * {@code int}
-		 * @since 948
-		 */
-		public static final String DURATION_MS = "durMs";
-
-		/**
-		 * Rating in range [0..5]<br>
-		 * {@code int}
-		 * @since 995
-		 */
-		public static final String RATING = "rating";
-
-		/**
-		 * Position in track in seconds<br>
-		 * NOTE: while this extra is defined within this Track class, it's always exposed as top level extra, not the
-		 * track bundle extra.<br>
-		 * {@code int}
-		 */
-		public static final String POSITION = "pos";
-
-		/**
-		 * Position in a list<br>
-		 * {@code int}
-		 */
-		public static final String POS_IN_LIST = "posInList";
-
-		/**
-		 * List size<br>
-		 * {@code int}
-		 */
-		public static final String LIST_SIZE = "listSize";
-
-		/**
-		 * Track sample rate<br>
-		 * {@code int}
-		 */
-		public static final String SAMPLE_RATE = "sampleRate";
-
-		/**
-		 * Track number of channels<br>
-		 * {@code int}
-		 */
-		public static final String CHANNELS = "channels";
-
-		/**
-		 * Track average bitrate<br>
-		 * {@code int}
-		 */
-		public static final String BITRATE = "bitRate";
-
-		/**
-		 * Resolved codec name for the track<br>
-		 * {@code String}
-		 */
-		public static final String CODEC = "codec";
-
-		/**
-		 * Track bits per sample<br>
-		 * {@code int}
-		 */
-		public static final String BITS_PER_SAMPLE = "bitsPerSample";
-
-		/**
-		 * Track flags<br>
-		 * {@code int}
-		 */
-		public static final String FLAGS = "flags";
-
-		/**
-		 * One of the {@link LyricsState} values
-		 * @since 941
-		 */
-		public static final String LYRICS_STATE = "lyricsState";
-
-
-		/**
-		 * {@link PowerampAPI.Track} {@link #FLAGS} bitset values. First 3 bits = FLAG_ADVANCE_*
-		 */
-		public interface Flags {
-			/** Track wasn't advanced */
-            int FLAG_ADVANCE_NONE = 0;
-
-			/** Track was advanced forward */
-            int FLAG_ADVANCE_FORWARD = 0x1;
-
-			/** Track was advanced backward */
-            int FLAG_ADVANCE_BACKWARD = 0x2;
-
-			/** Track category was advanced forward */
-            int FLAG_ADVANCE_FORWARD_CAT = 0x3;
-
-			/** Track category was advanced backward */
-            int FLAG_ADVANCE_BACKWARD_CAT = 0x4;
-
-			/**
-			 * Track is manually selected by user from the list
-			 */
-            int FLAG_ADVANCE_BY_USER = 0x5;
-
-			/** Mask for FLAG_ADVANCE_* values */
-            int FLAG_ADVANCE_MASK = 0x7;
-
-			/**
-			 * Track was advanced from the notification.<br>
-			 * If set, event comes from the notification ui and we will animate aa update then
-			 */
-            int FLAG_NOTIFICATION_UI = 0x20;
-
-			/** Indicates the track is the first in Poweramp service session */
-            int FLAG_FIRST_IN_PLAYER_SESSION = 0x40;
-
-			/**
-			 * The track failed to load for any reason
-			 * @since 948
-			 */
-            int FLAG_FAILED = 0x80;
-		}
-
-		/**
-		 * {@link PowerampAPI.Track} {@link #FILE_TYPE} values
-		 */
-		public static class FileType {
-			public static final int TYPE_UNKNOWN    = -1;
-			public static final int FIRST_TYPE      = 0;
-			public static final int TYPE_MP3        = 0;
-			public static final int TYPE_FLAC       = 1;
-			public static final int TYPE_M4A        = 2;
-			public static final int TYPE_MP4        = 3;
-			public static final int TYPE_OGG        = 4;
-			public static final int TYPE_WMA        = 5;
-			public static final int TYPE_WAV        = 6;
-			public static final int TYPE_TTA        = 7;
-			public static final int TYPE_APE        = 8;
-			public static final int TYPE_WV         = 9;
-			public static final int TYPE_AAC        = 10;
-			public static final int TYPE_MPGA       = 11;
-			@Deprecated
-			public static final int TYPE_AMR        = 12;
-			public static final int TYPE_3GP        = 13;
-			public static final int TYPE_MPC        = 14;
-			public static final int TYPE_AIFF       = 15;
-			public static final int TYPE_AIF        = 16;
-			public static final int TYPE_FLV        = 17;
-			public static final int TYPE_OPUS       = 18;
-			public static final int TYPE_DFF        = 19;
-			public static final int TYPE_DSF        = 20;
-			public static final int TYPE_MKA        = 21;
-			public static final int TYPE_TAK        = 22;
-			public static final int TYPE_STREAM     = 23;
-			public static final int TYPE_MKV        = 24;
-			public static final int TYPE_MOD = 25;
-			public static final int TYPE_XM = 26;
-			public static final int TYPE_S3M = 27;
-			public static final int TYPE_IT = 28;
-			public static final int TYPE_MPTM = 29;
-			public static final int TYPE_OGA = 30;
-
-			public static final int LAST_TYPE = 30;
-		}
-
-		public static final class TagStatus {
-			public static final int TAG_NOT_SCANNED = 0;
-			public static final int TAG_SCANNED = 1;
-
-			/** Currently used only for LRC files */
-			public static final int TAG_FAILED = 2;
-		}
-
-		/**
-		 * Values for {@link #LYRICS_STATE}
-		 * @since 948
-		 */
-		public static final class LyricsState {
-			/**
-			 * No lyrics detected or cached for the track
-			 * @since 948
-			 */
-			public static final int LYRICS_STATE_NONE = 0;
-
-			/**
-			 * Some local or previously cached plugin lyrics are available
-			 * @since 948
-			 */
-			public static final int LYRICS_STATE_HAS_DATA = 1;
-		}
-
-		// Deprecated
-
-		/**
-		 * @deprecated not used anymore
-		 */
-		@Deprecated
-		public static final String TYPE = "type";
-	}
-
-
-	// Deprecated =============================================
-
-	/**
-	 * {@link PowerampAPI.Track} {@link PowerampAPI.Track#CAT} categories
-	 */
-	public static final class Cats {
-		/** Root library category. Not used in Poweramp v3. */
-		@Deprecated
-		public static final int ROOT                    = 0;
-
-		/** All Songs */
-		public static final int FILES                   = 30;
-		public static final int FOLDERS                 = 10;
-		public static final int FOLDERS_HIER            = 20;
-		public static final int ALBUMS                  = 200;
-		public static final int ARTISTS                 = 500;
-
-		/** Albums for given artist id */
-		public static final int ARTISTS_ID_ALBUMS       = 220;
-		public static final int ALBUM_ARTISTS           = 520;
-
-		/** Albums for given album_artist id */
-		public static final int ALBUM_ARTISTS_ID_ALBUMS = 256;
-
-		/** Albums for given albums split by artists */
-		public static final int ARTISTS__ALBUMS         = 250;
-		public static final int GENRES                  = 320;
-		public static final int YEARS                   = 330;
-
-		/** Albums for given genre id */
-		public static final int GENRES_ID_ALBUMS        = 210;
-
-		/** Albums for given year id */
-		public static final int YEARS_ID_ALBUMS         = 340;
-		public static final int COMPOSERS               = 600;
-
-		/** Albums for given composer id */
-		public static final int COMPOSERS_ID_ALBUMS     = 230;
-		public static final int PLAYLISTS               = 100;
-		public static final int QUEUE                   = 800;
-
-		/** @since 877 */
-		public static final int BOOKMARKS               = 810;
-		public static final int STREAM_FILES            = 60;
-		public static final int MOST_PLAYED             = 43;
-		public static final int TOP_RATED               = 48;
-		public static final int LOW_RATED = 50;
-		public static final int RECENTLY_PLAYED = 58;
-		public static final int RECENTLY_ADDED = 53;
-		public static final int LONG = 55;
-
-		private Cats() {}
 	}
 
 	/**
@@ -2251,24 +2275,24 @@ public final class PowerampAPI {
 
 		/**
 		 * Limited subset of preferences allowed to be set by {@link #CALL_SET_PREFERENCE}.<br>
-		 * NOTE: preferences defined as static field with the preference name and type as a reference<br>
-		 * This <b>can't</b> be used for actual preference reading/writing, i.e.:<br>
-		 * {@code Poweramp.Preferences.dvc_enabled = true;}<br>
-		 * will do nothing<br><br>
-		 *
-		 * <b>Experimental: this part of API is currently under development and may/will change in the future</b><br>
-		 * This class entries/types/values may change in the next Poweramp builds without prior warning/deprecation<br>
-		 * @since 862
-		 * @deprecated as preferences change often between Poweramp releases, static definitions do not work.
-		 *             Instead, retreive the available subset of Poweramp preferences via {@link #CALL_PREFERENCE}
-		 */
-		@Deprecated
-		public static class Preferences {
-		}
+         * NOTE: preferences defined as static field with the preference name and type as a reference<br>
+         * This <b>can't</b> be used for actual preference reading/writing, i.e.:<br>
+         * {@code Poweramp.Preferences.dvc_enabled = true;}<br>
+         * will do nothing<br><br>
+         *
+         * <b>Experimental: this part of API is currently under development and may/will change in the future</b><br>
+         * This class entries/types/values may change in the next Poweramp builds without prior warning/deprecation<br>
+         * @since 862
+         * @deprecated as preferences change often between Poweramp releases, static definitions do not work.
+         *             Instead, retreive the available subset of Poweramp preferences via {@link #CALL_PREFERENCE}
+         */
+        @Deprecated
+        public static class Preferences {
+        }
 
-		public static class PreferencesConsts {
-			/**
-			 * Don't show vis<br>
+        public static class PreferencesConsts {
+            /**
+             * Don't show vis<br>
 			 */
 			public static final int VIS_MODE_VIS_NONE = 0;
 
@@ -2280,9 +2304,9 @@ public final class PowerampAPI {
 			/**
 			 * Just Vis<br>
 			 */
-			public static final int VIS_MODE_VIS = 2;
+			public static final int VIS_MODE_VIS      = 2;
 
-			public static final int VIS_MODE_MAX = 2;
+			public static final int VIS_MODE_MAX      = 2;
 		}
 	}
 

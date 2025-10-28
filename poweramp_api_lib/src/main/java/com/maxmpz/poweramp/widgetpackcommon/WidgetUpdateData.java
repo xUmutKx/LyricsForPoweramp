@@ -22,7 +22,9 @@ package com.maxmpz.poweramp.widgetpackcommon;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+
 import com.maxmpz.poweramp.player.PowerampAPI;
+
 import org.eclipse.jdt.annotation.Nullable;
 
 

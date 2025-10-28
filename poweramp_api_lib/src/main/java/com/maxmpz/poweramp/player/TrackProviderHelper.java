@@ -21,9 +21,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.maxmpz.poweramp.player;
 
 import android.annotation.SuppressLint;
+
+import org.eclipse.jdt.annotation.NonNull;
+
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * Some useful track provider related helper methods

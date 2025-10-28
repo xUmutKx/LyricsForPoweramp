@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
@@ -17,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.AboutActivity
@@ -56,26 +57,22 @@ fun TopBar(modifier: Modifier = Modifier) {
                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.wrapContentSize()
+                    modifier = Modifier.minimumInteractiveComponentSize()
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Absolute.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = AnnotatedString(text = stringResource(R.string.app_name)),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            shadow = Shadow(
-                                color = MaterialTheme.colorScheme.secondary,
-                                offset = Offset(1f, 1f),
-                                blurRadius = 1f
-                            )
-                        ),
-                        color = MaterialTheme.colorScheme.primary,
-                        fontFamily = FontFamily.Cursive
-                    )
-                }
+                Text(
+                    text = AnnotatedString(text = stringResource(R.string.app_name)),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        shadow = Shadow(
+                            color = MaterialTheme.colorScheme.secondary,
+                            offset = Offset(1f, 1f),
+                            blurRadius = 1f
+                        )
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontFamily = FontFamily.Cursive,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                )
             }
         },
         actions = {

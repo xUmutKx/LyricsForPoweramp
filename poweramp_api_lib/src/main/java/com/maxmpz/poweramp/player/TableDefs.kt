@@ -1771,7 +1771,7 @@ object TableDefs {
         const val UNBIND_FROM_ALL_DEVICES: String = "__unbind_from_all_devices"
 
         /**
-         * Virtual field, used for insert/update contentValues.
+         * Virtual field, used for insert/update contentValues. 
          * If this is set to value > 0, * content values named [.BIND_TO_DEVICE_PREFIX]#, [.DEVICE_PREFIX]#, [.DEVICE_ADDRESS_PREFIX]#, [.DEVICE_NAME_PREFIX]#,
          * will be checked and if all 4 are set to appropriate valid non-empty values, preset will be bound/unbound to that device according to the [.BIND_TO_DEVICE_PREFIX]#.
          * # is number [0, NUM_BIND_DEVICES)
