@@ -1,8 +1,11 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -28,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity.Companion.TAG
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
@@ -70,6 +75,7 @@ fun EditorScreen(
 ) {
     val timeStampRegex = rememberSaveable { Regex("(\\[\\d{2}:\\d{2}\\.\\d{2}])") }
     val context = LocalContext.current
+    val taglibHelper = remember { TaglibHelper(context) }
     val defaultFontSize = LocalTextStyle.current.fontSize.value
     val inputState by viewmodel.inputState.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
@@ -87,9 +93,7 @@ fun EditorScreen(
     var fontSize by rememberSaveable {
         mutableFloatStateOf(AppPreference.getEditorFontSize(context) ?: defaultFontSize)
     }
-    var saveAsFileEnabled by remember {
-        mutableStateOf(AppPreference.getSaveAsFile(context))
-    }
+
     val selectionLineIndexes by remember(textFieldValue) {
         derivedStateOf { getLineIndexesForSelection(textFieldValue) }
     }
@@ -239,11 +243,10 @@ fun EditorScreen(
                 }
             }
 
-            val lyricsText by produceState<String?>(null, fileUri) {
+            val lyricsFromFile by produceState<String?>(null, fileUri) {
                 value = fileUri?.let { uri ->
                     try {
-                        context.contentResolver.openInputStream(uri)
-                            ?.bufferedReader()
+                        context.contentResolver.openInputStream(uri)?.bufferedReader()
                             ?.use { it.readText().replace("\r\n", "\n") }
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to read lyrics", e)
@@ -251,27 +254,109 @@ fun EditorScreen(
                     }
                 }
             }
-            lyricsText?.let { lyrics ->
-                EditorSuggestions(
-                    visible = lyrics.isNotBlank() && lyricsContent.isEmpty(),
-                    actionLabel = stringResource(R.string.open),
-                    onAction = { viewmodel.updateInputState(EditorInputState(lyrics)) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(R.string.load_saved_lyrics_suggestion),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
+            val embeddedLyrics by produceState<String?>(null, fileUri) {
+                val fileAvailable = taglibHelper.prepareFile(filePath) {
+                    Log.e(TAG, "EditorScreen: error reading embedded lyrics- $it")
+                }
+                if (fileAvailable) {
+                    value = taglibHelper.getLyricsTag()
+                } else {
+                    Log.e(TAG, "EditorScreen: failed to get lyrics tag info")
                 }
             }
+            var showLyricsSourceSelection by remember(
+                lyricsContent,
+                lyricsFromFile,
+                embeddedLyrics
+            ) {
+                mutableStateOf(
+                    lyricsContent.isEmpty() && lyricsFromFile.isNullOrBlank() && embeddedLyrics.isNullOrBlank()
+                )
+            }
+            if (showLyricsSourceSelection) {
+                LyricsStorageSelection(
+                    title = stringResource(R.string.editor_lyrics_source_dialog_title),
+                    description = stringResource(R.string.editor_lyrics_source_dialog_description),
+                    onDismiss = { showLyricsSourceSelection = false },
+                    content = {
+                        TextButton(
+                            onClick = {
+                                viewmodel.updateInputState(EditorInputState(lyricsFromFile ?: ""))
+                                context.makeToast(R.string.editor_loaded_from_lyrics_file)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(stringResource(R.string.editor_load_from_lyrics_file)) }
+                        TextButton(
+                            onClick = {
+                                viewmodel.updateInputState(EditorInputState(embeddedLyrics ?: ""))
+                                context.makeToast(R.string.editor_loaded_from_embedded)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(stringResource(R.string.editor_load_embedded_lyrics)) }
+                    }
+                )
+            }
             EditorSuggestions(
-                visible = lyricsContent.isNotEmpty() && !saveAsFileEnabled,
-                actionLabel = stringResource(R.string.enable),
+                visible = lyricsContent.isEmpty() && (!lyricsFromFile.isNullOrBlank() || !embeddedLyrics.isNullOrBlank()),
+                actionLabel = stringResource(R.string.open),
                 onAction = {
-                    AppPreference.setSaveAsFile(context, true)
-                    saveAsFileEnabled = true
+                    when {
+                        !lyricsFromFile.isNullOrBlank() && !embeddedLyrics.isNullOrBlank() ->
+                            showLyricsSourceSelection = true
+
+                        !lyricsFromFile.isNullOrBlank() -> {
+                            viewmodel.updateInputState(EditorInputState(lyricsFromFile ?: ""))
+                            context.makeToast(R.string.editor_loaded_from_lyrics_file)
+                        }
+
+                        !embeddedLyrics.isNullOrBlank() -> {
+                            viewmodel.updateInputState(EditorInputState(embeddedLyrics ?: ""))
+                            context.makeToast(R.string.editor_loaded_from_embedded)
+                        }
+                    }
                 },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.load_saved_lyrics_suggestion),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+            var saveAsFileEnabled by remember { mutableStateOf(AppPreference.getSaveAsFile(context)) }
+            var embedIntoFiles by remember {
+                mutableStateOf(AppPreference.getEmbedLyricsAsTag(context))
+            }
+            var showLyricsStorageSelection by remember { mutableStateOf(false) }
+            if (showLyricsStorageSelection) {
+                LyricsStorageSelection(
+                    title = stringResource(R.string.editor_saving_methods_dialog_title),
+                    description = stringResource(R.string.editor_saving_methods_dialog_description),
+                    onDismiss = { showLyricsStorageSelection = false },
+                    content = {
+                        LyricsStorage(
+                            label = stringResource(R.string.settings_save_as_file_label),
+                            checked = saveAsFileEnabled,
+                            onCheckChange = {
+                                AppPreference.setSaveAsFile(context, it)
+                                saveAsFileEnabled = it
+                            }
+                        )
+                        LyricsStorage(
+                            label = stringResource(R.string.settings_embed_into_song_file_label),
+                            checked = embedIntoFiles,
+                            onCheckChange = {
+                                AppPreference.setEmbedLyricsAsTag(context, it)
+                                embedIntoFiles = it
+                            }
+                        )
+                    }
+                )
+            }
+            EditorSuggestions(
+                visible = lyricsContent.isNotEmpty() && !saveAsFileEnabled && !embedIntoFiles,
+                actionLabel = stringResource(R.string.enable),
+                onAction = { showLyricsStorageSelection = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -398,4 +483,8 @@ fun EditorSuggestions(
             }
         }
     }
+}
+
+private fun Context.makeToast(@StringRes resId: Int) {
+    Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
 }

@@ -56,8 +56,16 @@
     <string name="result_type_plain_description">Letras planas de esta pista</string>
     <!--    editor activity-->
     <string name="title_activity_editor">Editora</string>
-    <string name="save_as_file_not_enabled_warning">Las ediciones se guardan solo en la caché de Poweramp y no se pueden cambiar después. Toca abajo para activar Guardar como archivo.</string>
+    <string name="save_as_file_not_enabled_warning">Las ediciones se guardan en la caché de Poweramp únicamente y no se pueden cambiar más adelante. Toque el botón a continuación para habilitar otras opciones.</string>
+    <string name="editor_lyrics_source_dialog_title">Elige una fuente de letras</string>
+    <string name="editor_lyrics_source_dialog_description">Las letras de la fuente seleccionada se cargarán en el editor.</string>
+    <string name="editor_load_from_lyrics_file">Cargar desde archivo de letras</string>
+    <string name="editor_load_embedded_lyrics">Cargar letras incrustadas</string>
+    <string name="editor_loaded_from_lyrics_file">Archivo de letras cargado</string>
+    <string name="editor_loaded_from_embedded">Letras incrustadas cargadas</string>
     <string name="load_saved_lyrics_suggestion">Letras guardadas encontradas. ¿Cargarlos en el editor?</string>
+    <string name="editor_saving_methods_dialog_title">Habilitar métodos para guardar letras</string>
+    <string name="editor_saving_methods_dialog_description">Habilite al menos un método para guardar la letra de forma segura para futuras ediciones.</string>
     <string name="undo">Deshacer</string>
     <string name="redo">Rehacer</string>
     <string name="save">ahorrar</string>
@@ -117,7 +125,7 @@
     <string name="settings_lyrics_storage_label">Configuración de Almacenamiento de Letras</string>
     <string name="settings_send_to_poweramp_label">Enviar Letras a Poweramp</string>
     <string name="settings_send_to_poweramp_description">Las letras se guardarán en la caché de Poweramp, permitiendo actualizaciones desde la interfaz de Poweramp.</string>
-    <string name="settings_save_as_file_label">Guardar Letras como Archivos</string>
+    <string name="settings_save_as_file_label">Guardar letras como archivo</string>
     <string name="settings_save_as_file_description">Guarda letras como archivos de texto en la misma carpeta que el archivo de música. Asegúrate de seleccionar las carpetas correctas abajo.</string>
     <string name="settings_embed_into_song_file_label">Incrustar letras en un archivo</string>
     <string name="settings_embed_into_song_file_description">Incrusta la letra directamente en el archivo de música.</string>

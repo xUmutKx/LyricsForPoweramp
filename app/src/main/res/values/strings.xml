@@ -55,8 +55,16 @@
     <string name="result_type_plain_description">Plain lyrics of this track</string>
     <!--    editor activity-->
     <string name="title_activity_editor">Editor</string>
-    <string name="save_as_file_not_enabled_warning">Edits are saved to Poweramp\'s cache only and can\'t be changed later. Tap below button to enable Save as File.</string>
+    <string name="save_as_file_not_enabled_warning">Edits are saved to Poweramp\'s cache only and can\'t be changed later. Tap below button to enable other options.</string>
+    <string name="editor_lyrics_source_dialog_title">Choose a lyrics source</string>
+    <string name="editor_lyrics_source_dialog_description">Lyrics from the selected source will be loaded into the editor.</string>
+    <string name="editor_load_from_lyrics_file">Load from Lyrics File</string>
+    <string name="editor_load_embedded_lyrics">Load Embedded Lyrics</string>
+    <string name="editor_loaded_from_lyrics_file">Loaded lyrics file</string>
+    <string name="editor_loaded_from_embedded">Loaded embedded lyrics</string>
     <string name="load_saved_lyrics_suggestion">Saved lyrics found. Load them into the editor?</string>
+    <string name="editor_saving_methods_dialog_title">Enable lyrics saving methods</string>
+    <string name="editor_saving_methods_dialog_description">Enable at least one method to save the lyrics safely for future edits.</string>
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
     <string name="save">Save</string>
@@ -116,7 +124,7 @@
     <string name="settings_lyrics_storage_label">Lyrics Storage Settings</string>
     <string name="settings_send_to_poweramp_label">Send Lyrics to Poweramp</string>
     <string name="settings_send_to_poweramp_description">Lyrics will be stored in Poweramp\'s cache, allowing updates directly from the Poweramp UI.</string>
-    <string name="settings_save_as_file_label">Save Lyrics as Files</string>
+    <string name="settings_save_as_file_label">Save Lyrics as File</string>
     <string name="settings_save_as_file_description">Store lyrics as text files in the same folder as the music file. Ensure you select the correct folders below.</string>
     <string name="settings_embed_into_song_file_label">Embed Lyrics into File</string>
     <string name="settings_embed_into_song_file_description">Embed the lyrics directly into the music file.</string>

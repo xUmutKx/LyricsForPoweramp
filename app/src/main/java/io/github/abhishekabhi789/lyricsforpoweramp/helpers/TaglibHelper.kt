@@ -71,6 +71,11 @@ class TaglibHelper(private val context: Context) {
         return setMetadata(metadata)
     }
 
+    fun getLyricsTag(): String? {
+        val metadata = getMetadata() ?: PropertyMap()
+        return metadata["LYRICS"]?.firstOrNull()
+    }
+
     fun fixMetadata(lyrics: Lyrics): Boolean {
         val metadata = getMetadata() ?: PropertyMap()
         metadata["TITLE"] = arrayOf(lyrics.trackName)
