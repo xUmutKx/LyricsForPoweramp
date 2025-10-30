@@ -9,14 +9,14 @@ plugins {
 
 android {
     namespace = "io.github.abhishekabhi789.lyricsforpoweramp"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "io.github.abhishekabhi789.lyricsforpoweramp"
         minSdk = 23
-        targetSdk = 35
-        versionCode = 19
-        versionName = "1.9"
+        targetSdk = 36
+        versionCode = 20
+        versionName = "2.0"
         vectorDrawables {
             useSupportLibrary = true
         }

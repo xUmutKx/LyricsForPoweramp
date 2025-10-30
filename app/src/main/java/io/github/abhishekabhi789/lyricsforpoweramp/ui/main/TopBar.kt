@@ -16,7 +16,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +44,14 @@ fun TopBar(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var showMenu: Boolean by remember { mutableStateOf(false) }
     TopAppBar(
+        navigationIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.semantics { hideFromAccessibility() }
+            )
+        },
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -53,12 +60,6 @@ fun TopBar(modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .semantics { hideFromAccessibility() }
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.minimumInteractiveComponentSize()
-                )
                 Text(
                     text = AnnotatedString(text = stringResource(R.string.app_name)),
                     style = MaterialTheme.typography.titleLarge.copy(

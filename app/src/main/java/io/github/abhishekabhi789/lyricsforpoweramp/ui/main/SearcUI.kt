@@ -28,8 +28,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -103,7 +103,7 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
         }
     }
     Column(modifier = modifier.fillMaxSize()) {
-        TabRow(
+        SecondaryTabRow(
             selectedTabIndex = pagerState.currentPage,
             containerColor = TopAppBarDefaults.topAppBarColors().containerColor,
             modifier = Modifier.fillMaxWidth()

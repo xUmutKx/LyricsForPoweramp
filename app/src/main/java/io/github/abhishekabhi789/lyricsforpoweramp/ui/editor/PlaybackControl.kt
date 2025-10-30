@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
@@ -45,6 +46,9 @@ fun PlaybackControl(
     viewmodel: EditorViewmodel,
     folderAccessState: FolderAccessState
 ) {
+    val tooltipPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+        TooltipAnchorPosition.Above
+    )
     val playerInitialized by viewmodel.playerInitialized.collectAsStateWithLifecycle()
     val trackDuration by viewmodel.trackDuration.collectAsStateWithLifecycle()
     val playbackPosition by viewmodel.playbackPosition.collectAsStateWithLifecycle()
@@ -92,7 +96,7 @@ fun PlaybackControl(
             }
             TooltipBox(
                 state = rememberTooltipState(),
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                positionProvider = tooltipPositionProvider,
                 focusable = false,
                 tooltip = { PlainTooltip { Text(stringResource(R.string.playback_rewind_10s)) } }
             ) {
@@ -111,7 +115,7 @@ fun PlaybackControl(
             }
             TooltipBox(
                 state = rememberTooltipState(),
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                positionProvider = tooltipPositionProvider,
                 focusable = false,
                 tooltip = { PlainTooltip { Text(stringResource(R.string.playback_forward_10s)) } }
             ) {

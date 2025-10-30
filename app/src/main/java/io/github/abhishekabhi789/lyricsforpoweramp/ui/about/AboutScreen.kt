@@ -199,7 +199,7 @@ fun browseUrl(context: Context, url: String) {
     try {
         context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
     } catch (e: Exception) {
-        Log.e(TAG, "browseUrl: unable to open link $url")
+        Log.e(TAG, "browseUrl: unable to open link $url", e)
         Toast.makeText(context, R.string.toast_failed_to_browse_link, Toast.LENGTH_SHORT).show()
     }
 }

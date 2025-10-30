@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
@@ -150,7 +151,9 @@ fun EditorBottomBar(
         floatingActionButton = {
             TooltipBox(
                 state = rememberTooltipState(),
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Above
+                ),
                 focusable = false,
                 tooltip = { PlainTooltip { Text(stringResource(R.string.sync_line_button_descr)) } }
             ) {

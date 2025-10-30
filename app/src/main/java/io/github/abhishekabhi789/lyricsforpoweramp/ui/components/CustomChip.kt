@@ -15,6 +15,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -34,7 +35,10 @@ fun CustomChip(
     icon: Any?,
     onClick: () -> Unit = {}
 ) {
-    BasicTooltipBox(positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+    BasicTooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            TooltipAnchorPosition.Above
+        ),
         state = rememberBasicTooltipState(),
         tooltip = {
             ElevatedCard(

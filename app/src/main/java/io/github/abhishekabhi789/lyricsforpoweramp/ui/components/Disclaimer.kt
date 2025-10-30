@@ -21,11 +21,11 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun Disclaimer(
+    modifier: Modifier = Modifier,
     textContent: String,
     icon: ImageVector,
     foregroundColor: Color = MaterialTheme.colorScheme.onTertiaryContainer,
-    backgroundColor: Color = MaterialTheme.colorScheme.tertiaryContainer,
-    modifier: Modifier = Modifier
+    backgroundColor: Color = MaterialTheme.colorScheme.tertiaryContainer
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Lyrics for Poweramp</string>
     <!--    general-->
     <string name="plain_lyrics">Letras Planas</string>
     <string name="synced_lyrics">Letras Sincronizadas</string>
