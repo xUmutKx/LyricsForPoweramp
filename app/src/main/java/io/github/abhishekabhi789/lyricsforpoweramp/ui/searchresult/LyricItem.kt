@@ -43,15 +43,16 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -186,7 +187,8 @@ fun LyricItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 FlowRow(
-                    horizontalArrangement = Arrangement.Start,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
+                    verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
                     modifier = Modifier.weight(0.5f)
                 ) {
                     if (lyrics.plainLyrics != null) {
@@ -311,7 +313,9 @@ fun <T> SelectableButton(
         mutableStateOf(if (preferred in allItems) preferred else allItems.first())
     }
     BasicTooltipBox(
-        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            TooltipAnchorPosition.Above
+        ),
         state = rememberBasicTooltipState(),
         tooltip = {
             ElevatedCard(
@@ -359,7 +363,7 @@ fun <T> SelectableButton(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .padding(start = 4.dp)
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                     ) {
                         Text(
                             text = getLabel(chosenItem),

@@ -55,7 +55,7 @@ fun TopBar(modifier: Modifier = Modifier) {
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start,
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics { hideFromAccessibility() }
@@ -72,7 +72,6 @@ fun TopBar(modifier: Modifier = Modifier) {
                     color = MaterialTheme.colorScheme.primary,
                     fontFamily = FontFamily.Cursive,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
                 )
             }
         },

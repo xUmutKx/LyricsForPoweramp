@@ -264,15 +264,8 @@ fun EditorScreen(
                     Log.e(TAG, "EditorScreen: failed to get lyrics tag info")
                 }
             }
-            var showLyricsSourceSelection by remember(
-                lyricsContent,
-                lyricsFromFile,
-                embeddedLyrics
-            ) {
-                mutableStateOf(
-                    lyricsContent.isEmpty() && lyricsFromFile.isNullOrBlank() && embeddedLyrics.isNullOrBlank()
-                )
-            }
+            var showLyricsSourceSelection by remember { mutableStateOf(false) }
+
             if (showLyricsSourceSelection) {
                 LyricsStorageSelection(
                     title = stringResource(R.string.editor_lyrics_source_dialog_title),
@@ -283,6 +276,7 @@ fun EditorScreen(
                             onClick = {
                                 viewmodel.updateInputState(EditorInputState(lyricsFromFile ?: ""))
                                 context.makeToast(R.string.editor_loaded_from_lyrics_file)
+                                showLyricsSourceSelection = false
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.editor_load_from_lyrics_file)) }
@@ -290,6 +284,7 @@ fun EditorScreen(
                             onClick = {
                                 viewmodel.updateInputState(EditorInputState(embeddedLyrics ?: ""))
                                 context.makeToast(R.string.editor_loaded_from_embedded)
+                                showLyricsSourceSelection = false
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.editor_load_embedded_lyrics)) }

@@ -102,7 +102,7 @@
     <string name="settings_theme_light_label">Light Theme</string>
     <string name="settings_theme_dark_label">Dark Theme</string>
     <string name="settings_lyrics_request_label">Lyrics Requests</string>
-    <string name="settings_fallback_to_search_label">Fallback to Broader Search</string>
+    <string name="settings_fallback_to_search_label">Fall Back to Broader Search</string>
     <string name="settings_fallback_to_search_description">If the exact lyrics can\'t be retrieved, a broader search will be performed.\nNote: This may occasionally return incorrect lyrics.</string>
     <string name="settings_notification_permission_label">Notification Permission</string>
     <string name="settings_notification_permission_description">Permission is required to post notifications about lyrics request status.</string>
@@ -115,9 +115,9 @@
     <string name="settings_permission_toast_granted">Permission Granted</string>
     <string name="settings_permission_toast_denied">Permission Denied</string>
     <string name="settings_request_fail_notification_label">Notify on Lyrics Request Failure</string>
-    <string name="settings_request_fail_notification_description">Get notified when lyrics retrieval fails. Allows manual search.</string>
+    <string name="settings_request_fail_notification_description">Get notified when a background lyrics request fails.</string>
     <string name="settings_overwrite_existing_notification_label">Replace Previous Notification</string>
-    <string name="settings_overwrite_existing_notification_description">A new notification will replace the previous one.</string>
+    <string name="settings_overwrite_existing_notification_description">Older notifications will be removed and only the last notification will be shown.</string>
     <string name="settings_preferred_lyrics_type_label">Preferred Lyrics Type</string>
     <string name="settings_preferred_lyrics_type_description">Set a default preference for synced or plain lyrics.</string>
     <string name="settings_mark_instrumental_tracks">Mark Instrumental Songs</string>

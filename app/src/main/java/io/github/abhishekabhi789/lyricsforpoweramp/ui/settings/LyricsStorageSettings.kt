@@ -172,7 +172,7 @@ fun LyricsStorageSettings(
                 checked = embedIntoFile, onCheckedChange = onSwitchToggle,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
-        AnimatedVisibility(visible = saveAsFile || embedIntoFile) {
+        AnimatedVisibility(visible = embedIntoFile) {
             var fixMetadata by remember { mutableStateOf(AppPreference.getFixMetadata(context)) }
             BasicSettings(
                 label = stringResource(R.string.settings_fix_metadata_with_lyrics_info_label),
