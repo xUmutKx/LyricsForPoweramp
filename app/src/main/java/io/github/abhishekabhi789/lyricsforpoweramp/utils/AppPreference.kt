@@ -24,6 +24,7 @@ object AppPreference {
     private const val PREFERRED_LYRICS_TYPE = "preferred_lyrics_type"
     private const val SEND_LYRICS_TO_POWERAMP = "send_lyrics_to_poweramp"
     private const val SAVE_LYRICS_IN_FILE = "save_lyrics_in_file"
+    private const val SAVE_ID_TAGS_IN_FILE = "save_id_tags_in_file"
     private const val EMBED_LYRICS_AS_TAG = "embed_lyrics_as_tag"
     private const val FIX_METADATA = "fix_metadata_from_result"
     private const val FOLDER_URIS = "folder_uri_list"
@@ -146,6 +147,16 @@ object AppPreference {
     fun setSaveAsFile(context: Context, value: Boolean) {
         val sharedPreference = getSharedPreference(context, OTHER_PREF)
         sharedPreference?.edit { putBoolean(SAVE_LYRICS_IN_FILE, value) }
+    }
+
+    fun getSaveIdTagsInFile(context: Context): Boolean {
+        val sharedPreferences = getSharedPreference(context, OTHER_PREF)
+        return sharedPreferences?.getBoolean(SAVE_ID_TAGS_IN_FILE, false) == true
+    }
+
+    fun setSaveIdTagsInFile(context: Context, value: Boolean) {
+        val sharedPreference = getSharedPreference(context, OTHER_PREF)
+        sharedPreference?.edit { putBoolean(SAVE_ID_TAGS_IN_FILE, value) }
     }
 
     fun getEmbedLyricsAsTag(context: Context): Boolean {

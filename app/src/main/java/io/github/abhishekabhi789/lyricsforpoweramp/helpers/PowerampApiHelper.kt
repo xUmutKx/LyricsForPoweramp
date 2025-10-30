@@ -113,6 +113,7 @@ object PowerampApiHelper {
         val shouldSaveAsFile = AppPreference.getSaveAsFile(context)
         val embedIntoFile = AppPreference.getEmbedLyricsAsTag(context)
         val fixMetadata = AppPreference.getFixMetadata(context)
+        val saveIdTagsInFile = AppPreference.getSaveIdTagsInFile(context)
 
         var state = SendLyricsState(
             progress = progress,
@@ -164,7 +165,7 @@ object PowerampApiHelper {
         }
         if (shouldSaveAsFile) {
             if (lyricsText != null) {
-                val lyricsContent = if (lyricsType == LyricsType.SYNCED) {
+                val lyricsContent = if (saveIdTagsInFile && lyricsType == LyricsType.SYNCED) {
                     buildString {
                         appendLine("[ti:${lyrics.trackName}]")
                         lyrics.artistName?.let { appendLine("[ar:$it]") }

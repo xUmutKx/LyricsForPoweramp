@@ -127,6 +127,8 @@
     <string name="settings_send_to_poweramp_description">Las letras se guardarán en la caché de Poweramp, permitiendo actualizaciones desde la interfaz de Poweramp.</string>
     <string name="settings_save_as_file_label">Guardar letras como archivo</string>
     <string name="settings_save_as_file_description">Guarda letras como archivos de texto en la misma carpeta que el archivo de música. Asegúrate de seleccionar las carpetas correctas abajo.</string>
+    <string name="settings_save_id_tags_in_lrc_file_label">Guardar etiquetas ID en el archivo LRC</string>
+    <string name="settings_save_id_tags_in_lrc_file_description">Agrega los metadatos de la canción (como el título y el artista) como etiquetas ID dentro del archivo de letras LRC.</string>
     <string name="settings_embed_into_song_file_label">Incrustar letras en un archivo</string>
     <string name="settings_embed_into_song_file_description">Incrusta la letra directamente en el archivo de música.</string>
     <string name="settings_fix_metadata_with_lyrics_info_label">Corregir información de la canción</string>

@@ -118,6 +118,36 @@ fun LyricsStorageSettings(
                 checked = saveAsFile, onCheckedChange = onSwitchToggle,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
+        var saveIdTagsInFile by remember {
+            mutableStateOf(AppPreference.getSaveIdTagsInFile(context))
+        }
+        AnimatedVisibility(visible = saveAsFile) {
+            BasicSettings(
+                label = stringResource(R.string.settings_save_id_tags_in_lrc_file_label),
+                description = stringResource(R.string.settings_save_id_tags_in_lrc_file_description)
+            ) { interactionSource ->
+                val onSwitchToggle = { enabled: Boolean ->
+                    AppPreference.setSaveIdTagsInFile(context, enabled)
+                    saveIdTagsInFile = enabled
+                }
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
+                            onSwitchToggle(!saveIdTagsInFile)
+                        }
+                    }
+                }
+                val accessibilityLabel = (if (saveIdTagsInFile) stringResource(R.string.disable)
+                else stringResource(R.string.enable)).let {
+                    "$it ${stringResource(R.string.settings_save_id_tags_in_lrc_file_label)}"
+                }
+                Switch(
+                    checked = saveIdTagsInFile, onCheckedChange = onSwitchToggle,
+                    modifier = Modifier.semantics { contentDescription = accessibilityLabel }
+                )
+            }
+        }
+
         var embedIntoFile by remember { mutableStateOf(AppPreference.getEmbedLyricsAsTag(context)) }
         BasicSettings(
             label = stringResource(R.string.settings_embed_into_song_file_label),

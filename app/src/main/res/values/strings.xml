@@ -127,6 +127,8 @@
     <string name="settings_send_to_poweramp_description">Lyrics will be stored in Poweramp\'s cache, allowing updates directly from the Poweramp UI.</string>
     <string name="settings_save_as_file_label">Save Lyrics as File</string>
     <string name="settings_save_as_file_description">Store lyrics as text files in the same folder as the music file. Ensure you select the correct folders below.</string>
+    <string name="settings_save_id_tags_in_lrc_file_label">Save ID Tags in LRC File</string>
+    <string name="settings_save_id_tags_in_lrc_file_description">Add song metadata (like title and artist) as ID tags inside the LRC lyrics file.</string>
     <string name="settings_embed_into_song_file_label">Embed Lyrics into File</string>
     <string name="settings_embed_into_song_file_description">Embed the lyrics directly into the music file.</string>
     <string name="settings_fix_metadata_with_lyrics_info_label">Fix Song Metadata</string>
