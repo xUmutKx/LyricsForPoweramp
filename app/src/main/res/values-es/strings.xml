@@ -78,6 +78,7 @@
     <string name="supported_language_choose_title">Selecciona el idioma de destino</string>
     <string name="translation_button_label">Traducir</string>
     <string name="translation_failed">Traducción fallida</string>
+    <string name="translation_service_not_configured">%1$s no está configurado. Ve a Configuración para ingresar la clave API y completar la configuración.</string>
     <string name="playback_play_button">Reproducir</string>
     <string name="playback_pause_button">Pausar</string>
     <string name="playback_rewind_10s">Retroceder 10s</string>

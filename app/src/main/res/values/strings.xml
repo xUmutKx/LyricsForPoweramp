@@ -78,6 +78,7 @@
     <string name="supported_language_choose_title">Select target language</string>
     <string name="translation_button_label">Translate</string>"
     <string name="translation_failed">Translation Failed</string>
+    <string name="translation_service_not_configured">%1$s isn\'t configured. Go to Settings to enter the API key and complete the configuration.</string>
     <string name="playback_play_button">Play</string>
     <string name="playback_pause_button">Pause</string>
     <string name="playback_rewind_10s">Back 10s</string>

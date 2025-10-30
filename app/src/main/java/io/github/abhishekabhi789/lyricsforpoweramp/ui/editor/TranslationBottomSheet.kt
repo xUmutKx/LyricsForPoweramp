@@ -1,6 +1,7 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
 import android.widget.Toast
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,8 +30,13 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -61,6 +68,9 @@ fun TranslationBottomSheet(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
+    val tooltipPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+        TooltipAnchorPosition.Above
+    )
     val services = remember(viewmodel.translators.size) { viewmodel.translators }
     val chosenTranslator by viewmodel.chosenTranslator.collectAsStateWithLifecycle()
     val targetLanguage by viewmodel.targetLanguage.collectAsStateWithLifecycle()
@@ -93,15 +103,39 @@ fun TranslationBottomSheet(
         Column(modifier = modifier.padding(16.dp)) {
             Text(stringResource(R.string.translation_button_label))
             LazyRow(modifier = Modifier.fillMaxWidth()) {
-                items(items = services, key = { it.nameRes }) {
-                    val isConfigured = remember { it.isConfigured(context) }
-                    AssistChip(
-                        enabled = isConfigured,
-                        onClick = { viewmodel.setChosenTranslator(it) },
-                        leadingIcon = {
-                            if (chosenTranslator == it) Icon(Icons.Default.Check, null)
-                        },
-                        label = { Text(stringResource(it.nameRes)) })
+                items(items = services, key = { it.nameRes }) { translator ->
+                    val isConfigured = remember(translator) { translator.isConfigured(context) }
+                    val tooltipState = rememberTooltipState()
+                    TooltipBox(
+                        state = tooltipState,
+                        positionProvider = tooltipPositionProvider,
+                        focusable = false,
+                        tooltip = {
+                            PlainTooltip {
+                                Text(
+                                    stringResource(
+                                        R.string.translation_service_not_configured,
+                                        stringResource(translator.nameRes)
+                                    )
+                                )
+                            }
+                        }
+                    ) {
+                        AssistChip(
+                            enabled = isConfigured,
+                            onClick = { viewmodel.setChosenTranslator(translator) },
+                            leadingIcon = {
+                                if (chosenTranslator == translator) Icon(Icons.Default.Check, null)
+                            },
+                            label = { Text(stringResource(translator.nameRes)) },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Default.Error,
+                                    stringResource(R.string.error),
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            })
+                    }
                 }
             }
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -171,7 +205,14 @@ fun TranslationBottomSheet(
                 BasicSettings(
                     label = stringResource(R.string.editor_settings_lyrics_replace_original_title),
                     description = stringResource(R.string.editor_settings_lyrics_replace_original_description)
-                ) {
+                ) { interactionSource ->
+                    LaunchedEffect(interactionSource) {
+                        interactionSource.interactions.collect { interaction ->
+                            if (interaction is PressInteraction.Release) {
+                                viewmodel.setReplaceLyrics(!replaceOriginal)
+                            }
+                        }
+                    }
                     Switch(
                         checked = replaceOriginal,
                         onCheckedChange = { viewmodel.setReplaceLyrics(it) },
