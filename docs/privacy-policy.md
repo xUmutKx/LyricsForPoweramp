@@ -1,16 +1,16 @@
 # Privacy Policy
 
-*Lyrics for Poweramp* ("the App") is a lyrics plugin designed for use with the Poweramp music
-player. This privacy policy explains how the App handles user data.
+*Lyrics for Poweramp* is a lyrics plugin designed for use with the Poweramp music player. This
+privacy policy explains how the app handles user data.
 
 ## **Data Collection**
 
-The App does not collect, store, or process any personal data from users. Any user configurations in
-the App are stored locally on the user's device.
+This app does not collect, store, or process any personal data from users. Any user configurations
+in the app are stored locally on the user's device.
 
 ## **Data Usage**
 
-The App uses the [LRCLIB API](https://lrclib.net/docs) to fetch lyrics for tracks played in
+This app uses the [LRCLIB API](https://lrclib.net/docs) to fetch lyrics for tracks played in
 Poweramp.
 
 - **Metadata Sharing:** Only track metadata (e.g., track title, artist, album name, and duration) is
@@ -22,46 +22,48 @@ Poweramp.
 
 ## **Data Sharing**
 
-The App does not share any user information with third parties. However:
+This app does not share any user information with third parties. However:
 
 - Track metadata or user-provided search queries are sent to LRCLIB to retrieve lyrics results.
 - Retrieved lyrics are shared only with Poweramp.
 
 ## **Security**
 
-While the App does not collect or store personal data, all track metadata and user-provided queries
+While the app does not collect or store personal data, all track metadata and user-provided queries
 sent to LRCLIB are transmitted securely over HTTPS to ensure confidentiality and security.
 
 ## **User Rights**
 
-Since the App does not collect or store personal data:
+Since the app does not collect or store personal data:
 
 - No data deletion or retrieval requests are required or applicable.
 - No data retention policies apply.
 
 ## **Permissions**
 
-The App requires the following permissions to function:
+This app requires the following permissions to function:
 
 - **Internet:** To fetch lyrics from the LRCLIB API.
-- **Notification:** To inform users about the status of lyrics requests.
+- **Notification:** To display status updates or notifications related to lyrics fetching progress
+  or results.
+- **Storage:** The app accesses user-selected storage folders to read and write lyrics files and
+  support music playback.
 
-These permissions are used solely for the App's functionality and are not used to collect or
+These permissions are used solely for the app's functionality and are not used to collect or
 transmit user data.
 
 ## **Children's Privacy**
 
-The App is not directed at individuals under the age of 18.  
-Although the App does not collect data, it relies on third-party services (e.g., LRCLIB), which may
-deliver lyrics containing unpleasant or explicit words. Therefore, the App is not recommended for
-users under the age of 18.
+The app itself does not include any sensitive or explicit content. However, third-party lyrics
+sources may return results that contain explicit or inappropriate words based on the user’s song or
+search query. Therefore, parental discretion is advised.
 
 ## **Changes to This Policy**
 
-This privacy policy may be updated periodically to reflect changes in the App’s features or to
+This privacy policy may be updated periodically to reflect changes in the app’s features or to
 comply with legal requirements.
 
 ## **Contact**
 
-If you have any questions or concerns about this privacy policy, you can reach out via email at:  
-**justsomerandomapps@gmail.com**
+If you have any questions or concerns about this privacy policy, you can reach out via email at: *
+*justsomerandomapps@gmail.com**

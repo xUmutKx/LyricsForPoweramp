@@ -111,13 +111,15 @@ fun TranslationBottomSheet(
                         positionProvider = tooltipPositionProvider,
                         focusable = false,
                         tooltip = {
-                            PlainTooltip {
-                                Text(
-                                    stringResource(
-                                        R.string.translation_service_not_configured,
-                                        stringResource(translator.nameRes)
+                            if (!isConfigured) {
+                                PlainTooltip {
+                                    Text(
+                                        stringResource(
+                                            R.string.translation_service_not_configured,
+                                            stringResource(translator.nameRes)
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     ) {
@@ -129,11 +131,13 @@ fun TranslationBottomSheet(
                             },
                             label = { Text(stringResource(translator.nameRes)) },
                             trailingIcon = {
-                                Icon(
-                                    Icons.Default.Error,
-                                    stringResource(R.string.error),
-                                    tint = MaterialTheme.colorScheme.error
-                                )
+                                if (!isConfigured) {
+                                    Icon(
+                                        Icons.Default.Error,
+                                        stringResource(R.string.error),
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
                             })
                     }
                 }

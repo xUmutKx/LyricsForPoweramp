@@ -6,13 +6,13 @@
 A lyrics plugin for <a href="https://powerampapp.com/">Poweramp</a><br>
 <br>
 <a href="https://developer.android.com/tools/releases/platforms#5.0">
-<img alt="API 21+" src="https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=for-the-badge&color=FF0800&logo=android" title="Android 6.0 Marshmallow">
+<img alt="Android 6.0+" src="https://img.shields.io/badge/API-23%2B-brightgreen.svg?style=for-the-badge&color=FF0800&logo=android" title="Android 6.0+">
 </a>
 <a href="https://github.com/abhishekabhi789/LyricsForPowerAmp/releases">
-<img alt="GitHub release download count" src="https://img.shields.io/github/downloads/abhishekabhi789/LyricsForPowerAmp/total?style=for-the-badge&color=00C853&logo=github" title="GitHub release download count">
+<img alt="GitHub release download count" src="https://img.shields.io/github/downloads/abhishekabhi789/LyricsForPowerAmp/total?style=for-the-badge&color=00C853&logo=github" title="GitHub download count">
 </a>
 <a href="https://play.google.com/store/apps/details?id=io.github.abhishekabhi789.lyricsforpoweramp&referrer=utm_source%3Dgithub%26utm_medium%3Dreadme%26utm_campaign%3Ddownload_count">
-<img alt="Play Store release download count" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dio.github.abhishekabhi789.lyricsforpoweramp%26gl%3DUS%26hl%3Den%26l%3DDOWNLOADS%26m%3D%24totalinstalls&color=4285F4&logo=googleplay&style=for-the-badge" title="Play Store release download count">
+<img alt="Play Store release download count" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dio.github.abhishekabhi789.lyricsforpoweramp%26gl%3DUS%26hl%3Den%26l%3DDOWNLOADS%26m%3D%24shortinstalls&color=4285F4&logo=googleplay&style=for-the-badge" title="PlayStore download count">
 </a>
 <br>
 <a href="https://play.google.com/store/apps/details?id=io.github.abhishekabhi789.lyricsforpoweramp&referrer=utm_source%3Dgithub%26utm_medium%3Dreadme%26utm_campaign%3Dplay_widget" class="btn" target="_blank">
@@ -30,7 +30,9 @@ A lyrics plugin for <a href="https://powerampapp.com/">Poweramp</a><br>
 | [Goto Latest Release](https://github.com/abhishekabhi789/LyricsForPowerAmp/releases)                                                                                              | [View on Play Store](https://play.google.com/store/apps/details?id=io.github.abhishekabhi789.lyricsforpoweramp&referrer=utm_source%3Dgithub%26utm_medium%3Dreadme%26utm_campaign%3Ddownload_table)                                                                    |
 
 > [!NOTE]  
-> The Google Play version contains extra features, including a free library UI that allows you to browse and manage lyrics collection seamlessly. Premium features include a batch downloader for fetching multiple lyrics at once, saving time and effort for users with extensive music libraries.
+> The Google Play version contains extra features, including a library UI that allows you to browse
+> and manage lyrics collection seamlessly. Premium features include a batch downloader for fetching
+> multiple lyrics at once, saving time and effort for users with extensive music libraries.
 
 > [!IMPORTANT]
 > Play Store builds are signed by Google hence you can't update GitHub Variant from Play Store.
