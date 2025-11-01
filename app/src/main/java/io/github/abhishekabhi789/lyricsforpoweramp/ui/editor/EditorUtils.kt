@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
@@ -77,9 +78,14 @@ fun transformLyrics(
             }
         }
     }
-
-    check(text.text == annotatedString.text) { "Mismatch between original and transformed text!" }
-    return TransformedText(annotatedString, OffsetMapping.Identity)
+    val transformedText = runCatching {
+        check(text.text == annotatedString.text) { "Mismatch between original and transformed text!" }
+        annotatedString
+    }.getOrElse {
+        Log.e("EditorUtils", "transformLyrics: failed to transform", it)
+        text
+    }
+    return TransformedText(transformedText, OffsetMapping.Identity)
 }
 
 fun isValidTimestamp(ts: String): Boolean {
