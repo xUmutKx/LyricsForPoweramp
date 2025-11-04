@@ -229,7 +229,7 @@ class LrclibApiHelper(private val client: OkHttpClient, private val gson: Gson) 
     private fun encode(text: String) = URLEncoder.encode(text, "UTF-8")
 
     enum class Error(val errMsgResId: Int, var moreInfo: String? = null) {
-        CANCELLED(R.string.error_cancelled),
+        CANCELLED(R.string.error_canceled),
         EMPTY_RESPONSE(R.string.error_empty_response),
         NETWORK_ERROR(R.string.error_network),
         TIMEOUT(R.string.error_timeout),

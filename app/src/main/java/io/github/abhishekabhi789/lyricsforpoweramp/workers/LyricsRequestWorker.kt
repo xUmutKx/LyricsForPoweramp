@@ -90,7 +90,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
                 onError = { error ->
                     when (error) {
                         LrclibApiHelper.Error.TIMEOUT -> {
-                            notifyFailure("${getString(R.string.timeout_cancelled)} - ${mTrack.trackName}")
+                            notifyFailure("${getString(R.string.timeout_canceled)} - ${mTrack.trackName}")
                         }
 
                         LrclibApiHelper.Error.EMPTY_RESPONSE, LrclibApiHelper.Error.NO_RESULTS -> {
@@ -108,7 +108,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
             )
             result
         } ?: run {
-            notifyFailure("${getString(R.string.timeout_cancelled)} - ${mTrack.trackName}")
+            notifyFailure("${getString(R.string.timeout_canceled)} - ${mTrack.trackName}")
             Log.e(TAG, "handleLyricsRequest: timeout cancelled")
             Result.retry()
         }

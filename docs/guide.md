@@ -73,6 +73,9 @@ For Play Store builds, you can edit embedded song metadata (including lyrics) fr
 
 Note: This requires [Storage Access Permission](#selected-folders).
 
+Important: You need to refresh the library in Poweramp first, and then refresh the plugin library to
+see the updated metadata in the plugin library.
+
 ## App Settings
 
 - ### Theme

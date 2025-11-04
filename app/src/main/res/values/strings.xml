@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Lyrics for Poweramp</string>
-    <!--    general-->
+
+    <!-- general -->
     <string name="plain_lyrics">Plain Lyrics</string>
     <string name="synced_lyrics">Synced Lyrics</string>
     <string name="plain_lyrics_short">Plain</string>
@@ -16,32 +17,35 @@
     <string name="loading">Loading</string>
     <string name="error">Error</string>
     <string name="change">Change</string>
-    <string name="response_footer_text">Powered by Lyrics for PowerAmp</string>
-    <string name="toast_failed_to_browse_link">Unable to open link</string>
+    <string name="response_footer_text">Powered by Lyrics for Poweramp</string>
+    <string name="toast_failed_to_browse_link">Couldn’t open link</string>
     <string name="first_time_info_dialog_title">Important Info</string>
-    <string name="first_time_info_dialog_content">\nThis app depends on accurate track metadata (title, artist, etc.) to find lyrics.\nIf the metadata is missing or incorrect, the search may fail — this is not a bug.\n\nIn such cases, you’ll need to manually adjust the search query.\nLyrics are fetched from a third-party server and may not always be available, even with correct metadata.\n\nNeed help? Contact support: %1$s\n</string>
+    <string name="first_time_info_dialog_content">This app depends on accurate track metadata (title, artist, etc.) to find lyrics.\nIf the metadata is missing or incorrect, the search may fail — this is not a bug.\n\nIn such cases, you’ll need to manually adjust the search query.\nLyrics are fetched from a third-party server. They may not always be available, even if the metadata is correct.\n\nNeed help? Contact support: %1$s\n</string>
     <string name="got_it">Got it</string>
     <string name="cancel">Cancel</string>
     <string name="closing_with_timeout">Closing in %1$ss</string>
     <string name="folder_access_request_title">Folder Access Needed</string>
     <string name="folder_access_request_explanation">To manage lyrics, this app needs access to the folder: %1$s</string>
     <string name="grant_access">Grant Access</string>
-    <string name="failed_to_open_folder_picker">Unable to open folder picker</string>
+    <string name="failed_to_open_folder_picker">Couldn’t open folder picker</string>
     <string name="open">Open</string>
-    <!--    top bar-->
+
+    <!-- top bar -->
     <string name="top_bar_menu_descriptions">More Options</string>
-    <!--    search ui-->
+
+    <!-- search ui -->
     <string name="coarse_search">Coarse Search</string>
     <string name="fine_search">Fine Search</string>
     <string name="clear_field">Clear %1$s</string>
-    <string name="invalid_input_error">Ensure a valid input</string>
+    <string name="invalid_input_error">Enter a valid input</string>
     <string name="input_track_query_label">Query</string>
     <string name="input_track_title_label">Title</string>
     <string name="input_track_artists_label">Artists</string>
     <string name="input_track_album_label">Album</string>
     <string name="search">Search</string>
     <string name="add_custom_lyrics">Write lyrics</string>
-    <!--    lyrics result-->
+
+    <!-- lyrics result -->
     <string name="result_topbar_title">Results</string>
     <string name="send_lyrics_button">Send</string>
     <string name="change_preferred_lyrics_type">Change lyrics type</string>
@@ -51,15 +55,16 @@
     <string name="lyrics_sent_to_pa">Lyrics sent to Poweramp</string>
     <string name="lyrics_saved_to_storage">Saved as lyrics file</string>
     <string name="lyrics_embedded_to_track">Embedded to song file</string>
-    <string name="result_type_synced_description">Synced lyrics of this track</string>
-    <string name="result_type_plain_description">Plain lyrics of this track</string>
-    <!--    editor activity-->
+    <string name="result_type_synced_description">Synced lyrics for this track</string>
+    <string name="result_type_plain_description">Plain lyrics for this track</string>
+
+    <!-- editor activity -->
     <string name="title_activity_editor">Editor</string>
-    <string name="save_as_file_not_enabled_warning">Edits are saved to Poweramp\'s cache only and can\'t be changed later. Tap below button to enable other options.</string>
+    <string name="save_as_file_not_enabled_warning">Edits are saved to Poweramp’s cache only and can’t be changed later. Tap the button below to enable other options.</string>
     <string name="editor_lyrics_source_dialog_title">Choose a lyrics source</string>
     <string name="editor_lyrics_source_dialog_description">Lyrics from the selected source will be loaded into the editor.</string>
-    <string name="editor_load_from_lyrics_file">Load from Lyrics File</string>
-    <string name="editor_load_embedded_lyrics">Load Embedded Lyrics</string>
+    <string name="editor_load_from_lyrics_file">Load from lyrics file</string>
+    <string name="editor_load_embedded_lyrics">Load embedded lyrics</string>
     <string name="editor_loaded_from_lyrics_file">Loaded lyrics file</string>
     <string name="editor_loaded_from_embedded">Loaded embedded lyrics</string>
     <string name="load_saved_lyrics_suggestion">Saved lyrics found. Load them into the editor?</string>
@@ -76,24 +81,26 @@
     <string name="editor_settings_lyrics_replace_original_description">Replace the original lyrics with the translated version. Turn this off to display both the original and translated lyrics.</string>
     <string name="translation_button_description">Lyrics Translator</string>
     <string name="supported_language_choose_title">Select target language</string>
-    <string name="translation_button_label">Translate</string>"
+    <string name="translation_button_label">Translate</string>
     <string name="translation_failed">Translation Failed</string>
-    <string name="translation_service_not_configured">%1$s isn\'t configured. Go to Settings to enter the API key and complete the configuration.</string>
+    <string name="translation_service_not_configured">%1$s isn’t configured. Go to Settings to enter the API key and complete the configuration.</string>
     <string name="playback_play_button">Play</string>
     <string name="playback_pause_button">Pause</string>
     <string name="playback_rewind_10s">Back 10s</string>
     <string name="playback_forward_10s">Forward 10s</string>
-    <string name="sync_line_button_descr">Sync Line</string>
-    <string name="play_current_line">Play Current Line</string>
-    <!--    about activity-->
+    <string name="sync_line_button_descr">Sync line</string>
+    <string name="play_current_line">Play current line</string>
+
+    <!-- about activity -->
     <string name="about">About</string>
     <string name="version">Version</string>
-    <string name="third_party_licenses">Third Party Licenses</string>
+    <string name="third_party_licenses">Third-party licenses</string>
     <string name="link_to_github">Visit on GitHub</string>
     <string name="link_to_play_store">Get from Play Store</string>
     <string name="link_to_guide">Read Guide</string>
     <string name="link_to_feedback">Feedback</string>
     <string name="link_to_more_projects">More Projects</string>
+
     <!--    settings-->
     <string name="top_bar_settings">Settings</string>
     <string name="settings_app_theme_label">Theme</string>
@@ -103,7 +110,7 @@
     <string name="settings_theme_dark_label">Dark Theme</string>
     <string name="settings_lyrics_request_label">Lyrics Requests</string>
     <string name="settings_fallback_to_search_label">Fall Back to Broader Search</string>
-    <string name="settings_fallback_to_search_description">If the exact lyrics can\'t be retrieved, a broader search will be performed.\nNote: This may occasionally return incorrect lyrics.</string>
+    <string name="settings_fallback_to_search_description">If the exact lyrics can’t be retrieved, a broader search will be performed.\nNote: This may occasionally return incorrect lyrics.</string>
     <string name="settings_notification_permission_label">Notification Permission</string>
     <string name="settings_notification_permission_description">Permission is required to post notifications about lyrics request status.</string>
     <string name="settings_permission_button_grant">Grant</string>
@@ -124,7 +131,7 @@
     <string name="settings_mark_instrumental_tracks_description">Tag non-vocal tracks as instrumental. Poweramp will not ask again lyrics for these tracks.</string>
     <string name="settings_lyrics_storage_label">Lyrics Storage Settings</string>
     <string name="settings_send_to_poweramp_label">Send Lyrics to Poweramp</string>
-    <string name="settings_send_to_poweramp_description">Lyrics will be stored in Poweramp\'s cache, allowing updates directly from the Poweramp UI.</string>
+    <string name="settings_send_to_poweramp_description">Lyrics will be stored in Poweramp’s cache, allowing updates directly from the Poweramp UI.</string>
     <string name="settings_save_as_file_label">Save Lyrics as File</string>
     <string name="settings_save_as_file_description">Store lyrics as text files in the same folder as the music file. Ensure you select the correct folders below.</string>
     <string name="settings_save_id_tags_in_lrc_file_label">Save ID Tags in LRC File</string>
@@ -144,7 +151,7 @@
     <string name="settings_editor_api_keys_list">API Keys</string>
     <string name="settings_editor_api_keys_disclaimer">You need to add your own API key to enable translation. This keeps the app free and avoids paid usage limits. Your key is stored only on your device — it’s never collected or shared.</string>
     <string name="settings_timestamp_step_title">Timestamp Adjustment Step</string>
-    <string name="settings_timestamp_step_summary">Amount of time to shift timestamps with each + or − button press</string>
+    <string name="settings_timestamp_step_summary">Amount of time to shift timestamps with each + or − button press.</string>
     <string name="settings_timestamp_step_dropdown_item">%1$d centiseconds</string>
     <string name="settings_filter_label">Filters</string>
     <string name="settings_filter_description">These words will be removed from respective fields while processing. Case insensitive. Supports regex.</string>
@@ -153,27 +160,30 @@
     <string name="settings_filter_album_label">Album Filter</string>
     <string name="clear_field_title">Clear this field?</string>
     <string name="input_clear_confirmation_message">Are you sure you want to clear the %1$s</string>
-    <!--    notifications-->
-    <string name="lyrics_request_handling_notifications">Lyrics Request Handling Notifications</string>
-    <string name="timeout_cancelled">Timeout cancelled</string>
-    <string name="notification_lyrics_request_failed">Lyrics Request Failed</string>
-    <string name="notification_manual_search_suggestion">Tap here to manually search</string>
-    <string name="notification_storage_access_needed_title">Need access to folder</string>
-    <string name="notification_storage_missing_access_to_path">Tap here grant access to %1$s.</string>
-    <string name="notification_no_saving_method_title">Lyrics saving is disabled</string>
-    <string name="notification_no_saving_method_description">Enable at least one lyrics saving method</string>
-    <!--    Api Errors-->
-    <string name="error_cancelled">Cancelled</string>
-    <string name="error_empty_response">Empty Response</string>
-    <string name="error_network">Failed, Network Error</string>
-    <string name="error_timeout">Timed Out</string>
-    <string name="error_exception">Failed, Exception occurred</string>
+
+    <!-- notifications -->
+    <string name="lyrics_request_handling_notifications">Lyrics request handling notifications</string>
+    <string name="timeout_canceled">Timeout canceled</string>
+    <string name="notification_lyrics_request_failed">Lyrics request failed</string>
+    <string name="notification_manual_search_suggestion">Tap here to search manually</string>
+    <string name="notification_storage_access_needed_title">Folder access needed</string>
+    <string name="notification_storage_missing_access_to_path">Tap here to grant access to %1$s.</string>
+    <string name="notification_no_saving_method_title">Lyrics saving disabled</string>
+    <string name="notification_no_saving_method_description">Enable at least one lyrics saving method.</string>
+
+    <!-- API errors -->
+    <string name="error_canceled">Canceled</string>
+    <string name="error_empty_response">Empty response</string>
+    <string name="error_network">Failed, network error</string>
+    <string name="error_timeout">Timed out</string>
+    <string name="error_exception">Failed, exception occurred</string>
     <string name="error_no_track_name">Track name cannot be empty</string>
     <string name="error_preparing_url">Failed to prepare request URL</string>
-    <string name="error_no_results">No result found</string>
-    <string name="error_processing_error">Error processing response</string>
-    <!--    lyrics file writing status messages-->
-    <string name="lyrics_write_no_permission">No access to write on this folder</string>
+    <string name="error_no_results">No results found</string>
+    <string name="error_processing_error">Failed to process response</string>
+
+    <!-- lyrics file writing status messages -->
+    <string name="lyrics_write_no_permission">No permission to write to this folder.</string>
     <string name="lyrics_write_invalid_path">Failed to determine the file path.</string>
     <string name="lyrics_write_invalid_lyrics">Failed to parse lyrics for saving.</string>
     <string name="lyrics_write_unknown_error">An unknown error occurred while saving the file.</string>
