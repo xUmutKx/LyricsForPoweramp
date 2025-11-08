@@ -7,6 +7,8 @@ import androidx.documentfile.provider.DocumentFile
 import com.kyant.taglib.PropertyMap
 import com.kyant.taglib.TagLib
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.internal.closeQuietly
 import java.io.File
 
@@ -15,36 +17,40 @@ class TaglibHelper(private val context: Context) {
     private var fd: ParcelFileDescriptor? = null
     private var file: DocumentFile? = null
 
-    fun prepareFile(filePath: String, onError: (error: StorageHelper.Result) -> Unit): Boolean {
+    suspend fun prepareFile(
+        filePath: String,
+        onError: (error: StorageHelper.Result) -> Unit
+    ): Boolean = withContext(Dispatchers.IO) {
         val parentFolder = StorageHelper.getParentFolder(context, filePath)
         if (parentFolder == null) {
             Log.e(TAG, "prepareFile: no access to file path; returning")
             onError(StorageHelper.Result.NO_PERMISSION)
-            return false
+            return@withContext false
         }
         val trackFile = parentFolder.findFile(filePath.substringAfterLast("/"))
         if (trackFile == null || !trackFile.exists() || !trackFile.isFile) {
             Log.e(TAG, "prepareFile: failed to find track file; returning")
             onError(StorageHelper.Result.NO_PERMISSION)//may get fixed by re-selecting the path
-            return false
+            return@withContext false
         }
-        this.file = trackFile
+        this@TaglibHelper.file = trackFile
         context.contentResolver.openInputStream(trackFile.uri).use { inputStream ->
             if (inputStream == null) {
                 Log.e(TAG, "prepareFile: input stream is null; returning")
                 onError(StorageHelper.Result.INVALID_FILEPATH)
-                return false
+                return@withContext false
             }
             val fileName = trackFile.name
             if (fileName.isNullOrBlank()) {
                 Log.e(TAG, "prepareFile: invalid filename; returning")
                 onError(StorageHelper.Result.INVALID_FILEPATH)
-                return false
+                return@withContext false
             }
             val outputFile = File(context.cacheDir, fileName)
             outputFile.outputStream().use { outputStream -> inputStream.copyTo(outputStream) }
-            this.fd = ParcelFileDescriptor.open(outputFile, ParcelFileDescriptor.MODE_READ_WRITE)
-            return true
+            this@TaglibHelper.fd =
+                ParcelFileDescriptor.open(outputFile, ParcelFileDescriptor.MODE_READ_WRITE)
+            return@withContext true
         }
     }
 
@@ -67,20 +73,20 @@ class TaglibHelper(private val context: Context) {
 
     fun updateLyricsTag(lyrics: String): Boolean {
         val metadata = getMetadata() ?: PropertyMap()
-        metadata["LYRICS"] = arrayOf(lyrics)
+        metadata[KEY_LYRICS] = arrayOf(lyrics)
         return setMetadata(metadata)
     }
 
     fun getLyricsTag(): String? {
         val metadata = getMetadata() ?: PropertyMap()
-        return metadata["LYRICS"]?.firstOrNull()
+        return metadata[KEY_LYRICS]?.firstOrNull()
     }
 
     fun fixMetadata(lyrics: Lyrics): Boolean {
         val metadata = getMetadata() ?: PropertyMap()
-        metadata["TITLE"] = arrayOf(lyrics.trackName)
-        lyrics.artistName?.let { metadata["ARTIST"] = arrayOf(it) }
-        lyrics.albumName?.let { metadata["ALBUM"] = arrayOf(it) }
+        metadata[KEY_TITLE] = arrayOf(lyrics.trackName)
+        lyrics.artistName?.let { metadata[KEY_ARTIST] = arrayOf(it) }
+        lyrics.albumName?.let { metadata[KEY_ALBUM] = arrayOf(it) }
         return setMetadata(metadata)
     }
 
@@ -131,5 +137,9 @@ class TaglibHelper(private val context: Context) {
 
     companion object {
         private const val TAG = "TaglibHelper"
+        const val KEY_TITLE = "TITLE"
+        const val KEY_ALBUM = "ALBUM"
+        const val KEY_ARTIST = "ARTIST"
+        const val KEY_LYRICS = "LYRICS"
     }
 }

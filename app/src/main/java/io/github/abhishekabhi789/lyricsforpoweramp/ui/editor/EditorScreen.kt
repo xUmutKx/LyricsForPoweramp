@@ -254,7 +254,7 @@ fun EditorScreen(
                     }
                 }
             }
-            val embeddedLyrics by produceState<String?>(null, fileUri) {
+            val embeddedLyrics by produceState<String?>(null, filePath) {
                 val fileAvailable = taglibHelper.prepareFile(filePath) {
                     Log.e(TAG, "EditorScreen: error reading embedded lyrics- $it")
                 }
