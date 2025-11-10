@@ -54,66 +54,67 @@ class TaglibHelper(private val context: Context) {
         }
     }
 
-    private fun getMetadata(): PropertyMap? {
+    private suspend fun getMetadata(): PropertyMap? = withContext(Dispatchers.IO) {
         if (fd == null) {
             Log.e(TAG, "getMetadata: fd is null; returning")
-            return null
+            return@withContext null
         }
         val metadata = TagLib.getMetadata(fd!!.dup().detachFd(), false)
-        return metadata?.propertyMap
+        return@withContext metadata?.propertyMap
     }
 
-    private fun setMetadata(newMetadata: PropertyMap): Boolean {
-        if (fd == null) {
-            Log.e(TAG, "setMetadata: fd is null; returning")
-            return false
+    private suspend fun setMetadata(newMetadata: PropertyMap): Boolean =
+        withContext(Dispatchers.IO) {
+            if (fd == null) {
+                Log.e(TAG, "setMetadata: fd is null; returning")
+                return@withContext false
+            }
+            return@withContext TagLib.savePropertyMap(fd!!.dup().detachFd(), newMetadata)
         }
-        return TagLib.savePropertyMap(fd!!.dup().detachFd(), newMetadata)
-    }
 
-    fun updateLyricsTag(lyrics: String): Boolean {
+    suspend fun updateLyricsTag(lyrics: String): Boolean = withContext(Dispatchers.IO) {
         val metadata = getMetadata() ?: PropertyMap()
         metadata[KEY_LYRICS] = arrayOf(lyrics)
-        return setMetadata(metadata)
+        return@withContext setMetadata(metadata)
     }
 
-    fun getLyricsTag(): String? {
+    suspend fun getLyricsTag(): String? = withContext(Dispatchers.IO) {
         val metadata = getMetadata() ?: PropertyMap()
-        return metadata[KEY_LYRICS]?.firstOrNull()
+        return@withContext metadata[KEY_LYRICS]?.firstOrNull()
     }
 
-    fun fixMetadata(lyrics: Lyrics): Boolean {
+    suspend fun fixMetadata(lyrics: Lyrics): Boolean = withContext(Dispatchers.IO) {
         val metadata = getMetadata() ?: PropertyMap()
         metadata[KEY_TITLE] = arrayOf(lyrics.trackName)
         lyrics.artistName?.let { metadata[KEY_ARTIST] = arrayOf(it) }
         lyrics.albumName?.let { metadata[KEY_ALBUM] = arrayOf(it) }
-        return setMetadata(metadata)
+        return@withContext setMetadata(metadata)
     }
 
-    fun saveModifiedFile(): Boolean {
+    suspend fun saveModifiedFile(): Boolean = withContext(Dispatchers.IO) {
         if (fd == null) {
             Log.e(TAG, "saveModifiedFile: fd is null; returning")
-            return false
+            return@withContext false
         }
 
         if (file == null || file?.exists() == false) {
             Log.e(TAG, "saveModifiedFile: file not exists returning")
-            return false
+            return@withContext false
         }
 
         val fileName = file?.name
         if (fileName.isNullOrBlank()) {
             Log.e(TAG, "saveModifiedFile: invalid filename; returning")
-            return false
+            return@withContext false
         }
 
         val tempFile = File(context.cacheDir, fileName)
         if (!tempFile.exists()) {
             Log.e(TAG, "saveModifiedFile: temp file not found; returning")
-            return false
+            return@withContext false
         }
 
-        return try {
+        return@withContext try {
             context.contentResolver.openOutputStream(file!!.uri, "wt")?.use { outputStream ->
                 tempFile.inputStream().use { inputStream ->
                     inputStream.copyTo(outputStream)
@@ -126,7 +127,7 @@ class TaglibHelper(private val context: Context) {
                 }
             } ?: run {
                 Log.e(TAG, "saveModifiedFile: failed to open output stream; returning")
-                return false
+                return@run false
             }
             true
         } catch (e: Exception) {
