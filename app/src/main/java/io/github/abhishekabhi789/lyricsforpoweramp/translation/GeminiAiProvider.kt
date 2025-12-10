@@ -163,6 +163,6 @@ class GeminiAiProvider(
     companion object {
         private const val TAG = "GeminiAiProvider"
         private const val APIURL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     }
 }
