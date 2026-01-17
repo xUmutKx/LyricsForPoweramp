@@ -14,6 +14,7 @@ import java.io.File
 
 
 class TaglibHelper(private val context: Context) {
+
     private var fd: ParcelFileDescriptor? = null
     private var file: DocumentFile? = null
 
@@ -21,36 +22,42 @@ class TaglibHelper(private val context: Context) {
         filePath: String,
         onError: (error: StorageHelper.Result) -> Unit
     ): Boolean = withContext(Dispatchers.IO) {
-        val parentFolder = StorageHelper.getParentFolder(context, filePath)
-        if (parentFolder == null) {
-            Log.e(TAG, "prepareFile: no access to file path; returning")
-            onError(StorageHelper.Result.NO_PERMISSION)
-            return@withContext false
-        }
-        val trackFile = parentFolder.findFile(filePath.substringAfterLast("/"))
-        if (trackFile == null || !trackFile.exists() || !trackFile.isFile) {
-            Log.e(TAG, "prepareFile: failed to find track file; returning")
-            onError(StorageHelper.Result.NO_PERMISSION)//may get fixed by re-selecting the path
-            return@withContext false
-        }
-        this@TaglibHelper.file = trackFile
-        context.contentResolver.openInputStream(trackFile.uri).use { inputStream ->
-            if (inputStream == null) {
-                Log.e(TAG, "prepareFile: input stream is null; returning")
-                onError(StorageHelper.Result.INVALID_FILEPATH)
+        try {
+            val parentFolder = StorageHelper.getParentFolder(context, filePath)
+            if (parentFolder == null) {
+                Log.e(TAG, "prepareFile: no access to file path; returning")
+                onError(StorageHelper.Result.NO_PERMISSION)
                 return@withContext false
             }
-            val fileName = trackFile.name
-            if (fileName.isNullOrBlank()) {
-                Log.e(TAG, "prepareFile: invalid filename; returning")
-                onError(StorageHelper.Result.INVALID_FILEPATH)
+            val trackFile = parentFolder.findFile(filePath.substringAfterLast("/"))
+            if (trackFile == null || !trackFile.exists() || !trackFile.isFile) {
+                Log.e(TAG, "prepareFile: failed to find track file; returning")
+                onError(StorageHelper.Result.NO_PERMISSION)//may get fixed by re-selecting the path
                 return@withContext false
             }
-            val outputFile = File(context.cacheDir, fileName)
-            outputFile.outputStream().use { outputStream -> inputStream.copyTo(outputStream) }
-            this@TaglibHelper.fd =
-                ParcelFileDescriptor.open(outputFile, ParcelFileDescriptor.MODE_READ_WRITE)
-            return@withContext true
+            this@TaglibHelper.file = trackFile
+            context.contentResolver.openInputStream(trackFile.uri).use { inputStream ->
+                if (inputStream == null) {
+                    Log.e(TAG, "prepareFile: input stream is null; returning")
+                    onError(StorageHelper.Result.INVALID_FILEPATH)
+                    return@withContext false
+                }
+                val fileName = trackFile.name
+                if (fileName.isNullOrBlank()) {
+                    Log.e(TAG, "prepareFile: invalid filename; returning")
+                    onError(StorageHelper.Result.INVALID_FILEPATH)
+                    return@withContext false
+                }
+                val outputFile = File(context.cacheDir, fileName)
+                outputFile.outputStream().use { outputStream -> inputStream.copyTo(outputStream) }
+                this@TaglibHelper.fd =
+                    ParcelFileDescriptor.open(outputFile, ParcelFileDescriptor.MODE_READ_WRITE)
+                return@withContext true
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "prepareFile: ${e.message}", e)
+            close()
+            return@withContext false
         }
     }
 
@@ -59,7 +66,7 @@ class TaglibHelper(private val context: Context) {
             Log.e(TAG, "getMetadata: fd is null; returning")
             return@withContext null
         }
-        val metadata = TagLib.getMetadata(fd!!.dup().detachFd(), false)
+        val metadata = runCatching { TagLib.getMetadata(fd!!.dup().detachFd(), false) }.getOrNull()
         return@withContext metadata?.propertyMap
     }
 
@@ -69,7 +76,9 @@ class TaglibHelper(private val context: Context) {
                 Log.e(TAG, "setMetadata: fd is null; returning")
                 return@withContext false
             }
-            return@withContext TagLib.savePropertyMap(fd!!.dup().detachFd(), newMetadata)
+            return@withContext runCatching {
+                TagLib.savePropertyMap(fd!!.dup().detachFd(), newMetadata)
+            }.getOrElse { false }
         }
 
     suspend fun updateLyricsTag(lyrics: String): Boolean = withContext(Dispatchers.IO) {
@@ -108,8 +117,8 @@ class TaglibHelper(private val context: Context) {
             return@withContext false
         }
 
-        val tempFile = File(context.cacheDir, fileName)
-        if (!tempFile.exists()) {
+        val tempFile = runCatching { File(context.cacheDir, fileName) }.getOrNull()
+        if (tempFile == null || !tempFile.exists()) {
             Log.e(TAG, "saveModifiedFile: temp file not found; returning")
             return@withContext false
         }
@@ -133,9 +142,16 @@ class TaglibHelper(private val context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "saveModifiedFile: ${e.message}", e)
             false
+        } finally {
+            close()
         }
     }
 
+    fun close() {
+        fd?.closeQuietly()
+        fd = null
+        file = null
+    }
     companion object {
         private const val TAG = "TaglibHelper"
         const val KEY_TITLE = "TITLE"
