@@ -19,11 +19,15 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URLEncoder
+import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 
 /**Helper to interacts with LRCLIB*/
-class LrclibApiHelper(private val client: OkHttpClient, private val gson: Gson) {
+class LrclibApiHelper @Inject constructor(
+    private val client: OkHttpClient,
+    private val gson: Gson
+) {
 
     sealed class ApiResult {
         data class Success(val data: String) : ApiResult()
@@ -119,9 +123,8 @@ class LrclibApiHelper(private val client: OkHttpClient, private val gson: Gson) 
             //when the call has already been executed.
             Log.e(TAG, "IllegalArgumentException, may be the call has already been executed", e)
             onComplete(
-                ApiResult.Failure(
-                Error.NETWORK_ERROR.apply { moreInfo = e.localizedMessage }
-            ))
+                ApiResult.Failure(Error.NETWORK_ERROR.apply { moreInfo = e.localizedMessage })
+            )
         } catch (e: SocketTimeoutException) {
             Log.e(TAG, "makeApiRequest: timeout exception", e)
             onComplete(ApiResult.Failure(Error.TIMEOUT))

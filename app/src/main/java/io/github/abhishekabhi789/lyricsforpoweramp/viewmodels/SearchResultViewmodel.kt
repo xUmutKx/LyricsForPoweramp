@@ -4,8 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsSendData
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
@@ -14,8 +15,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Collections
+import javax.inject.Inject
 
-class SearchResultViewmodel : ViewModel() {
+@HiltViewModel
+class SearchResultViewmodel @Inject constructor(private val lyricsSavingHelper: LyricsSavingHelper) :
+    ViewModel() {
 
     private var _searchResults = MutableStateFlow<List<Lyrics>>(Collections.emptyList())
     private var pendingSend: LyricsSendData? = null
@@ -23,8 +27,8 @@ class SearchResultViewmodel : ViewModel() {
     /** Search results as [List]<[Lyrics]>*/
     val searchResults = _searchResults.asStateFlow()
 
-    private val _sendLyricsState = MutableStateFlow(SendLyricsState())
-    val sendLyricsState = _sendLyricsState.asStateFlow()
+    private val _lyricsSavingState = MutableStateFlow(LyricsSavingState())
+    val lyricsSavingState = _lyricsSavingState.asStateFlow()
 
     var powerampId: Long? = null
 
@@ -46,7 +50,6 @@ class SearchResultViewmodel : ViewModel() {
     /** Will send the chosen lyrics to PowerAmp. Should call when have realId
      * @return [Boolean] indicating request attempt result*/
     fun sendLyricsToPoweramp(
-        context: Context,
         lyrics: Lyrics,
         lyricsType: LyricsType,
         markInstrumental: Boolean = false,
@@ -55,14 +58,13 @@ class SearchResultViewmodel : ViewModel() {
         clearResultState()
         viewModelScope.launch {
             powerampId?.let { realId ->
-                PowerampApiHelper.sendLyrics(
-                    context = context,
+                lyricsSavingHelper.saveLyrics(
                     filePath = filePath,
                     powerampId = realId,
                     lyrics = lyrics,
                     lyricsType = lyricsType,
                     markInstrumental = markInstrumental
-                ).collect { state -> _sendLyricsState.value = state }
+                ).collect { state -> _lyricsSavingState.value = state }
             } ?: Log.e(TAG, "sendLyricsToPoweramp: Poweramp realId is null")
         }
     }
@@ -71,7 +73,6 @@ class SearchResultViewmodel : ViewModel() {
         val request = pendingSend
         if (request != null) {
             sendLyricsToPoweramp(
-                context = context,
                 lyrics = request.lyrics,
                 lyricsType = request.type,
                 markInstrumental = request.markInstrumental
@@ -82,7 +83,7 @@ class SearchResultViewmodel : ViewModel() {
     }
 
     fun clearResultState() {
-        _sendLyricsState.value = SendLyricsState()
+        _lyricsSavingState.value = LyricsSavingState()
     }
 
     companion object {

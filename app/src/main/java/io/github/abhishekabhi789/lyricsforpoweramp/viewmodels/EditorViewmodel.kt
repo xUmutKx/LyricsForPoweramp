@@ -1,20 +1,14 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 
-import android.app.Application
-import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.maxmpz.poweramp.player.PowerampAPI
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingState
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PlaybackHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
@@ -26,10 +20,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class EditorViewmodel(
+@HiltViewModel
+class EditorViewmodel @Inject constructor(
     private val playbackHelper: PlaybackHelper,
-    private val translationHelper: TranslationHelper
+    private val translationHelper: TranslationHelper,
+    private val lyricsSavingHelper: LyricsSavingHelper
 ) : ViewModel() {
     private val timestampRegex = Regex("\\[\\d{2,3}:\\d{2}\\.\\d{2}]")
 
@@ -70,8 +67,8 @@ class EditorViewmodel(
 
     val translators = translationHelper.getAvailableTranslators()
 
-    private val _sendLyricsState = MutableStateFlow(SendLyricsState())
-    val sendLyricsState = _sendLyricsState.asStateFlow()
+    private val _lyricsSavingState = MutableStateFlow(LyricsSavingState())
+    val lyricsSavingState = _lyricsSavingState.asStateFlow()
 
     fun undo() {
         if (canUndo.value) {
@@ -116,23 +113,23 @@ class EditorViewmodel(
         isInitialized = true
     }
 
-    fun sendLyricsToPoweramp(context: Context) {
+    fun saveLyrics() {
         _inputState.value.lyrics.takeIf { it.isNotBlank() }?.let { lyricsContent ->
             viewModelScope.launch {
-                resetSendLyricsState()
-                PowerampApiHelper.sendLyrics(
-                    context = context,
+                resetLyricsSavingState()
+                lyricsSavingHelper.saveLyrics(
                     filePath = _filepath.value,
                     powerampId = powerampId,
                     lyrics = lyrics.copy(syncedLyrics = lyricsContent),
                     lyricsType = LyricsType.SYNCED,
-                ).collect { state -> _sendLyricsState.value = state }
+                    markInstrumental = false
+                ).collect { state -> _lyricsSavingState.value = state }
             }
         }
     }
 
-    fun resetSendLyricsState() {
-        _sendLyricsState.value = SendLyricsState()
+    fun resetLyricsSavingState() {
+        _lyricsSavingState.value = LyricsSavingState()
     }
 
     fun updateStackState() {
@@ -218,7 +215,7 @@ class EditorViewmodel(
         } else {
             val firstTimestampIndex = Regex("\\[\\d{2}:\\d{2}\\.\\d{2}]")
                 .find(lyricsContent)?.range?.first ?: 0
-            val prefix = lyricsContent.substring(0, firstTimestampIndex)
+            val prefix = lyricsContent.take(firstTimestampIndex)
             val lyricsWithoutPrefix = lyricsContent.substring(firstTimestampIndex)
 
             buildString {
@@ -283,14 +280,5 @@ class EditorViewmodel(
 
     companion object {
         private const val TAG = "EditorViewmodel"
-        val FACTORY: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val context = (this[APPLICATION_KEY] as Application)
-                EditorViewmodel(
-                    PlaybackHelper(context),
-                    TranslationHelper(context, RequestHelper.okHttpClient, RequestHelper.gson)
-                )
-            }
-        }
     }
 }

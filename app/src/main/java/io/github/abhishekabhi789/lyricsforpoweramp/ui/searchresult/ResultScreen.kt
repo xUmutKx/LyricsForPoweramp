@@ -54,7 +54,7 @@ fun ResultScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val result by viewmodel.searchResults.collectAsState()
     val isLaunchedFromPoweramp by remember { derivedStateOf { viewmodel.powerampId != null } }
-    val sendLyricsState by viewmodel.sendLyricsState.collectAsState()
+    val sendLyricsState by viewmodel.lyricsSavingState.collectAsState()
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
@@ -99,7 +99,6 @@ fun ResultScreen(
                         showBottomSheet = true
                         scope.launch {
                             viewmodel.sendLyricsToPoweramp(
-                                context = context,
                                 lyrics = lyrics,
                                 lyricsType = lyricsType,
                             )
@@ -128,7 +127,7 @@ fun ResultScreen(
             val path = viewmodel.filePath.substringBeforeLast("/")
             val permissionState = rememberFolderAccess(path)
             ResultBottomSheet(
-                sendLyricsState = sendLyricsState,
+                lyricsSavingState = sendLyricsState,
                 onDismiss = {
                     showBottomSheet = false
                     viewmodel.clearResultState()

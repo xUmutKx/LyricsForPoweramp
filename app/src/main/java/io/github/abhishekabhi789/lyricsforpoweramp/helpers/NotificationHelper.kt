@@ -16,8 +16,11 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker
 import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class NotificationHelper(private val context: Context) {
+@Singleton
+class NotificationHelper @Inject constructor(private val context: Context) {
     private val isReqNotificationEnabled = AppPreference.getShowNotification(context)
     private var reqNotificationId: Int = generateRequestNotificationId(context)
     private val reqNotificationChannelName: String =
@@ -61,7 +64,7 @@ class NotificationHelper(private val context: Context) {
         Log.d(TAG, "makeNotification: $content")
         val pendingIntent = if (track != null) {
             val intent = Intent(context, MainActivity::class.java).apply {
-                action = LyricsRequestWorker.Companion.MANUAL_SEARCH_ACTION
+                action = LyricsRequestWorker.MANUAL_SEARCH_ACTION
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 putExtra(PowerampAPI.Track.REAL_ID, track.realId)
                 putExtra(PowerampAPI.Track.TITLE, track.trackName)
@@ -104,7 +107,7 @@ class NotificationHelper(private val context: Context) {
 
     fun launchSettings(title: String, text: String, extras: Map<String, String>? = null) {
         val pendingIntent = Intent(context, SettingsActivity::class.java).apply {
-            action = SettingsActivity.Companion.OPEN_SETTINGS_ACTION
+            action = SettingsActivity.OPEN_SETTINGS_ACTION
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             extras?.let { extras.forEach { extra -> putExtra(extra.key, extra.value) } }
         }.run {

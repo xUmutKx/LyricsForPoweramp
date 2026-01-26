@@ -80,7 +80,7 @@ fun EditorScreen(
     val inputState by viewmodel.inputState.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
-    val sendLyricsState by viewmodel.sendLyricsState.collectAsState()
+    val lyricsSavingState by viewmodel.lyricsSavingState.collectAsState()
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
     val isPlaying by viewmodel.isPlaying.collectAsStateWithLifecycle()
     var showTranslator by rememberSaveable { mutableStateOf(false) }
@@ -192,7 +192,7 @@ fun EditorScreen(
                     }
                 })
         }, floatingActionButton = {
-            FloatingActionButton(onClick = { viewmodel.sendLyricsToPoweramp(context) }) {
+            FloatingActionButton(onClick = { viewmodel.saveLyrics() }) {
                 Icon(
                     imageVector = Icons.Default.Save,
                     contentDescription = stringResource(R.string.save),
@@ -255,13 +255,10 @@ fun EditorScreen(
                 }
             }
             val embeddedLyrics by produceState<String?>(null, filePath) {
-                val fileAvailable = taglibHelper.prepareFile(filePath) {
-                    Log.e(TAG, "EditorScreen: error reading embedded lyrics- $it")
-                }
-                if (fileAvailable) {
-                    value = taglibHelper.getLyricsTag()
-                } else {
+                taglibHelper.getTaglibSession(filePath, onError = {
                     Log.e(TAG, "EditorScreen: failed to get lyrics tag info")
+                })?.use { session ->
+                    value = session.getLyricsTag()
                 }
             }
             var showLyricsSourceSelection by remember { mutableStateOf(false) }
@@ -435,15 +432,15 @@ fun EditorScreen(
         LaunchedEffect(fontSize) {
             Log.d(TAG, "EditorScreen: fontsize $fontSize")
         }
-        if (sendLyricsState.progress != 0f) {
+        if (lyricsSavingState.progress != 0f) {
             val path = filePath.substringBeforeLast(File.separatorChar)
             val pathAccess = rememberFolderAccess(path)
             ResultBottomSheet(
-                sendLyricsState = sendLyricsState,
-                onDismiss = viewmodel::resetSendLyricsState,
+                lyricsSavingState = lyricsSavingState,
+                onDismiss = viewmodel::resetLyricsSavingState,
                 grantAccess = {
                     pathAccess.requestAccess {
-                        viewmodel.sendLyricsToPoweramp(context)
+                        viewmodel.saveLyrics()
                     }
                 },
                 onFinish = onFinish

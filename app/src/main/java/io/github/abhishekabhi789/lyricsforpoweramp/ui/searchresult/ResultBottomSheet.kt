@@ -49,7 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.SendLyricsState
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingState
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import kotlinx.coroutines.delay
 import kotlin.time.Duration
@@ -59,15 +59,15 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultBottomSheet(
-    sendLyricsState: SendLyricsState,
+    lyricsSavingState: LyricsSavingState,
     grantAccess: () -> Unit,
     onDismiss: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val timeout = remember { 3.seconds }
-    val sendToPoweramp by remember(sendLyricsState) { derivedStateOf { sendLyricsState.sendToPoweramp } }
-    val saveToStorage by remember(sendLyricsState) { derivedStateOf { sendLyricsState.saveAsFile } }
-    val embedIntoFile by remember(sendLyricsState) { derivedStateOf { sendLyricsState.embedIntoFile } }
+    val sendToPoweramp by remember(lyricsSavingState) { derivedStateOf { lyricsSavingState.sendToPoweramp } }
+    val saveToStorage by remember(lyricsSavingState) { derivedStateOf { lyricsSavingState.saveAsFile } }
+    val embedIntoFile by remember(lyricsSavingState) { derivedStateOf { lyricsSavingState.embedIntoFile } }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Row(
@@ -76,7 +76,7 @@ fun ResultBottomSheet(
                 .height(IntrinsicSize.Min)
         ) {
             val animatedProgress by animateFloatAsState(
-                targetValue = sendLyricsState.progress,
+                targetValue = lyricsSavingState.progress,
                 animationSpec = tween(1000)
             )
             VerticalProgressBar(progress = animatedProgress)
@@ -132,7 +132,7 @@ fun ResultBottomSheet(
                         onAction = if (embedIntoFile.result == StorageHelper.Result.NO_PERMISSION) grantAccess else null
                     )
                 }
-                val completed: Boolean? by remember(sendLyricsState) {
+                val completed: Boolean? by remember(lyricsSavingState) {
                     derivedStateOf {
                         val send = !sendToPoweramp.shouldPerform || sendToPoweramp.result == true
                         val saved =
@@ -141,7 +141,7 @@ fun ResultBottomSheet(
                             !embedIntoFile.shouldPerform || embedIntoFile.result == StorageHelper.Result.SUCCESS
                         when {
                             !sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform && !embedIntoFile.shouldPerform -> false
-                            sendLyricsState.progress == 1f -> true
+                            lyricsSavingState.progress == 1f -> true
                             (sendToPoweramp.result != null && !send) || (saveToStorage.result != null && !saved) || (embedIntoFile.result != null && !embedded) -> false
                             else -> null
                         }
@@ -150,7 +150,7 @@ fun ResultBottomSheet(
                 StepIndicator(stringResource(R.string.done), completed)
             }
         }
-        if (sendLyricsState.progress == 1f) {
+        if (lyricsSavingState.progress == 1f) {
             Row(
                 verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     .fillMaxWidth()

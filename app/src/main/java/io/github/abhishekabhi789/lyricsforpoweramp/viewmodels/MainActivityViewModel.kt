@@ -3,8 +3,8 @@ package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LrclibApiHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
@@ -16,10 +16,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
-class MainActivityViewModel : ViewModel() {
-    private val lrclibApiHelper = LrclibApiHelper(RequestHelper.okHttpClient, RequestHelper.gson)
+@HiltViewModel
+class MainActivityViewModel @Inject constructor(private val lrclibApiHelper: LrclibApiHelper) :
+    ViewModel() {
 
     private val _appTheme = MutableStateFlow(AppPreference.AppTheme.Auto)
 

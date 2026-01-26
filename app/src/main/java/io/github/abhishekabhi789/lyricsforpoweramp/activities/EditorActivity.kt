@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.os.BundleCompat
 import com.maxmpz.poweramp.player.PowerampAPI
+import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
@@ -16,8 +17,9 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpThe
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
+@AndroidEntryPoint
 class EditorActivity : ComponentActivity() {
-    private val viewmodel: EditorViewmodel by viewModels { EditorViewmodel.FACTORY }
+    private val viewmodel: EditorViewmodel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

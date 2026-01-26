@@ -8,16 +8,18 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.maxmpz.poweramp.player.PowerampAPI
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LrclibApiHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.NotificationHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper.sendLyrics
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.RequestHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
@@ -30,11 +32,16 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 
-class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
+@HiltWorker
+class LyricsRequestWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val lrclibApiHelper: LrclibApiHelper,
+    private val lyricsSavingHelper: LyricsSavingHelper
+) :
     CoroutineWorker(context, workerParams) {
 
     private val mContext = applicationContext
-    private var mLrclibApiHelper = LrclibApiHelper(RequestHelper.okHttpClient, RequestHelper.gson)
     private lateinit var mNotificationHelper: NotificationHelper
     private lateinit var mTrack: Track
     private var powerampTrackId = PowerampAPI.ID_NO_ID
@@ -76,7 +83,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
             return Result.failure()
         }
         val preferredLyricsType = AppPreference.getPreferredLyricsType(mContext)
-        var result: Result = Result.failure() // Store the result here
+        var result: Result = Result.failure()
 
         return withTimeoutOrNull(POWERAMP_LYRICS_REQUEST_WAIT_TIMEOUT) {
             getLyrics(
@@ -123,7 +130,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
     ) = withContext(dispatcher) {
         val useFallbackMethod = AppPreference.getSearchIfGetFailed(mContext)
         Log.i(TAG, "getLyrics: fallback to search permitted- $useFallbackMethod")
-        mLrclibApiHelper.getLyricsForTracks(
+        lrclibApiHelper.getLyricsForTracks(
             track = track,
             dispatcher = dispatcher,
             onResult = onSuccess,
@@ -132,7 +139,7 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
                 if (useFallbackMethod && error == LrclibApiHelper.Error.NO_RESULTS) {
                     Log.i(TAG, "getLyrics: trying with search method")
                     launch {
-                        mLrclibApiHelper.searchLyricsForTrack(
+                        lrclibApiHelper.searchLyricsForTrack(
                             query = track,
                             dispatcher = dispatcher,
                             onResult = { results: List<Lyrics> ->
@@ -162,10 +169,9 @@ class LyricsRequestWorker(context: Context, workerParams: WorkerParameters) :
 
     private suspend fun sendLyrics(lyrics: Lyrics, lyricsType: LyricsType) {
         val markInstrumental = AppPreference.getMarkInstrumental(mContext)
-        sendLyrics(
-            context = mContext,
+        lyricsSavingHelper.saveLyrics(
             filePath = mTrack.filePath,
-            powerampId = mTrack.realId,
+            powerampId = mTrack.realId ?: PowerampAPI.ID_NO_ID,
             lyrics = lyrics,
             lyricsType = lyricsType,
             markInstrumental = markInstrumental
