@@ -37,12 +37,12 @@ class LyricsRequestWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val lrclibApiHelper: LrclibApiHelper,
-    private val lyricsSavingHelper: LyricsSavingHelper
+    private val lyricsSavingHelper: LyricsSavingHelper,
+    private val notificationHelper: NotificationHelper
 ) :
     CoroutineWorker(context, workerParams) {
 
     private val mContext = applicationContext
-    private lateinit var mNotificationHelper: NotificationHelper
     private lateinit var mTrack: Track
     private var powerampTrackId = PowerampAPI.ID_NO_ID
 
@@ -52,7 +52,6 @@ class LyricsRequestWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result {
-        mNotificationHelper = NotificationHelper(mContext)
         powerampTrackId = inputData.getLong(Track.KEY_REAL_ID, PowerampAPI.ID_NO_ID)
         inputData.getString(Track.KEY_TRACK_NAME)?.let { trackName ->
             mTrack = Track(
@@ -76,7 +75,7 @@ class LyricsRequestWorker @AssistedInject constructor(
         val embedIntoFile = AppPreference.getEmbedLyricsAsTag(mContext)
         if (!sendToPoweramp && !saveToStorage && !embedIntoFile) {
             Log.e(TAG, "sendLyrics: both saving options are disabled")
-            mNotificationHelper.launchSettings(
+            notificationHelper.launchSettings(
                 title = getString(R.string.notification_no_saving_method_title),
                 text = getString(R.string.notification_no_saving_method_description)
             )
@@ -185,7 +184,7 @@ class LyricsRequestWorker @AssistedInject constructor(
                 else -> null
             }
             notificationText?.let {
-                mNotificationHelper.launchSettings(
+                notificationHelper.launchSettings(
                     title = mContext.getString(R.string.notification_storage_access_needed_title),
                     text = it,
                     extras = mapOf(SettingsActivity.EXTRA_REQUIRED_PATH to path)
@@ -196,7 +195,7 @@ class LyricsRequestWorker @AssistedInject constructor(
                 else state.progress == 1f
 
             if (completed == true) {
-                mNotificationHelper.cancelRequestNotification()
+                notificationHelper.cancelRequestNotification()
             }
         }
     }
@@ -206,9 +205,9 @@ class LyricsRequestWorker @AssistedInject constructor(
         val subText = getString(R.string.notification_lyrics_request_failed)
         if (::mTrack.isInitialized) {
             val content = getString(R.string.notification_manual_search_suggestion)
-            mNotificationHelper.makeRequestNotification(title, content, subText, mTrack)
+            notificationHelper.makeRequestNotification(title, content, subText, mTrack)
         } else {
-            mNotificationHelper.makeRequestNotification(title = title, subText = subText)
+            notificationHelper.makeRequestNotification(title = title, subText = subText)
         }
     }
 

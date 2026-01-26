@@ -37,59 +37,59 @@ class TaglibHelper @Inject constructor(private val context: Context) {
             }.getOrElse { false }
 
 
-        suspend fun updateLyricsTag(lyrics: String): Boolean = withContext(Dispatchers.IO) {
+        fun updateLyricsTag(lyrics: String): Boolean {
             if (closed.get()) {
                 Log.w(TAG, "updateLyricsTag: session closed")
-                return@withContext false
+                return false
             }
             val metadata = getMetadata() ?: PropertyMap()
             metadata[KEY_LYRICS] = arrayOf(lyrics)
-            return@withContext setMetadata(metadata)
+            return setMetadata(metadata)
         }
 
-        suspend fun getLyricsTag(): String? = withContext(Dispatchers.IO) {
+        fun getLyricsTag(): String? {
             if (closed.get()) {
                 Log.w(TAG, "getLyricsTag: session closed")
-                return@withContext null
+                return null
             }
             val metadata = getMetadata() ?: PropertyMap()
-            return@withContext metadata[KEY_LYRICS]?.firstOrNull()
+            return metadata[KEY_LYRICS]?.firstOrNull()
         }
 
-        suspend fun fixMetadata(lyrics: Lyrics): Boolean = withContext(Dispatchers.IO) {
+        fun fixMetadata(lyrics: Lyrics): Boolean {
             if (closed.get()) {
                 Log.w(TAG, "fixMetadata: session closed")
-                return@withContext false
+                return false
             }
             val metadata = getMetadata() ?: PropertyMap()
             metadata[KEY_TITLE] = arrayOf(lyrics.trackName)
             lyrics.artistName?.let { metadata[KEY_ARTIST] = arrayOf(it) }
             lyrics.albumName?.let { metadata[KEY_ALBUM] = arrayOf(it) }
-            return@withContext setMetadata(metadata)
+            return setMetadata(metadata)
         }
 
-        suspend fun saveModifiedFile(): Boolean = withContext(Dispatchers.IO) {
+        fun saveModifiedFile(): Boolean {
             if (closed.get()) {
                 Log.w(TAG, "saveModifiedFile: session closed")
-                return@withContext false
+                return false
             }
             if (!trackFile.exists()) {
                 Log.e(TAG, "saveModifiedFile: file not exists returning")
-                return@withContext false
+                return false
             }
 
             val fileName = trackFile.name
             if (fileName.isNullOrBlank()) {
                 Log.e(TAG, "saveModifiedFile: invalid filename; returning")
-                return@withContext false
+                return false
             }
 
             if (!tempFile.exists()) {
                 Log.e(TAG, "saveModifiedFile: temp file not found; returning")
-                return@withContext false
+                return false
             }
 
-            return@withContext try {
+            return try {
                 context.contentResolver.openOutputStream(trackFile.uri, "wt")?.use { outputStream ->
                     tempFile.inputStream().use { inputStream ->
                         inputStream.copyTo(outputStream)

@@ -1,6 +1,5 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -69,7 +68,7 @@ class SearchResultViewmodel @Inject constructor(private val lyricsSavingHelper: 
         }
     }
 
-    fun retrySend(context: Context) {
+    fun retrySend() {
         val request = pendingSend
         if (request != null) {
             sendLyricsToPoweramp(

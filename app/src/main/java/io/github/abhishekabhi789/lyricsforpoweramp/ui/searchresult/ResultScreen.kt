@@ -134,7 +134,7 @@ fun ResultScreen(
                 },
                 grantAccess = {
                     permissionState.requestAccess {
-                        viewmodel.retrySend(context)
+                        viewmodel.retrySend()
                     }
                 },
                 onFinish = onFinish
