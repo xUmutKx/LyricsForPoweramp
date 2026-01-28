@@ -29,6 +29,9 @@
     <string name="grant_access">Grant Access</string>
     <string name="failed_to_open_folder_picker">Couldn’t open folder picker</string>
     <string name="open">Open</string>
+    <string name="edit_metadata">Edit Metadata</string>
+    <string name="saved">Saved</string>
+    <string name="failed">Failed</string>
 
     <!-- top bar -->
     <string name="top_bar_menu_descriptions">More Options</string>

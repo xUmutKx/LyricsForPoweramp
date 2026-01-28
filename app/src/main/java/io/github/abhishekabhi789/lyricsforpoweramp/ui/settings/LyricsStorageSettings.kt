@@ -198,125 +198,123 @@ fun LyricsStorageSettings(
                     modifier = Modifier.semantics { contentDescription = accessibilityLabel })
             }
         }
-        AnimatedVisibility(visible = saveAsFile || embedIntoFile) {
-            val accessRequestedPath by viewmodel.accessRequestedPath.collectAsState()
-            var savedUris by rememberSaveable { mutableStateOf(AppPreference.getSavedUris(context)) }
-            val pickFolderLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.OpenDocumentTree()
-            ) { uri ->
-                uri?.let {
-                    context.contentResolver.takePersistableUriPermission(
-                        it,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    )
-                    AppPreference.saveFolderUri(context, it)
-                    savedUris = savedUris.toMutableSet().apply { add(it) }.distinct().toList()
-                    //clearing the requested URI
-                    viewmodel.setAccessRequestedPath(null)
+        val accessRequestedPath by viewmodel.accessRequestedPath.collectAsState()
+        var savedUris by rememberSaveable { mutableStateOf(AppPreference.getSavedUris(context)) }
+        val pickFolderLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocumentTree()
+        ) { uri ->
+            uri?.let {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+                AppPreference.saveFolderUri(context, it)
+                savedUris = savedUris.toMutableSet().apply { add(it) }.distinct().toList()
+                //clearing the requested URI
+                viewmodel.setAccessRequestedPath(null)
+            }
+        }
+        Column(modifier = modifier.fillMaxWidth()) {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            Text(
+                text = stringResource(R.string.settings_add_folder),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .padding(bottom = 8.dp)
+            )
+            val onPermissionRequest = {
+                runCatching { pickFolderLauncher.launch(null) }.exceptionOrNull()?.let {
+                    Log.e(TAG, "LyricsStorageSettings: request failed", it)
+                    Toast(context).run {
+                        setText(R.string.failed_to_open_folder_picker)
+                        duration = Toast.LENGTH_SHORT
+                        show()
+                    }
+                }
+                Unit
+            }
+            BasicSettings(label = stringResource(R.string.settings_add_folder_list_title)) { interactionSource ->
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
+                            onPermissionRequest()
+                        }
+                    }
+                }
+                TextButton(onClick = { onPermissionRequest() }) {
+                    Icon(Icons.Default.AddCircle, null)
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.settings_add_folder_add_new))
                 }
             }
-            Column(modifier = modifier.fillMaxWidth()) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    text = stringResource(R.string.settings_add_folder),
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .padding(bottom = 8.dp)
-                )
-                val onPermissionRequest = {
-                    runCatching { pickFolderLauncher.launch(null) }.exceptionOrNull()?.let {
-                        Log.e(TAG, "LyricsStorageSettings: request failed", it)
-                        Toast(context).run {
-                            setText(R.string.failed_to_open_folder_picker)
-                            duration = Toast.LENGTH_SHORT
-                            show()
-                        }
-                    }
-                    Unit
-                }
-                BasicSettings(label = stringResource(R.string.settings_add_folder_list_title)) { interactionSource ->
-                    LaunchedEffect(interactionSource) {
-                        interactionSource.interactions.collect { interaction ->
-                            if (interaction is PressInteraction.Release) {
-                                onPermissionRequest()
+            if (savedUris.isNotEmpty()) {
+                for ((i, uri) in savedUris.withIndex()) {
+                    val path by remember(uri) { derivedStateOf { uri.getTreeDocumentId() } }
+                    val folderAccessState = rememberFolderAccess(path)
+                    val onPermissionRequest = {
+                        folderAccessState.requestAccess { uri ->
+                            uri?.let {
+                                AppPreference.saveFolderUri(context, it)
+                                savedUris = savedUris.toMutableSet().apply {
+                                    add(it)
+                                }.distinct().toList()
                             }
                         }
                     }
-                    TextButton(onClick = { onPermissionRequest() }) {
-                        Icon(Icons.Default.AddCircle, null)
-                        Spacer(Modifier.width(4.dp))
-                        Text(stringResource(R.string.settings_add_folder_add_new))
-                    }
-                }
-                if (savedUris.isNotEmpty()) {
-                    for ((i, uri) in savedUris.withIndex()) {
-                        val path by remember(uri) { derivedStateOf { uri.getTreeDocumentId() } }
-                        val folderAccessState = rememberFolderAccess(path)
-                        val onPermissionRequest = {
-                            folderAccessState.requestAccess { uri ->
-                                uri?.let {
-                                    AppPreference.saveFolderUri(context, it)
-                                    savedUris = savedUris.toMutableSet().apply {
-                                        add(it)
-                                    }.distinct().toList()
-                                }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text("${i + 1}.", modifier = Modifier.padding(end = 8.dp))
+                        Text(
+                            path,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (!folderAccessState.hasPermission) {
+                            TextButton(onClick = onPermissionRequest) {
+                                Text(stringResource(R.string.settings_add_folder_button_grant_access))
                             }
                         }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp)
-                        ) {
-                            Text("${i + 1}.", modifier = Modifier.padding(end = 8.dp))
-                            Text(
-                                path,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (!folderAccessState.hasPermission) {
-                                TextButton(onClick = onPermissionRequest) {
-                                    Text(stringResource(R.string.settings_add_folder_button_grant_access))
-                                }
-                            }
-                            IconButton(onClick = {
-                                folderAccessState.revokeAccess()
-                                val success = AppPreference.removeSavedFolder(context, uri)
-                                if (success) savedUris = savedUris - uri
+                        IconButton(onClick = {
+                            folderAccessState.revokeAccess()
+                            val success = AppPreference.removeSavedFolder(context, uri)
+                            if (success) savedUris = savedUris - uri
 
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = stringResource(R.string.settings_add_folder_button_remove),
-                                    tint = Color.Red.copy(alpha = 0.7f)
-                                )
-                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.settings_add_folder_button_remove),
+                                tint = Color.Red.copy(alpha = 0.7f)
+                            )
                         }
                     }
-                } else {
-                    Disclaimer(
-                        textContent = stringResource(R.string.settings_add_folder_empty_list),
-                        icon = Icons.Default.Error,
-                        foregroundColor = MaterialTheme.colorScheme.onErrorContainer,
-                        backgroundColor = MaterialTheme.colorScheme.errorContainer
-                    )
                 }
-            }
-            accessRequestedPath?.let { pathUri ->
-                PermissionDialog(
-                    explanation = stringResource(
-                        R.string.settings_add_folder_permission_explanation,
-                        pathUri.getTreeDocumentId()
-                    ),
-                    allowToSuppress = false,
-                    onConfirm = { pickFolderLauncher.launch(pathUri) },
-                    onDismiss = {
-                        viewmodel.setAccessRequestedPath(null)
-                        Log.w(TAG, "LyricsStorageSettings: user ignored storage access request")
-                    }
+            } else {
+                Disclaimer(
+                    textContent = stringResource(R.string.settings_add_folder_empty_list),
+                    icon = Icons.Default.Error,
+                    foregroundColor = MaterialTheme.colorScheme.onErrorContainer,
+                    backgroundColor = MaterialTheme.colorScheme.errorContainer
                 )
             }
+        }
+        accessRequestedPath?.let { pathUri ->
+            PermissionDialog(
+                explanation = stringResource(
+                    R.string.settings_add_folder_permission_explanation,
+                    pathUri.getTreeDocumentId()
+                ),
+                allowToSuppress = false,
+                onConfirm = { pickFolderLauncher.launch(pathUri) },
+                onDismiss = {
+                    viewmodel.setAccessRequestedPath(null)
+                    Log.w(TAG, "LyricsStorageSettings: user ignored storage access request")
+                }
+            )
         }
     }
 }

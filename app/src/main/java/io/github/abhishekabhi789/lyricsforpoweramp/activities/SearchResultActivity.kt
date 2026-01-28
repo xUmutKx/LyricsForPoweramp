@@ -71,6 +71,7 @@ class SearchResultActivity : ComponentActivity() {
     }
 
     companion object {
+        const val TAG = "SearchResultActivity"
         const val KEY_RESULT = "search_result"
     }
 }

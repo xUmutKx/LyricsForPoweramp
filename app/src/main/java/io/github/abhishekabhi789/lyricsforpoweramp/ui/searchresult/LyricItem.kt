@@ -33,11 +33,13 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.InterpreterMode
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -90,7 +92,8 @@ fun LyricItem(
     lyrics: Lyrics,
     isLaunchedFromPowerAmp: Boolean,
     onLyricChosen: (preferredLyricsType: LyricsType) -> Unit,
-    onEditLyrics: (preferredLyricsType: LyricsType) -> Unit
+    onEditLyrics: (preferredLyricsType: LyricsType) -> Unit,
+    onFixMetadata: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -237,6 +240,21 @@ fun LyricItem(
                             allItems = availableLyrics,
                             onSend = onLyricChosen,
                             getLabel = { stringResource(it.shortLabelResId) })
+                        AssistChip(
+                            onClick = onFixMetadata,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.EditNote,
+                                    contentDescription = null
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.edit_metadata),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
                     }
                 }
             }
@@ -413,5 +431,11 @@ fun PreviewLyricItem() {
         plainLyrics = lyrics,
         syncedLyrics = lyrics
     )
-    LyricItem(lyrics = data, isLaunchedFromPowerAmp = true, onLyricChosen = { }, onEditLyrics = {})
+    LyricItem(
+        lyrics = data,
+        isLaunchedFromPowerAmp = true,
+        onLyricChosen = { },
+        onEditLyrics = {},
+        onFixMetadata = {}
+    )
 }

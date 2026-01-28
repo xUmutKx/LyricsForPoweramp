@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingState
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsSendData
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
@@ -17,7 +19,10 @@ import java.util.Collections
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchResultViewmodel @Inject constructor(private val lyricsSavingHelper: LyricsSavingHelper) :
+class SearchResultViewmodel @Inject constructor(
+    private val lyricsSavingHelper: LyricsSavingHelper,
+    private val taglibHelper: TaglibHelper
+) :
     ViewModel() {
 
     private var _searchResults = MutableStateFlow<List<Lyrics>>(Collections.emptyList())
@@ -31,8 +36,8 @@ class SearchResultViewmodel @Inject constructor(private val lyricsSavingHelper: 
 
     var powerampId: Long? = null
 
-    var filePath = ""
-        private set
+    private val _filePath = MutableStateFlow("")
+    val filePath = _filePath.asStateFlow()
 
     fun setSearchResults(list: List<Lyrics>) {
         _searchResults.update { list }
@@ -43,7 +48,26 @@ class SearchResultViewmodel @Inject constructor(private val lyricsSavingHelper: 
     }
 
     fun setFilePath(path: String) {
-        filePath = path
+        _filePath.value = path
+    }
+
+    private var _tagLibSession = MutableStateFlow<TaglibHelper.TagLibSession?>(null)
+    val tagLibSession = _tagLibSession.asStateFlow()
+    fun prepareTaglibSession(
+        path: String?,
+        onError: (error: StorageHelper.Result) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            if (path == null) {
+                Log.d(TAG, "prepareTaglibSession: closing taglib session")
+                _tagLibSession.value?.close()
+                _tagLibSession.value = null
+                Log.d(TAG, "prepareTaglibSession: session closed")
+            } else {
+                Log.d(TAG, "prepareTaglibSession: preparing taglib session")
+                _tagLibSession.value = taglibHelper.getTaglibSession(path, onError)
+            }
+        }
     }
 
     /** Will send the chosen lyrics to PowerAmp. Should call when have realId
@@ -58,7 +82,7 @@ class SearchResultViewmodel @Inject constructor(private val lyricsSavingHelper: 
         viewModelScope.launch {
             powerampId?.let { realId ->
                 lyricsSavingHelper.saveLyrics(
-                    filePath = filePath,
+                    filePath = _filePath.value,
                     powerampId = realId,
                     lyrics = lyrics,
                     lyricsType = lyricsType,

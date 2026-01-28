@@ -25,13 +25,13 @@ class TaglibHelper @Inject constructor(private val context: Context) {
         private val tempFile: File
     ) : Closeable {
         private val closed = AtomicBoolean(false)
-        private fun getMetadata(): PropertyMap? {
+        fun getMetadata(): PropertyMap? {
             val metadata =
                 runCatching { TagLib.getMetadata(fd.dup().detachFd(), false) }.getOrNull()
             return metadata?.propertyMap
         }
 
-        private fun setMetadata(newMetadata: PropertyMap): Boolean =
+        fun setMetadata(newMetadata: PropertyMap): Boolean =
             runCatching {
                 TagLib.savePropertyMap(fd.dup().detachFd(), newMetadata)
             }.getOrElse { false }

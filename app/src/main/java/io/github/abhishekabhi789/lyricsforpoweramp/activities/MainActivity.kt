@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -38,6 +37,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialo
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.main.AppMain
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker.Companion.MANUAL_SEARCH_ACTION
 
@@ -134,10 +134,6 @@ class MainActivity : ComponentActivity() {
         super.onRestart()
         val preferredTheme = AppPreference.getTheme(this)
         viewModel.updateTheme(preferredTheme)
-    }
-
-    private fun makeToast(@StringRes resId: Int) {
-        Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
     }
 
     companion object {

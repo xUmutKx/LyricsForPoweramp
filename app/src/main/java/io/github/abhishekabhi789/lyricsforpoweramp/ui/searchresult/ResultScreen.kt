@@ -1,10 +1,11 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -34,8 +35,11 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.SearchResultActivity.Companion.TAG
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SearchResultViewmodel
@@ -57,6 +61,10 @@ fun ResultScreen(
     val sendLyricsState by viewmodel.lyricsSavingState.collectAsState()
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val tagLibSession by viewmodel.tagLibSession.collectAsStateWithLifecycle()
+    val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
+    val permissionState = rememberFolderAccess(filePath.substringBeforeLast("/"))
+    var lyricsForTagEdit: Lyrics? by remember { mutableStateOf(null) }
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -85,11 +93,9 @@ fun ResultScreen(
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Adaptive(400.dp),
             verticalItemSpacing = 8.dp,
-            contentPadding = PaddingValues(8.dp),
+            contentPadding = paddingValues,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier
-                .padding(paddingValues)
-                .consumeWindowInsets(paddingValues)
+            modifier = Modifier.consumeWindowInsets(paddingValues)
         ) {
             items(items = result) { lyrics ->
                 LyricItem(
@@ -108,7 +114,7 @@ fun ResultScreen(
                         try {
                             val intent = Intent(context, EditorActivity::class.java).apply {
                                 putExtra(Track.KEY_REAL_ID, viewmodel.powerampId)
-                                putExtra(Track.KEY_FILE_PATH, viewmodel.filePath)
+                                putExtra(Track.KEY_FILE_PATH, filePath)
                                 putExtra(EditorActivity.KEY_PREFERRED_TYPE, lyricsType.name)
                                 putParcelableArrayListExtra(
                                     Track.KEY_LYRICS, arrayListOf(lyrics)
@@ -118,14 +124,24 @@ fun ResultScreen(
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
+                    },
+                    onFixMetadata = {
+                        lyricsForTagEdit = lyrics
+                        if (permissionState.hasPermission) {
+                            Log.d(TAG, "ResultScreen: permission already granted")
+                            viewmodel.prepareTaglibSession(filePath)
+                        } else {
+                            Log.w(TAG, "ResultScreen: permission needed")
+                            permissionState.requestAccess {
+                                viewmodel.prepareTaglibSession(filePath)
+                            }
+                        }
                     }
                 )
             }
         }
 
         if (showBottomSheet) {
-            val path = viewmodel.filePath.substringBeforeLast("/")
-            val permissionState = rememberFolderAccess(path)
             ResultBottomSheet(
                 lyricsSavingState = sendLyricsState,
                 onDismiss = {
@@ -139,6 +155,21 @@ fun ResultScreen(
                 },
                 onFinish = onFinish
             )
+        }
+    }
+    tagLibSession?.let { session ->
+        lyricsForTagEdit?.let { lyrics ->
+            BoxWithConstraints {
+                FixMetadataDialog(
+                    taglibSession = session,
+                    lyrics = lyrics,
+                    onDismiss = { viewmodel.prepareTaglibSession(null) },
+                    modifier = Modifier.heightIn(
+                        min = maxHeight.times(0.3f),
+                        max = maxHeight.times(0.8f)
+                    )
+                )
+            }
         }
     }
 }

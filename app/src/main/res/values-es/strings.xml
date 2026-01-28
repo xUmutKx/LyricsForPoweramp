@@ -29,6 +29,9 @@
     <string name="grant_access">Conceder acceso</string>
     <string name="failed_to_open_folder_picker">No se pudo abrir el selector de carpetas</string>
     <string name="open">Abrir</string>
+    <string name="edit_metadata">Editar metadatos</string>
+    <string name="saved">Guardado</string>
+    <string name="failed">Fallido</string>
 
     <!-- top bar -->
     <string name="top_bar_menu_descriptions">Más opciones</string>
