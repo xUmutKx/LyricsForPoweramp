@@ -12,7 +12,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 
 fun transformLyrics(
     text: AnnotatedString,
@@ -48,7 +49,10 @@ fun transformLyrics(
                 fontWeight = if (lineIndex in currentPlayingLines) FontWeight.Bold else FontWeight.Normal
             )
             withStyle(
-                ParagraphStyle(textIndent = TextIndent(restLine = 6.5.em), lineHeight = 1.4.em)
+                ParagraphStyle(
+                    textIndent = TextIndent(restLine = TextUnit(6.5f, TextUnitType.Em)),
+                    lineHeight = TextUnit(1.4f, TextUnitType.Em)
+                )
             ) {
                 var currentIndex = 0
                 potentialTimestampRegex.findAll(line).forEach { match ->
@@ -101,14 +105,9 @@ fun isValidTimestamp(ts: String): Boolean {
 fun getLineIndexesForSelection(textFieldValue: TextFieldValue): IntRange {
     val lyricsContent = textFieldValue.text
     val range = textFieldValue.selection
-    val startIndex = minOf(range.start, range.end)
-    val endIndex = maxOf(range.start, range.end)
-
-    val firstLine =
-        (lyricsContent.substring(0, (startIndex).coerceAtLeast(0)).lines().size - 1)
-            .coerceAtLeast(0)
-    val lastLine =
-        (lyricsContent.substring(0, (endIndex).coerceAtLeast(0)).lines().size - 1)
-            .coerceAtLeast(0)
+    val startIndex = minOf(range.start, range.end).coerceAtLeast(0)
+    val endIndex = maxOf(range.start, range.end).coerceAtLeast(0)
+    val firstLine = (lyricsContent.take(startIndex).lines().size - 1).coerceAtLeast(0)
+    val lastLine = (lyricsContent.take(endIndex).lines().size - 1).coerceAtLeast(0)
     return IntRange(firstLine, lastLine)
 }
