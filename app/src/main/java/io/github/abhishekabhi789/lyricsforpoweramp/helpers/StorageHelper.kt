@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.getTreeDocumentId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -159,9 +160,4 @@ object StorageHelper {
         val fileDocId = if (relativePath.isEmpty()) treeDocId else "$treeDocId/$relativePath"
         return DocumentsContract.buildDocumentUriUsingTree(treeUri, fileDocId)
     }
-}
-
-/**@return document tree id of the uri*/
-fun Uri.getTreeDocumentId(): String {
-    return DocumentsContract.getTreeDocumentId(this)
 }

@@ -24,9 +24,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper.getFileUriFromTreeUri
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.getTreeDocumentId
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.FolderAccessState.Companion.TAG
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.getTreeDocumentId
 
 class FolderAccessState internal constructor(
     private val onRequestAccess: (onResult: ((Uri?) -> Unit)?) -> Unit,
@@ -47,48 +47,40 @@ class FolderAccessState internal constructor(
 @Composable
 fun rememberFolderAccess(documentId: String): FolderAccessState {
     val context = LocalContext.current
-    val modeFlags = remember {
-        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-    }
-    val documentId by remember(documentId) {
+    val modeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+    val normalizedDocumentId by remember(documentId) {
         derivedStateOf {
             if (documentId.substringAfterLast("/").contains(".")) {
                 documentId.substringBeforeLast("/")
             } else documentId
         }
     }
-    var askPermission by rememberSaveable(documentId) { mutableStateOf(false) }
+    var askPermission by rememberSaveable(normalizedDocumentId) { mutableStateOf(false) }
     var pendingResultCallback by remember { mutableStateOf<((Uri?) -> Unit)?>(null) }
     val invokePendingResultCallback = { uri: Uri? ->
         pendingResultCallback?.invoke(uri)
         pendingResultCallback = null
     }
     //askPermission is used as key since it's change when user interacts with permission dialog
-    val accessibleParentFolder: Uri? by remember(documentId, askPermission) {
+    val accessibleParentFolder: Uri? by remember(normalizedDocumentId, askPermission) {
         derivedStateOf {
             val uriPermissions = context.contentResolver.persistedUriPermissions
             uriPermissions.filterNotNull()
-                .filter { it.isReadPermission }.mapNotNull { it.uri }
-                .maxByOrNull { uri ->
-                    calculateCommonPrefixLength(uri.getTreeDocumentId(), documentId)
-                }
+                .filter { it.isReadPermission && it.isWritePermission }.mapNotNull { it.uri }
+                .let { uris -> findParentUri(uris, normalizedDocumentId) }
         }
     }
+    Log.d(TAG, "rememberFolderAccess: accessible parent $accessibleParentFolder")
     //this saved uri helps the picker to open correct folder
-    val savedParentFolder: Uri? by remember(documentId, askPermission) {
-        derivedStateOf {
-            AppPreference.getSavedUris(context).maxByOrNull { uri ->
-                calculateCommonPrefixLength(uri.getTreeDocumentId(), documentId)
-            }
-        }
+    val savedParentFolder: Uri? by remember(normalizedDocumentId, askPermission) {
+        derivedStateOf { findParentUri(AppPreference.getSavedUris(context), normalizedDocumentId) }
     }
     val hasPermission by remember(accessibleParentFolder) {
         derivedStateOf { accessibleParentFolder != null }
     }
 
-    LaunchedEffect(accessibleParentFolder, documentId) {
-        accessibleParentFolder?.let { uri ->
-            Log.i(TAG, "rememberFolderAccess: found parent folder with access $savedParentFolder")
+    LaunchedEffect(accessibleParentFolder) {
+        if (accessibleParentFolder != null) {
             askPermission = false
         }
     }
@@ -101,18 +93,21 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
             invokePendingResultCallback(null)
             return@rememberLauncherForActivityResult
         }
-        Log.i(TAG, "rememberFolderAccess: picked uri $pickedUri")
+        val pickedUriPath = pickedUri.getTreeDocumentId()
         context.contentResolver.takePersistableUriPermission(pickedUri, modeFlags)
-        AppPreference.saveFolderUri(context, pickedUri)
-        val isValidParentPicked = documentId.startsWith(pickedUri.getTreeDocumentId())
-        invokePendingResultCallback(pickedUri)
+        Log.i(TAG, "rememberFolderAccess: picked uri $pickedUriPath")
+        val isValidParentPicked = normalizedDocumentId.startsWith(pickedUriPath)
+        if (isValidParentPicked) {
+            AppPreference.saveFolderUri(context, pickedUri)
+            invokePendingResultCallback(pickedUri)
+        }
         askPermission = !isValidParentPicked
     }
 
     if (askPermission) {
-        val launchInput by remember(documentId, savedParentFolder) {
+        val launchInput by remember(normalizedDocumentId, savedParentFolder) {
             derivedStateOf {
-                getFileUriFromTreeUri(savedParentFolder, documentId)
+                getFileUriFromTreeUri(savedParentFolder, normalizedDocumentId)
             }
         }
         val onPermissionRequest = {
@@ -147,12 +142,12 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
                 Text(
                     stringResource(
                         R.string.folder_access_request_explanation,
-                        documentId.substringBeforeLast("/")
+                        normalizedDocumentId.substringBeforeLast("/")
                     )
                 )
             })
     }
-    return remember(documentId, hasPermission) {
+    return remember(normalizedDocumentId, hasPermission) {
         FolderAccessState(
             hasPermission = hasPermission,
             onRequestAccess = { onResult ->
@@ -160,27 +155,15 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
                 pendingResultCallback = onResult
             },
             onRevokeAccess = {
-                if (hasPermission) {
-                    accessibleParentFolder?.let { uri ->
-                        val uriPermissions = context.contentResolver.persistedUriPermissions
-                        val persisted = uriPermissions.firstOrNull { it.uri == uri }
-                        if (persisted != null) {
-                            var flagsToRelease = 0
-                            if (persisted.isReadPermission) {
-                                flagsToRelease =
-                                    flagsToRelease or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            }
-                            if (persisted.isWritePermission) {
-                                flagsToRelease =
-                                    flagsToRelease or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                            }
-                            if (flagsToRelease != 0) {
-                                context.contentResolver.releasePersistableUriPermission(
-                                    uri,
-                                    flagsToRelease
-                                )
-                            }
-                        }
+                accessibleParentFolder?.let { uri ->
+                    runCatching {
+                        context.contentResolver.releasePersistableUriPermission(
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        )
+                    }.onFailure {
+                        Log.e(TAG, "rememberFolderAccess: failed to revoke ${uri.path}", it)
                     }
                 }
             },
@@ -191,10 +174,37 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
     }
 }
 
-fun calculateCommonPrefixLength(a: String, b: String): Int {
-    val minLen = minOf(a.length, b.length)
-    for (i in 0 until minLen) {
-        if (a[i] != b[i]) return i
+fun findParentUri(
+    uris: List<Uri>,
+    documentId: String
+): Uri? {
+    val (docRoot, docPath) = getRootAndPathList(documentId)
+
+    var bestMatch: Uri? = null
+    var bestDepth = -1
+
+    for (uri in uris) {
+        val (uriRoot, uriPath) = getRootAndPathList(uri.getTreeDocumentId())
+
+        if (uriRoot != docRoot) continue
+        if (uriPath.size > docPath.size) continue
+
+        if (uriPath.indices.all { uriPath[it] == docPath[it] }) {
+            if (uriPath.size > bestDepth) {
+                bestDepth = uriPath.size
+                bestMatch = uri
+            }
+        }
     }
-    return minLen
+
+    return bestMatch
+}
+
+fun getRootAndPathList(documentId: String): Pair<String, List<String>> {
+    val root = documentId.substringBefore(":")
+    val path = documentId.substringAfter(":", "")
+        .split("/")
+        .filter { it.isNotEmpty() }
+
+    return root to path
 }
