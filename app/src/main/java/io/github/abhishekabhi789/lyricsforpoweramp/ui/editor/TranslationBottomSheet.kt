@@ -104,7 +104,8 @@ fun TranslationBottomSheet(
             Text(stringResource(R.string.translation_button_label))
             LazyRow(modifier = Modifier.fillMaxWidth()) {
                 items(items = services, key = { it.nameRes }) { translator ->
-                    val isConfigured = remember(translator) { translator.isConfigured(context) }
+                    val isConfigured =
+                        remember(translator) { viewmodel.isTranslatorConfigured(translator) }
                     val tooltipState = rememberTooltipState()
                     TooltipBox(
                         state = tooltipState,

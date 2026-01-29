@@ -19,12 +19,16 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track.Companion.KEY_FILE_PATH
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultScreen
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SearchResultViewmodel
 import java.io.Serializable
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchResultActivity : ComponentActivity() {
+    @Inject
+    lateinit var appPreference: AppPreference
     private val viewmodel: SearchResultViewmodel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -32,7 +36,7 @@ class SearchResultActivity : ComponentActivity() {
         val searchResult: List<Lyrics>? = intent.extras?.let {
             BundleCompat.getParcelableArrayList(it, KEY_RESULT, Lyrics::class.java)
         }
-        val preferredTheme = AppPreference.getTheme(this)
+        val preferredTheme = appPreference.getTheme()
         val realId: Long? = getSerializableExtra(intent, Track.KEY_REAL_ID)
         val fileUri: String? = getSerializableExtra(intent, KEY_FILE_PATH)
 
@@ -42,7 +46,7 @@ class SearchResultActivity : ComponentActivity() {
                 realId?.let { viewmodel.setPowerampId(it) }
                 fileUri?.let { viewmodel.setFilePath(it) }
             }
-            val useDarkTheme = AppPreference.isDarkTheme(theme = preferredTheme)
+            val useDarkTheme = isDarkTheme(theme = preferredTheme)
             LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),

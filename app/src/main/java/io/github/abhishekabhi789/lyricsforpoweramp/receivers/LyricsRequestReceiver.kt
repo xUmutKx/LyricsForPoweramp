@@ -13,13 +13,17 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import com.maxmpz.poweramp.player.PowerampAPI
+import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class LyricsRequestReceiver : BroadcastReceiver() {
-
+    @Inject
+    lateinit var powerampApiHelper: PowerampApiHelper
     @SuppressLint("NewApi")
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context != null && intent != null) {
@@ -28,7 +32,7 @@ class LyricsRequestReceiver : BroadcastReceiver() {
                 PowerampAPI.Lyrics.ACTION_NEED_LYRICS -> {
                     val realId =
                         intent.getLongExtra(PowerampAPI.Track.REAL_ID, PowerampAPI.ID_NO_ID)
-                    val track = PowerampApiHelper.makeTrack(context, intent)
+                    val track = powerampApiHelper.makeTrack(context, intent)
                     val workData = Data.Builder().run {
                         putLong(Track.KEY_REAL_ID, realId)
                         putString(Track.KEY_TRACK_NAME, track?.trackName)

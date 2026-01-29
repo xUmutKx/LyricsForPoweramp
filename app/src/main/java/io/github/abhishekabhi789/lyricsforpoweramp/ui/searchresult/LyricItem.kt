@@ -81,7 +81,6 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.CustomChip
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -91,11 +90,12 @@ fun LyricItem(
     modifier: Modifier = Modifier,
     lyrics: Lyrics,
     isLaunchedFromPowerAmp: Boolean,
+    preferredLyricsType: LyricsType,
     onLyricChosen: (preferredLyricsType: LyricsType) -> Unit,
     onEditLyrics: (preferredLyricsType: LyricsType) -> Unit,
     onFixMetadata: () -> Unit
 ) {
-    val context = LocalContext.current
+    LocalContext.current
     val scope = rememberCoroutineScope()
     val lyricPages = remember(lyrics) { listOfNotNull(lyrics.plainLyrics, lyrics.syncedLyrics) }
     val pagerState = rememberPagerState(pageCount = { lyricPages.size }, initialPage = 0)
@@ -219,8 +219,6 @@ fun LyricItem(
                             .weight(0.5f)
                             .height(IntrinsicSize.Min)
                     ) {
-                        val preferredLyricsType =
-                            remember { AppPreference.getPreferredLyricsType(context) }
                         val availableLyrics = buildList {
                             if (lyrics.syncedLyrics != null) add(LyricsType.SYNCED)
                             if (lyrics.plainLyrics != null) add(LyricsType.PLAIN)
@@ -434,6 +432,7 @@ fun PreviewLyricItem() {
     LyricItem(
         lyrics = data,
         isLaunchedFromPowerAmp = true,
+        preferredLyricsType = LyricsType.SYNCED,
         onLyricChosen = { },
         onEditLyrics = {},
         onFixMetadata = {}

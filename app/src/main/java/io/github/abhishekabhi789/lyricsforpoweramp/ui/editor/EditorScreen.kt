@@ -1,11 +1,8 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
-import android.content.Context
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -38,7 +35,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -64,7 +60,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 import java.io.File
 
@@ -89,10 +85,8 @@ fun EditorScreen(
     }
     val lyricsContent by remember(inputState) { derivedStateOf { inputState.lyrics } }
     val lyricsLines by remember(lyricsContent) { derivedStateOf { lyricsContent.lines() } }
-    val timestampDeltaCenti = remember { AppPreference.getTimestampDelta(context) }
-    var fontSize by rememberSaveable {
-        mutableFloatStateOf(AppPreference.getEditorFontSize(context) ?: defaultFontSize)
-    }
+    val timestampDeltaCenti = remember { viewmodel.timestampDelta }
+    val fontSize by viewmodel.editorFontSize.collectAsStateWithLifecycle()
 
     val selectionLineIndexes by remember(textFieldValue) {
         derivedStateOf { getLineIndexesForSelection(textFieldValue) }
@@ -181,6 +175,7 @@ fun EditorScreen(
                 onRedo = viewmodel::redo,
                 canTranslate = textFieldValue.text.isNotBlank(),
                 onTranslate = { showTranslator = true },
+                timestampDelta = timestampDeltaCenti,
                 showTimestampAdjustButtons = timestampOnSelection != null,
                 onTimestampChange = offsetTimestamp,
                 onSyncLine = onSyncLine,
@@ -315,11 +310,9 @@ fun EditorScreen(
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
-            var saveAsFileEnabled by remember { mutableStateOf(AppPreference.getSaveAsFile(context)) }
-            var embedIntoFiles by remember {
-                mutableStateOf(AppPreference.getEmbedLyricsAsTag(context))
-            }
-            var showLyricsStorageSelection by remember { mutableStateOf(false) }
+            var saveAsFileEnabled by rememberSaveable { mutableStateOf(viewmodel.saveAsFileEnabled) }
+            var embedIntoFiles by rememberSaveable { mutableStateOf(viewmodel.embedLyrics) }
+            var showLyricsStorageSelection by rememberSaveable { mutableStateOf(false) }
             if (showLyricsStorageSelection) {
                 LyricsStorageSelection(
                     title = stringResource(R.string.editor_saving_methods_dialog_title),
@@ -330,7 +323,7 @@ fun EditorScreen(
                             label = stringResource(R.string.settings_save_as_file_label),
                             checked = saveAsFileEnabled,
                             onCheckChange = {
-                                AppPreference.setSaveAsFile(context, it)
+                                viewmodel.setSaveAsFile(it)
                                 saveAsFileEnabled = it
                             }
                         )
@@ -338,7 +331,7 @@ fun EditorScreen(
                             label = stringResource(R.string.settings_embed_into_song_file_label),
                             checked = embedIntoFiles,
                             onCheckChange = {
-                                AppPreference.setEmbedLyricsAsTag(context, it)
+                                viewmodel.setEmbedLyrics(it)
                                 embedIntoFiles = it
                             }
                         )
@@ -390,7 +383,7 @@ fun EditorScreen(
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = FontFamily.Monospace,
-                    fontSize = TextUnit(fontSize, TextUnitType.Sp)
+                    fontSize = TextUnit(fontSize ?: defaultFontSize, TextUnitType.Sp)
                 ),
                 decorationBox = { innerTextField ->
                     if (lyricsContent.isEmpty()) {
@@ -419,19 +412,17 @@ fun EditorScreen(
                     .weight(1f) //needed to show playback control
                     .pointerInput(Unit) {
                         detectTransformGestures { _, _, zoom, _ ->
-                            val newSize = (fontSize * (zoom)).coerceIn(9f, 30f)
+                            val newSize =
+                                (fontSize ?: defaultFontSize).times(zoom).coerceIn(9f, 30f)
                             if (newSize != fontSize) {
-                                fontSize = newSize
-                                AppPreference.setEditorFontSize(context, newSize)
+                                viewmodel.setEditorFontSize(newSize)
                             }
                         }
                     },
             )
             PlaybackControl(viewmodel = viewmodel, folderAccessState = folderAccessState)
         }
-        LaunchedEffect(fontSize) {
-            Log.d(TAG, "EditorScreen: fontsize $fontSize")
-        }
+
         if (lyricsSavingState.progress != 0f) {
             val path = filePath.substringBeforeLast(File.separatorChar)
             val pathAccess = rememberFolderAccess(path)
@@ -475,8 +466,4 @@ fun EditorSuggestions(
             }
         }
     }
-}
-
-private fun Context.makeToast(@StringRes resId: Int) {
-    Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
 }

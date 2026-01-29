@@ -1,28 +1,27 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.translation
 
-import android.content.Context
 import com.google.gson.Gson
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import okhttp3.OkHttpClient
+import javax.inject.Inject
 import javax.inject.Provider
 
-class TranslationHelper(
-    private val context: Context,
+class TranslationHelper @Inject constructor(
+    private val appPreference: AppPreference,
     okHttpClientProvider: Provider<OkHttpClient>,
     gson: Gson
 ) {
 
     private val client by lazy { okHttpClientProvider.get() }
 
-
-    private val geminiApiKey = AppPreference.getTranslationApiKey(context, Translator.GEMINI)
+    private val geminiApiKey = appPreference.getTranslationApiKey(Translator.GEMINI)
     private val gemini by lazy { GeminiAiProvider(client, gson, geminiApiKey) }
 
     fun getAvailableTranslators(): List<Translator> = Translator.entries
 
     suspend fun getSupportedLanguages(translator: Translator, lyrics: String): RequestState {
-        if (!translator.isConfigured(context)) {
+        if (!translator.isConfigured()) {
             return RequestState.Failure("No API Key")
         }
         val result = when (translator) {
@@ -46,7 +45,7 @@ class TranslationHelper(
         targetLanguage: String,
         translator: Translator
     ): RequestState {
-        if (!translator.isConfigured(context)) {
+        if (!translator.isConfigured()) {
             return RequestState.Failure("No API Key")
         }
         val result = when (translator) {
@@ -57,5 +56,9 @@ class TranslationHelper(
             is Result.Failure -> RequestState.Failure(result.error)
             is Result.Success -> RequestState.Success(result.response)
         }
+    }
+
+    private fun Translator.isConfigured(): Boolean {
+        return appPreference.getTranslationApiKey(this).isNotEmpty()
     }
 }

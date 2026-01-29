@@ -36,6 +36,7 @@ import java.io.File
 class LyricsRequestWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
+    private val appPreference: AppPreference,
     private val lrclibApiHelper: LrclibApiHelper,
     private val lyricsSavingHelper: LyricsSavingHelper,
     private val notificationHelper: NotificationHelper
@@ -70,9 +71,9 @@ class LyricsRequestWorker @AssistedInject constructor(
 
     private suspend fun handleLyricsRequest(dispatcher: CoroutineDispatcher = Dispatchers.IO): Result {
         Log.i(TAG, "handleLyricsRequest: request for $mTrack")
-        val sendToPoweramp = AppPreference.getSendLyricsToPoweramp(mContext)
-        val saveToStorage = AppPreference.getSaveAsFile(mContext)
-        val embedIntoFile = AppPreference.getEmbedLyricsAsTag(mContext)
+        val sendToPoweramp = appPreference.getSendLyricsToPoweramp()
+        val saveToStorage = appPreference.getSaveAsFile()
+        val embedIntoFile = appPreference.getEmbedLyricsAsTag()
         if (!sendToPoweramp && !saveToStorage && !embedIntoFile) {
             Log.e(TAG, "sendLyrics: both saving options are disabled")
             notificationHelper.launchSettings(
@@ -81,7 +82,7 @@ class LyricsRequestWorker @AssistedInject constructor(
             )
             return Result.failure()
         }
-        val preferredLyricsType = AppPreference.getPreferredLyricsType(mContext)
+        val preferredLyricsType = appPreference.getPreferredLyricsType()
         var result: Result = Result.failure()
 
         return withTimeoutOrNull(POWERAMP_LYRICS_REQUEST_WAIT_TIMEOUT) {
@@ -127,7 +128,7 @@ class LyricsRequestWorker @AssistedInject constructor(
         onSuccess: (Lyrics) -> Unit,
         onError: (LrclibApiHelper.Error) -> Unit
     ) = withContext(dispatcher) {
-        val useFallbackMethod = AppPreference.getSearchIfGetFailed(mContext)
+        val useFallbackMethod = appPreference.getSearchIfGetFailed()
         Log.i(TAG, "getLyrics: fallback to search permitted- $useFallbackMethod")
         lrclibApiHelper.getLyricsForTracks(
             track = track,
@@ -167,7 +168,7 @@ class LyricsRequestWorker @AssistedInject constructor(
     }
 
     private suspend fun sendLyrics(lyrics: Lyrics, lyricsType: LyricsType) {
-        val markInstrumental = AppPreference.getMarkInstrumental(mContext)
+        val markInstrumental = appPreference.getMarkInstrumental()
         lyricsSavingHelper.saveLyrics(
             filePath = mTrack.filePath,
             powerampId = mTrack.realId ?: PowerampAPI.ID_NO_ID,

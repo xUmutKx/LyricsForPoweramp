@@ -20,9 +20,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NotificationHelper @Inject constructor(private val context: Context) {
-    private val isReqNotificationEnabled = AppPreference.getShowNotification(context)
-    private var reqNotificationId: Int = generateRequestNotificationId(context)
+class NotificationHelper @Inject constructor(
+    private val context: Context,
+    private val appPreference: AppPreference
+) {
+    private val isReqNotificationEnabled = appPreference.getShowNotification()
+    private var reqNotificationId: Int = generateRequestNotificationId()
     private val reqNotificationChannelName: String =
         context.getString(R.string.lyrics_request_handling_notifications)
     private val permissionNotificationId: Int = PERMISSION_NOTIFICATION_ID
@@ -99,8 +102,8 @@ class NotificationHelper @Inject constructor(private val context: Context) {
         notificationManager.cancel(reqNotificationId)
     }
 
-    private fun generateRequestNotificationId(context: Context): Int {
-        val overwriteNotification = AppPreference.getOverwriteNotification(context)
+    private fun generateRequestNotificationId(): Int {
+        val overwriteNotification = appPreference.getOverwriteNotification()
         return if (overwriteNotification) DEFAULT_REQ_NOTIFICATION_ID else UUID.randomUUID()
             .hashCode()
     }

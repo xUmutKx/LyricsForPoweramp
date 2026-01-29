@@ -82,10 +82,10 @@ fun AppSettings(
                 .padding(bottom = 8.dp)
         ) {
             item { AppThemeSettings(viewmodel = viewmodel) }
-            item { LyricsRequestSettings() }
+            item { LyricsRequestSettings(viewmodel = viewmodel) }
             item { LyricsStorageSettings(viewmodel = viewmodel) }
-            item { EditorSettings() }
-            item { FilterSettings() }
+            item { EditorSettings(viewmodel = viewmodel) }
+            item { FilterSettings(viewmodel = viewmodel) }
         }
     }
 }

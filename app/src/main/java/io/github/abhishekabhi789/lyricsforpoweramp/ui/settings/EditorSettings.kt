@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,22 +30,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorSettings(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
+fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) {
     SettingsGroup(
         title = stringResource(R.string.settings_editor_label),
         icon = Icons.Default.EditNote,
@@ -73,7 +71,15 @@ fun EditorSettings(modifier: Modifier = Modifier) {
                     icon = Icons.Default.Info,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
-                TranslatorApiKey(translator = Translator.GEMINI)
+                val translatorKeys by viewmodel.translationApiKey.collectAsStateWithLifecycle()
+                translatorKeys.forEach { (translator, apiKey) ->
+                    TranslatorApiKey(
+                        translator = translator,
+                        apiKey = apiKey,
+                        onKeyChange = { viewmodel.setTranslationApiKey(translator, it) },
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                }
             }
         }
         BasicSettings(
@@ -82,22 +88,14 @@ fun EditorSettings(modifier: Modifier = Modifier) {
         ) {
             val suggstedSteps = listOf(1, 5, 10, 25, 50)
             var expanded by remember { mutableStateOf(false) }
-            var savedValue by remember { mutableIntStateOf(AppPreference.getTimestampDelta(context)) }
+            val savedValue by viewmodel.timestampDelta.collectAsStateWithLifecycle()
             DropdownSettings(
                 expanded = expanded,
                 currentValue = savedValue,
                 values = suggstedSteps,
                 onExpandChanged = { expanded = it },
-                getLabel = {
-                    stringResource(
-                        R.string.settings_timestamp_step_dropdown_item,
-                        it
-                    )
-                },
-                onSelection = {
-                    savedValue = it
-                    AppPreference.setTimestampDelta(context, it)
-                },
+                getLabel = { stringResource(R.string.settings_timestamp_step_dropdown_item, it) },
+                onSelection = { viewmodel.setTimestampDelta(it) },
                 modifier = Modifier.padding(start = 4.dp)
             )
         }
@@ -105,18 +103,18 @@ fun EditorSettings(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TranslatorApiKey(modifier: Modifier = Modifier, translator: Translator) {
-    val context = LocalContext.current
+fun TranslatorApiKey(
+    modifier: Modifier = Modifier,
+    translator: Translator,
+    apiKey: String,
+    onKeyChange: (String) -> Unit
+) {
     val focusManager = LocalFocusManager.current
-    var savedApiKey by remember {
-        mutableStateOf(AppPreference.getTranslationApiKey(context, translator))
-    }
-    var inputValue by rememberSaveable { mutableStateOf(savedApiKey) }
+    var inputValue by rememberSaveable(apiKey) { mutableStateOf(apiKey) }
     var showPassword by rememberSaveable { mutableStateOf(false) }
     val saveInput = {
-        AppPreference.setTranslatorApiKey(context, inputValue, translator)
         focusManager.clearFocus()
-        savedApiKey = inputValue
+        onKeyChange(inputValue)
     }
     Column(
         modifier = modifier
@@ -129,7 +127,7 @@ fun TranslatorApiKey(modifier: Modifier = Modifier, translator: Translator) {
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions { saveInput() },
             trailingIcon = {
-                if (inputValue != savedApiKey) {
+                if (inputValue != apiKey) {
                     IconButton(onClick = saveInput) {
                         Icon(Icons.Default.Done, stringResource(R.string.save))
                     }

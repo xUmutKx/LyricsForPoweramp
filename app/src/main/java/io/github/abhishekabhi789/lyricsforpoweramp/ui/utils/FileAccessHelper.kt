@@ -22,11 +22,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper.getFileUriFromTreeUri
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.FolderAccessState.Companion.TAG
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.getTreeDocumentId
+import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 class FolderAccessState internal constructor(
     private val onRequestAccess: (onResult: ((Uri?) -> Unit)?) -> Unit,
@@ -45,8 +47,12 @@ class FolderAccessState internal constructor(
 
 /** @param documentId the id of the folder document to access. e.g. primary/Music/Folder*/
 @Composable
-fun rememberFolderAccess(documentId: String): FolderAccessState {
+fun rememberFolderAccess(
+    documentId: String,
+    settingsViewModel: SettingsViewModel = viewModel()
+): FolderAccessState {
     val context = LocalContext.current
+    val savedUris by settingsViewModel.savedUris.collectAsStateWithLifecycle()
     val modeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
     val normalizedDocumentId by remember(documentId) {
         derivedStateOf {
@@ -73,7 +79,7 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
     Log.d(TAG, "rememberFolderAccess: accessible parent $accessibleParentFolder")
     //this saved uri helps the picker to open correct folder
     val savedParentFolder: Uri? by remember(normalizedDocumentId, askPermission) {
-        derivedStateOf { findParentUri(AppPreference.getSavedUris(context), normalizedDocumentId) }
+        derivedStateOf { findParentUri(savedUris, normalizedDocumentId) }
     }
     val hasPermission by remember(accessibleParentFolder) {
         derivedStateOf { accessibleParentFolder != null }
@@ -98,7 +104,7 @@ fun rememberFolderAccess(documentId: String): FolderAccessState {
         Log.i(TAG, "rememberFolderAccess: picked uri $pickedUriPath")
         val isValidParentPicked = normalizedDocumentId.startsWith(pickedUriPath)
         if (isValidParentPicked) {
-            AppPreference.saveFolderUri(context, pickedUri)
+            settingsViewModel.saveNewUri(pickedUri)
             invokePendingResultCallback(pickedUri)
         }
         askPermission = !isValidParentPicked

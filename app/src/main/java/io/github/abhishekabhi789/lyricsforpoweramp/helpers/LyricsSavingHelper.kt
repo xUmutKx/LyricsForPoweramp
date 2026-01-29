@@ -14,6 +14,7 @@ import javax.inject.Inject
 
 class LyricsSavingHelper @Inject constructor(
     private val context: Context,
+    private val appPreference: AppPreference,
     private val powerampAPIHelper: PowerampApiHelper,
     private val storageHelper: StorageHelper,
     private val taglibHelper: TaglibHelper,
@@ -22,15 +23,15 @@ class LyricsSavingHelper @Inject constructor(
         filePath: String,
         powerampId: Long,
         lyrics: Lyrics,
-        lyricsType: LyricsType = AppPreference.getPreferredLyricsType(context),
-        markInstrumental: Boolean = AppPreference.getMarkInstrumental(context)
+        lyricsType: LyricsType = appPreference.getPreferredLyricsType(),
+        markInstrumental: Boolean = appPreference.getMarkInstrumental()
     ): Flow<LyricsSavingState> = flow {
         //these configs are read everytime user saving lyrics, to get the up-to date values
-        val shouldSendToPA = AppPreference.getSendLyricsToPoweramp(context)
-        val shouldSaveAsFile = AppPreference.getSaveAsFile(context)
-        val embedIntoFile = AppPreference.getEmbedLyricsAsTag(context)
-        val fixMetadata = AppPreference.getFixMetadata(context)
-        val saveIdTagsInFile = AppPreference.getSaveIdTagsInFile(context)
+        val shouldSendToPA = appPreference.getSendLyricsToPoweramp()
+        val shouldSaveAsFile = appPreference.getSaveAsFile()
+        val embedIntoFile = appPreference.getEmbedLyricsAsTag()
+        val fixMetadata = appPreference.getFixMetadata()
+        val saveIdTagsInFile = appPreference.getSaveIdTagsInFile()
 
         var progress = 0.1f
         var state = LyricsSavingState(

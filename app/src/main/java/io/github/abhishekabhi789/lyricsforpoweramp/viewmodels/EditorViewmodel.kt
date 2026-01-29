@@ -16,6 +16,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditorViewmodel @Inject constructor(
+    private val appPreference: AppPreference,
     private val playbackHelper: PlaybackHelper,
     private val translationHelper: TranslationHelper,
     private val lyricsSavingHelper: LyricsSavingHelper
@@ -69,6 +71,24 @@ class EditorViewmodel @Inject constructor(
 
     private val _lyricsSavingState = MutableStateFlow(LyricsSavingState())
     val lyricsSavingState = _lyricsSavingState.asStateFlow()
+
+    val preferredLyricsType by lazy { appPreference.getPreferredLyricsType() }
+    val timestampDelta by lazy { appPreference.getTimestampDelta() }
+    val saveAsFileEnabled by lazy { appPreference.getSaveAsFile() }
+    fun setSaveAsFile(enabled: Boolean) = appPreference::setSaveAsFile
+    val embedLyrics by lazy { appPreference.getEmbedLyricsAsTag() }
+    fun setEmbedLyrics(enabled: Boolean) = appPreference::setEmbedLyricsAsTag
+
+    fun isTranslatorConfigured(translator: Translator): Boolean {
+        return appPreference.getTranslationApiKey(translator).isNotEmpty()
+    }
+
+    private val _editorFontSize = MutableStateFlow(appPreference.getEditorFontSize())
+    val editorFontSize = _editorFontSize.asStateFlow()
+    fun setEditorFontSize(size: Float) {
+        appPreference.setEditorFontSize(size)
+        _editorFontSize.value = size
+    }
 
     fun undo() {
         if (canUndo.value) {

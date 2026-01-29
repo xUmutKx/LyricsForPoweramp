@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.AppSettings
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @AndroidEntryPoint
@@ -26,7 +26,7 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val preferredTheme by viewmodel.themeState.collectAsState()
-            val useDarkTheme = AppPreference.isDarkTheme(theme = preferredTheme)
+            val useDarkTheme = isDarkTheme(theme = preferredTheme)
             LaunchedEffect(Unit) {
                 when (intent?.action) {
                     OPEN_SETTINGS_ACTION -> {

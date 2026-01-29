@@ -4,17 +4,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.about.AboutScreen
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class AboutActivity : ComponentActivity() {
+    @Inject
+    lateinit var appPreference: AppPreference
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            val preferredTheme = AppPreference.getTheme(this)
-            val useDarkTheme = AppPreference.isDarkTheme(theme = preferredTheme)
+            val preferredTheme = appPreference.getTheme()
+            val useDarkTheme = isDarkTheme(theme = preferredTheme)
             LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
                 AboutScreen(onFinish = ::finish)
             }

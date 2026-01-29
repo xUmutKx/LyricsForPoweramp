@@ -36,14 +36,22 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.FirstTimeInfoDi
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.main.AppMain
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker.Companion.MANUAL_SEARCH_ACTION
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
+
+    @Inject
+    lateinit var powerampApiHelper: PowerampApiHelper
+
+    @Inject
+    lateinit var appPreference: AppPreference
 
     @SuppressLint("InlinedApi")
     @OptIn(ExperimentalPermissionsApi::class)
@@ -53,18 +61,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             LaunchedEffect(Unit) {
-                viewModel.updateTheme(AppPreference.getTheme(this@MainActivity))
+                viewModel.updateTheme(appPreference.getTheme())
             }
             val appTheme by viewModel.appTheme.collectAsState()
-            val useDarkTheme = AppPreference.isDarkTheme(theme = appTheme)
+            val useDarkTheme = isDarkTheme(theme = appTheme)
             var firstTimeInfoShown by rememberSaveable {
-                mutableStateOf(AppPreference.getFirstTimeInfoShown(this@MainActivity))
+                mutableStateOf(appPreference.getFirstTimeInfoShown())
             }
             var readyToShowFirstTimeInfo by rememberSaveable { mutableStateOf(false) }
             LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
                 /* should not ask from here if user disabled notifications from settings*/
                 val shouldAskForNotificationPermission = rememberSaveable {
-                    AppPreference.getShowNotification(this@MainActivity)
+                    appPreference.getShowNotification()
                 }
                 val permissionState = rememberPermissionState(
                     permission = Manifest.permission.POST_NOTIFICATIONS
@@ -94,7 +102,7 @@ class MainActivity : ComponentActivity() {
                         },
                         onDismiss = { disableNotification ->
                             if (disableNotification) {
-                                AppPreference.setShowNotification(this@MainActivity, false)
+                                appPreference.setShowNotification(false)
                                 makeToast(R.string.settings_permission_toast_notification_disabled)
                             }
                             showPermissionDialog = false
@@ -103,7 +111,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 if (!BuildConfig.DEBUG && readyToShowFirstTimeInfo && !firstTimeInfoShown) FirstTimeInfoDialog {
-                    AppPreference.setFirstTimeInfoShown(this@MainActivity, true)
+                    appPreference.setFirstTimeInfoShown(true)
                     firstTimeInfoShown = true
                 }
                 Surface(
@@ -112,7 +120,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     when (intent?.action) {
                         PowerampAPI.Lyrics.ACTION_LYRICS_LINK, MANUAL_SEARCH_ACTION -> {
-                            PowerampApiHelper.makeTrack(this, intent)?.let { track ->
+                            powerampApiHelper.makeTrack(this, intent)?.let { track ->
                                 viewModel.updateInputState(
                                     InputState(
                                         queryString = track.trackName,
@@ -132,7 +140,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onRestart() {
         super.onRestart()
-        val preferredTheme = AppPreference.getTheme(this)
+        val preferredTheme = appPreference.getTheme()
         viewModel.updateTheme(preferredTheme)
     }
 

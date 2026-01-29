@@ -31,10 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +41,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -52,7 +50,6 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.getTreeDocumentId
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
@@ -71,13 +68,8 @@ fun LyricsStorageSettings(
             label = stringResource(R.string.settings_send_to_poweramp_label),
             description = stringResource(R.string.settings_send_to_poweramp_description)
         ) { interactionSource ->
-            var savedChoice by remember {
-                mutableStateOf(AppPreference.getSendLyricsToPoweramp(context))
-            }
-            val onSwitchToggle = { enabled: Boolean ->
-                AppPreference.setSendLyricsToPoweramp(context, enabled)
-                savedChoice = enabled
-            }
+            val savedChoice by viewmodel.sendLyricsToPoweramp.collectAsStateWithLifecycle()
+            val onSwitchToggle = { enabled: Boolean -> viewmodel.setSendLyricsToPoweramp(enabled) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
@@ -94,15 +86,12 @@ fun LyricsStorageSettings(
                 checked = savedChoice, onCheckedChange = onSwitchToggle,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
-        var saveAsFile by remember { mutableStateOf(AppPreference.getSaveAsFile(context)) }
+        val saveAsFile by viewmodel.saveAsFile.collectAsStateWithLifecycle()
         BasicSettings(
             label = stringResource(R.string.settings_save_as_file_label),
             description = stringResource(R.string.settings_save_as_file_description)
         ) { interactionSource ->
-            val onSwitchToggle = { enabled: Boolean ->
-                AppPreference.setSaveAsFile(context, enabled)
-                saveAsFile = enabled
-            }
+            val onSwitchToggle = { enabled: Boolean -> viewmodel.setSaveAsFile(enabled) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
@@ -118,17 +107,14 @@ fun LyricsStorageSettings(
                 checked = saveAsFile, onCheckedChange = onSwitchToggle,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
-        var saveIdTagsInFile by remember {
-            mutableStateOf(AppPreference.getSaveIdTagsInFile(context))
-        }
+        val saveIdTagsInFile by viewmodel.saveIdTagsInFile.collectAsStateWithLifecycle()
         AnimatedVisibility(visible = saveAsFile) {
             BasicSettings(
                 label = stringResource(R.string.settings_save_id_tags_in_lrc_file_label),
                 description = stringResource(R.string.settings_save_id_tags_in_lrc_file_description)
             ) { interactionSource ->
                 val onSwitchToggle = { enabled: Boolean ->
-                    AppPreference.setSaveIdTagsInFile(context, enabled)
-                    saveIdTagsInFile = enabled
+                    viewmodel.setSaveIdTagsInFile(enabled)
                 }
                 LaunchedEffect(interactionSource) {
                     interactionSource.interactions.collect { interaction ->
@@ -148,14 +134,13 @@ fun LyricsStorageSettings(
             }
         }
 
-        var embedIntoFile by remember { mutableStateOf(AppPreference.getEmbedLyricsAsTag(context)) }
+        val embedIntoFile by viewmodel.embedLyricsIntoFile.collectAsStateWithLifecycle()
         BasicSettings(
             label = stringResource(R.string.settings_embed_into_song_file_label),
             description = stringResource(R.string.settings_embed_into_song_file_description)
         ) { interactionSource ->
             val onSwitchToggle = { enabled: Boolean ->
-                AppPreference.setEmbedLyricsAsTag(context, enabled)
-                embedIntoFile = enabled
+                viewmodel.setEmbedLyricsIntoFile(enabled)
             }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
@@ -173,14 +158,13 @@ fun LyricsStorageSettings(
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
         AnimatedVisibility(visible = embedIntoFile) {
-            var fixMetadata by remember { mutableStateOf(AppPreference.getFixMetadata(context)) }
+            val fixMetadata by viewmodel.fixMetadata.collectAsStateWithLifecycle()
             BasicSettings(
                 label = stringResource(R.string.settings_fix_metadata_with_lyrics_info_label),
                 description = stringResource(R.string.settings_fix_metadata_with_lyrics_info_description),
             ) { interactionSource ->
                 val onSwitchToggle = { enabled: Boolean ->
-                    AppPreference.setFixMetadata(context, enabled)
-                    fixMetadata = enabled
+                    viewmodel.setFixMetadata(enabled)
                 }
                 LaunchedEffect(interactionSource) {
                     interactionSource.interactions.collect { interaction ->
@@ -199,7 +183,7 @@ fun LyricsStorageSettings(
             }
         }
         val accessRequestedPath by viewmodel.accessRequestedPath.collectAsState()
-        var savedUris by rememberSaveable { mutableStateOf(AppPreference.getSavedUris(context)) }
+        val savedUris by viewmodel.savedUris.collectAsStateWithLifecycle()
         val pickFolderLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree()
         ) { uri ->
@@ -208,10 +192,7 @@ fun LyricsStorageSettings(
                     it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                AppPreference.saveFolderUri(context, it)
-                savedUris = savedUris.toMutableSet().apply { add(it) }.distinct().toList()
-                //clearing the requested URI
-                viewmodel.setAccessRequestedPath(null)
+                viewmodel.saveNewUri(uri)
             }
         }
         Column(modifier = modifier.fillMaxWidth()) {
@@ -254,12 +235,7 @@ fun LyricsStorageSettings(
                     val folderAccessState = rememberFolderAccess(path)
                     val onPermissionRequest = {
                         folderAccessState.requestAccess { uri ->
-                            uri?.let {
-                                AppPreference.saveFolderUri(context, it)
-                                savedUris = savedUris.toMutableSet().apply {
-                                    add(it)
-                                }.distinct().toList()
-                            }
+                            uri?.let { viewmodel.saveNewUri(it) }
                         }
                     }
                     Row(
@@ -281,9 +257,7 @@ fun LyricsStorageSettings(
                         }
                         IconButton(onClick = {
                             folderAccessState.revokeAccess()
-                            val success = AppPreference.removeSavedFolder(context, uri)
-                            if (success) savedUris = savedUris - uri
-
+                            viewmodel.removeUri(uri)
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,

@@ -27,11 +27,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.abhishekabhi789.lyricsforpoweramp.R
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -48,15 +46,14 @@ fun EditorBottomBar(
     onRedo: () -> Unit,
     canTranslate: Boolean,
     onTranslate: () -> Unit,
+    timestampDelta: Int,
     onTimestampChange: (increase: Boolean) -> Unit,
     showTimestampAdjustButtons: Boolean,
     onSyncLine: () -> Unit,
     enablePlayLine: Boolean,
     onPlayLine: () -> Unit,
 ) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val timestampDeltaCenti = remember { AppPreference.getTimestampDelta(context) }
     val listState = rememberLazyListState()
 
     BottomAppBar(
@@ -121,7 +118,7 @@ fun EditorBottomBar(
                         icon = Icons.Default.Remove,
                         label = stringResource(
                             R.string.decrease_timestamp_by,
-                            timestampDeltaCenti
+                            timestampDelta
                         ),
                         onClick = { onTimestampChange(false) },
                         enabled = showTimestampAdjustButtons
@@ -132,7 +129,7 @@ fun EditorBottomBar(
                         icon = Icons.Default.Add,
                         label = stringResource(
                             R.string.increase_timestamp_by,
-                            timestampDeltaCenti
+                            timestampDelta
                         ),
                         onClick = { onTimestampChange(true) },
                         enabled = showTimestampAdjustButtons
@@ -179,6 +176,7 @@ fun PreviewEditorBottomBar() {
         onRedo = {},
         canTranslate = true,
         onTranslate = {},
+        timestampDelta = 10,
         onTimestampChange = {},
         showTimestampAdjustButtons = true,
         onSyncLine = {},

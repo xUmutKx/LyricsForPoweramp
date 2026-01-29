@@ -65,6 +65,7 @@ fun ResultScreen(
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
     val permissionState = rememberFolderAccess(filePath.substringBeforeLast("/"))
     var lyricsForTagEdit: Lyrics? by remember { mutableStateOf(null) }
+    val preferredLyricsType = remember { viewmodel.preferredLyricsType }
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -101,6 +102,7 @@ fun ResultScreen(
                 LyricItem(
                     lyrics = lyrics,
                     isLaunchedFromPowerAmp = isLaunchedFromPoweramp,
+                    preferredLyricsType = preferredLyricsType,
                     onLyricChosen = { lyricsType ->
                         showBottomSheet = true
                         scope.launch {

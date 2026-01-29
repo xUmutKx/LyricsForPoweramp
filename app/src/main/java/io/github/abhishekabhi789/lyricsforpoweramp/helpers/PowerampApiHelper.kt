@@ -9,26 +9,13 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.FilterType
+import javax.inject.Inject
 
 /**
  * Contains functions helping to send and receive data with PowerAmp
  */
-object PowerampApiHelper {
+class PowerampApiHelper @Inject constructor(private val appPreference: AppPreference) {
 
-    private const val TAG = "PowerampApiHelper"
-    const val INSTRUMENTAL_MARKING = "Instrumental Track" +
-            """
-                  .♫♫♫.
-                  ♫♫♫♫'
-                ♫
-                ♫
-                ♫
-                ♫
-                ♫
-    ,♫♫♫♫♫
-    ♫♫♫♫♫'
-    `♫♫♫'
-"""
 
     /**
      * Makes a [Track] for the intent passed by PowerAmp
@@ -72,8 +59,8 @@ object PowerampApiHelper {
      * Corresponding filter words will be removed from the value.
      */
     fun processField(context: Context, field: FilterType, value: String?): String? {
-        val filter = AppPreference.getFilter(context, field)?.lines()
-        return filter?.fold(value) { cleanedValue, filterItem ->
+        val filter = appPreference.getFilter(field).lines()
+        return filter.fold(value) { cleanedValue, filterItem ->
             try {
                 cleanedValue?.replace(Regex(filterItem, RegexOption.IGNORE_CASE), "")
             } catch (e: Exception) {
@@ -121,5 +108,22 @@ object PowerampApiHelper {
             }
             appendLine(context.getString(R.string.response_footer_text))
         }
+    }
+
+    companion object {
+        private const val TAG = "PowerampApiHelper"
+        const val INSTRUMENTAL_MARKING = "Instrumental Track" +
+                """
+                  .♫♫♫.
+                  ♫♫♫♫'
+                ♫
+                ♫
+                ♫
+                ♫
+                ♫
+    ,♫♫♫♫♫
+    ♫♫♫♫♫'
+    `♫♫♫'
+"""
     }
 }

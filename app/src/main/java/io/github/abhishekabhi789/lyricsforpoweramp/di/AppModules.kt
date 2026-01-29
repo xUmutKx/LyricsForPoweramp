@@ -14,6 +14,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.inject.Provider
@@ -44,9 +45,11 @@ object AppModules {
     @Provides
     fun provideLyricsSavingHelper(
         @ApplicationContext context: Context,
+        appPreference: AppPreference,
+        powerampApiHelper: PowerampApiHelper,
         taglibHelper: TaglibHelper
     ) =
-        LyricsSavingHelper(context, PowerampApiHelper, StorageHelper, taglibHelper)
+        LyricsSavingHelper(context, appPreference, powerampApiHelper, StorageHelper, taglibHelper)
 
     @Provides
     fun providePlaybackHelper(@ApplicationContext context: Context) = PlaybackHelper(context)
@@ -54,12 +57,16 @@ object AppModules {
     @Provides
     fun provideTranslationHelper(
         @ApplicationContext context: Context,
+        appPreference: AppPreference,
         okHttpClientProvider: Provider<OkHttpClient>,
         gson: Gson
-    ) = TranslationHelper(context, okHttpClientProvider, gson)
+    ) = TranslationHelper(appPreference, okHttpClientProvider, gson)
 
     @Provides
-    fun provideNotificationHelper(@ApplicationContext context: Context) =
-        NotificationHelper(context)
+    fun provideNotificationHelper(
+        @ApplicationContext context: Context,
+        appPreference: AppPreference
+    ) =
+        NotificationHelper(context, appPreference)
 
 }

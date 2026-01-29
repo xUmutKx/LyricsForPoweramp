@@ -14,7 +14,6 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.editor.EditorScreen
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
 @AndroidEntryPoint
@@ -32,7 +31,7 @@ class EditorActivity : ComponentActivity() {
         val filePath = intent.getStringExtra(Track.KEY_FILE_PATH)
         val preferredLyricsType = intent.getStringExtra(KEY_PREFERRED_TYPE)
             ?.let { name -> LyricsType.valueOf(name) }
-            ?: AppPreference.getPreferredLyricsType(this)
+            ?: viewmodel.preferredLyricsType
         if (powerampId == 0L || filePath == null || lyrics == null) {
             Log.i(TAG, "onCreate: realId = $powerampId || path = $filePath || lyrics == $lyrics")
             Log.e(TAG, "onCreate: failed to get required parameters, returning")

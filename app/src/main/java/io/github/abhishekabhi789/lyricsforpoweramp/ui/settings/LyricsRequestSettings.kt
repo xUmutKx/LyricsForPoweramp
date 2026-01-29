@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
@@ -41,12 +42,12 @@ import com.google.accompanist.permissions.shouldShowRationale
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @SuppressLint("InlinedApi", "PermissionLaunchedDuringComposition")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun LyricsRequestSettings(modifier: Modifier = Modifier) {
+fun LyricsRequestSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) {
     SettingsGroup(
         modifier = modifier,
         title = stringResource(R.string.settings_lyrics_request_label),
@@ -90,18 +91,13 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                 }
             )
         }
-        var fallbackToSearch by remember {
-            mutableStateOf(AppPreference.getSearchIfGetFailed(context))
-        }
+        val fallbackToSearch by viewmodel.fallbackToSearch.collectAsStateWithLifecycle()
         BasicSettings(
             label = stringResource(id = R.string.settings_fallback_to_search_label),
             description = stringResource(id = R.string.settings_fallback_to_search_description),
             modifier = Modifier
         ) { interactionSource ->
-            val onSwitchToggle = { enabled: Boolean ->
-                fallbackToSearch = enabled
-                AppPreference.setSearchIfGetFailed(context, enabled)
-            }
+            val onSwitchToggle = { enabled: Boolean -> viewmodel.setFallbackToSearchMode(enabled) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
@@ -121,18 +117,13 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                     .semantics { contentDescription = accessibilityLabel }
             )
         }
-        var showNotification by remember {
-            mutableStateOf(AppPreference.getShowNotification(context))
-        }
+        val showNotification by viewmodel.showNotification.collectAsStateWithLifecycle()
         BasicSettings(
             label = stringResource(id = R.string.settings_request_fail_notification_label),
             description = stringResource(id = R.string.settings_request_fail_notification_description),
             modifier = Modifier
         ) { interactionSource ->
-            val onSwitchToggle = { enabled: Boolean ->
-                showNotification = enabled
-                AppPreference.setShowNotification(context, enabled)
-            }
+            val onSwitchToggle = { enabled: Boolean -> viewmodel.setShowNotification(enabled) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
@@ -177,9 +168,7 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                 }
             }
         }
-        var overwriteNotification by remember {
-            mutableStateOf(AppPreference.getOverwriteNotification(context))
-        }
+        val overwriteNotification by viewmodel.overwriteNotification.collectAsStateWithLifecycle()
         AnimatedVisibility(
             visible = showNotification,
             enter = slideInVertically() + expandVertically(expandFrom = Alignment.Top) + fadeIn(),
@@ -190,10 +179,8 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                 description = stringResource(id = R.string.settings_overwrite_existing_notification_description),
                 modifier = Modifier.alpha(if (hasNotificationPermission) 1.0f else 0.7f)
             ) { interactionSource ->
-                val onSwitchToggle = { enabled: Boolean ->
-                    overwriteNotification = enabled
-                    AppPreference.setOverwriteNotification(context, enabled)
-                }
+                val onSwitchToggle =
+                    { enabled: Boolean -> viewmodel.setOverwriteNotification(enabled) }
                 LaunchedEffect(interactionSource) {
                     interactionSource.interactions.collect { interaction ->
                         if (interaction is PressInteraction.Release) {
@@ -230,17 +217,12 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                     }
                 }
             }
-            var preferredLyricsType by remember {
-                mutableStateOf(AppPreference.getPreferredLyricsType(context))
-            }
+            val preferredLyricsType by viewmodel.preferredLyricsType.collectAsStateWithLifecycle()
             DropdownSettings(
                 expanded = expanded,
                 currentValue = preferredLyricsType,
                 values = listOf(LyricsType.SYNCED, LyricsType.PLAIN),
-                onSelection = {
-                    preferredLyricsType = it
-                    AppPreference.setPreferredLyricsType(context, it)
-                },
+                onSelection = { selectedType -> viewmodel.setPreferredLyricsType(selectedType) },
                 onExpandChanged = { if (expanded) expanded = false },
                 getLabel = { stringResource(it.shortLabelResId) }
             )
@@ -249,13 +231,8 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
             label = stringResource(R.string.settings_mark_instrumental_tracks),
             description = stringResource(R.string.settings_mark_instrumental_tracks_description)
         ) { interactionSource ->
-            var markInstrumental by remember {
-                mutableStateOf(AppPreference.getMarkInstrumental(context))
-            }
-            val onSwitchToggle = { enabled: Boolean ->
-                markInstrumental = enabled
-                AppPreference.setMarkInstrumental(context, enabled)
-            }
+            val markInstrumental by viewmodel.getMarkInstrumental.collectAsStateWithLifecycle()
+            val onSwitchToggle = { enabled: Boolean -> viewmodel.setMarkInstrumental(enabled) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
@@ -274,7 +251,6 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .semantics { contentDescription = accessibilityLabel }
-
             )
         }
     }

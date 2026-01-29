@@ -11,6 +11,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsSendData
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchResultViewmodel @Inject constructor(
+    private val appPreference: AppPreference,
     private val lyricsSavingHelper: LyricsSavingHelper,
     private val taglibHelper: TaglibHelper
 ) :
@@ -38,6 +40,8 @@ class SearchResultViewmodel @Inject constructor(
 
     private val _filePath = MutableStateFlow("")
     val filePath = _filePath.asStateFlow()
+
+    val preferredLyricsType by lazy { appPreference.getPreferredLyricsType() }
 
     fun setSearchResults(list: List<Lyrics>) {
         _searchResults.update { list }
