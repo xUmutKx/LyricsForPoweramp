@@ -5,11 +5,19 @@ import com.google.gson.Gson
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import okhttp3.OkHttpClient
+import javax.inject.Provider
 
-class TranslationHelper(private val context: Context, client: OkHttpClient, gson: Gson) {
+class TranslationHelper(
+    private val context: Context,
+    okHttpClientProvider: Provider<OkHttpClient>,
+    gson: Gson
+) {
+
+    private val client by lazy { okHttpClientProvider.get() }
+
 
     private val geminiApiKey = AppPreference.getTranslationApiKey(context, Translator.GEMINI)
-    private val gemini = GeminiAiProvider(client, gson, geminiApiKey)
+    private val gemini by lazy { GeminiAiProvider(client, gson, geminiApiKey) }
 
     fun getAvailableTranslators(): List<Translator> = Translator.entries
 

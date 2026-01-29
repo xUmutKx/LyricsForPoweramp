@@ -16,6 +16,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -53,9 +54,9 @@ object AppModules {
     @Provides
     fun provideTranslationHelper(
         @ApplicationContext context: Context,
-        okHttpClient: OkHttpClient,
+        okHttpClientProvider: Provider<OkHttpClient>,
         gson: Gson
-    ) = TranslationHelper(context, okHttpClient, gson)
+    ) = TranslationHelper(context, okHttpClientProvider, gson)
 
     @Provides
     fun provideNotificationHelper(@ApplicationContext context: Context) =

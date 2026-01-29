@@ -20,14 +20,16 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URLEncoder
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 
 /**Helper to interacts with LRCLIB*/
 class LrclibApiHelper @Inject constructor(
-    private val client: OkHttpClient,
-    private val gson: Gson
+    private val gson: Gson,
+    private val okHttpClientProvider: Provider<OkHttpClient>
 ) {
+    private val client by lazy { okHttpClientProvider.get() }
 
     sealed class ApiResult {
         data class Success(val data: String) : ApiResult()
