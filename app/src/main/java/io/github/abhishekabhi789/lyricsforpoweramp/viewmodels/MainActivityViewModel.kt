@@ -1,32 +1,57 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.maxmpz.poweramp.player.PowerampAPI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LrclibApiHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker.Companion.MANUAL_SEARCH_ACTION
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
-class MainActivityViewModel @Inject constructor(private val lrclibApiHelper: LrclibApiHelper) :
-    ViewModel() {
+class MainActivityViewModel @Inject constructor(
+    private val lrclibApiHelper: LrclibApiHelper,
+    private val appPreference: AppPreference,
+    private val powerampApiHelper: PowerampApiHelper
+) : ViewModel() {
 
-    private val _appTheme = MutableStateFlow(AppPreference.AppTheme.Auto)
+    val appTheme = appPreference.appTheme
+        .stateIn(viewModelScope, SharingStarted.Lazily, AppPreference.defaultTheme)
 
-    /** Current App theme */
-    val appTheme = _appTheme.asStateFlow()
+    val firstTimeInfo = appPreference.firstTimeInfoShown
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setFirstTimeInfoShown(value: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.FIRST_TIME_INFO_SHOWN, value)
+        }
+    }
+
+    val showNotification = appPreference.notifyOnRequestFailure
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setShowNotification(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.SHOW_LYRICS_REQUEST_NOTIFICATION, enabled)
+        }
+    }
 
     private val _inputState = MutableStateFlow(InputState())
 
@@ -56,10 +81,23 @@ class MainActivityViewModel @Inject constructor(private val lrclibApiHelper: Lrc
     /* Holds the current search job, inorder to cancel it if needed.*/
     private var searchJob: Job? = Job()
 
-
-    /** Updates app theme */
-    fun updateTheme(theme: AppPreference.AppTheme) {
-        _appTheme.value = theme
+    fun updateLaunchIntent(intent: Intent) {
+        when (intent.action) {
+            PowerampAPI.Lyrics.ACTION_LYRICS_LINK, MANUAL_SEARCH_ACTION -> {
+                viewModelScope.launch {
+                    powerampApiHelper.makeTrack(intent)?.let { track ->
+                        updateInputState(
+                            InputState(
+                                queryString = track.trackName,
+                                queryTrack = track,
+                                searchMode = if (track.artistName.isNullOrEmpty() && track.albumName.isNullOrEmpty())
+                                    InputState.SearchMode.Coarse else InputState.SearchMode.Fine
+                            )
+                        )
+                    }
+                }
+            }
+        }
     }
 
     /** Updates [inputState]*/

@@ -5,20 +5,24 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.core.os.BundleCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maxmpz.poweramp.player.PowerampAPI
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.editor.EditorScreen
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
 
 @AndroidEntryPoint
 class EditorActivity : ComponentActivity() {
-    private val viewmodel: EditorViewmodel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -29,17 +33,27 @@ class EditorActivity : ComponentActivity() {
         }
         val powerampId = intent.getLongExtra(Track.KEY_REAL_ID, PowerampAPI.ID_NO_ID)
         val filePath = intent.getStringExtra(Track.KEY_FILE_PATH)
-        val preferredLyricsType = intent.getStringExtra(KEY_PREFERRED_TYPE)
+        val chosenLyricsType = intent.getStringExtra(KEY_LYRICS_TYPE)
             ?.let { name -> LyricsType.valueOf(name) }
-            ?: viewmodel.preferredLyricsType
         if (powerampId == 0L || filePath == null || lyrics == null) {
             Log.i(TAG, "onCreate: realId = $powerampId || path = $filePath || lyrics == $lyrics")
             Log.e(TAG, "onCreate: failed to get required parameters, returning")
+            makeToast(R.string.failed)
             finish()
             return
         }
-        viewmodel.initialize(powerampId, filePath, lyrics, preferredLyricsType)
         setContent {
+            val viewmodel: EditorViewmodel = viewModel()
+            val preferredLyricsType by viewmodel.preferredLyricsType.collectAsStateWithLifecycle()
+
+            LaunchedEffect(Unit) {
+                viewmodel.initialize(
+                    powerampId = powerampId,
+                    filePath = filePath,
+                    lyrics = lyrics,
+                    preferredLyricsType = chosenLyricsType ?: preferredLyricsType
+                )
+            }
             LyricsForPowerAmpTheme {
                 EditorScreen(viewmodel = viewmodel, onFinish = { finish() })
             }
@@ -48,6 +62,6 @@ class EditorActivity : ComponentActivity() {
 
     companion object {
         const val TAG = "EditorActivity"
-        const val KEY_PREFERRED_TYPE = "preferred_lyrics_type"
+        const val KEY_LYRICS_TYPE = "preferred_lyrics_type"
     }
 }

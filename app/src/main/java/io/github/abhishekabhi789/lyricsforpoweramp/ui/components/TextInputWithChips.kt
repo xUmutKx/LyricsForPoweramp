@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Close
@@ -45,8 +48,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -64,8 +67,8 @@ fun TextInputWithChips(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     var showClearWarningDialog: Boolean by rememberSaveable { mutableStateOf(false) }
-    var value by rememberSaveable { mutableStateOf("") }
-    val chipList: SnapshotStateList<String> = remember {
+    val inputState = rememberTextFieldState()
+    val chipList: SnapshotStateList<String> = remember(initialValue) {
         mutableStateListOf(*initialValue?.toTypedArray() ?: emptyArray())
     }
     var isFocused by rememberSaveable { mutableStateOf(false) }
@@ -105,7 +108,7 @@ fun TextInputWithChips(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     },
-                    onClick = { value = chipText },
+                    onClick = { inputState.setTextAndPlaceCursorAtEnd(chipText) },
                     trailingIcon = {
                         IconButton(
                             onClick = {
@@ -129,21 +132,20 @@ fun TextInputWithChips(
                 )
             }
             TextField(
-                value = value,
-                onValueChange = { value = it },
+                state = inputState,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {
-                    if (value.isNotEmpty()) {
-                        chipList.add(value)
+                onKeyboardAction = {
+                    if (inputState.text.isNotEmpty()) {
+                        chipList.add(inputState.text.toString())
                         onInputChange(chipList)
-                        value = ""
+                        inputState.clearText()
                     } else {
                         keyboardController?.hide()
                         focusRequester.freeFocus()
                         isFocused = false
                     }
-                }),
-                singleLine = true,
+                },
+                lineLimits = TextFieldLineLimits.SingleLine,
                 label = { Text(text = fieldLabel) },
                 colors = TextFieldDefaults.colors()
                     .copy(
@@ -155,14 +157,14 @@ fun TextInputWithChips(
                 modifier = Modifier
                     .widthIn(min = 20.dp)
                     .focusRequester(focusRequester)
-                    .semantics { contentDescription = fieldLabel }
+                    .semantics { stateDescription = "Input new $fieldLabel" }
             )
         }
-        if (chipList.isNotEmpty() || value.isNotEmpty()) {
+        if (chipList.isNotEmpty() || inputState.text.isNotEmpty()) {
             IconButton(
                 onClick = {
-                    if (value.isNotEmpty()) {
-                        value = ""
+                    if (inputState.text.isNotEmpty()) {
+                        inputState.clearText()
                     } else showClearWarningDialog = true
                 },
             ) {
@@ -194,7 +196,7 @@ fun PreviewTextInputWithChips() {
     TextInputWithChips(
         fieldLabel = "Test Input",
         leadingIcon = Icons.Default.BugReport,
-        initialValue = mutableListOf("Hello", "World"),
+        initialValue = emptyList(),// mutableListOf("Hello", "World"),
         onInputChange = {},
         modifier = Modifier.padding(horizontal = 16.dp)
     )

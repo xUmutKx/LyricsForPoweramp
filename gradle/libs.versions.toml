@@ -1,5 +1,6 @@
 [versions]
 accompanistPermissions = "0.37.3"
+datastorePreferences = "1.2.0"
 documentfile = "1.1.0"
 gson = "2.13.1"
 coreSplashscreen = "1.0.1"
@@ -22,6 +23,7 @@ ksp = "2.3.4"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }

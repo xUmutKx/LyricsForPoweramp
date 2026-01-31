@@ -66,9 +66,7 @@ import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun EditorScreen(
-    modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFinish: () -> Unit
-) {
+fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFinish: () -> Unit) {
     val timeStampRegex = rememberSaveable { Regex("(\\[\\d{2}:\\d{2}\\.\\d{2}])") }
     val context = LocalContext.current
     val taglibHelper = remember { TaglibHelper(context) }
@@ -85,7 +83,7 @@ fun EditorScreen(
     }
     val lyricsContent by remember(inputState) { derivedStateOf { inputState.lyrics } }
     val lyricsLines by remember(lyricsContent) { derivedStateOf { lyricsContent.lines() } }
-    val timestampDeltaCenti = remember { viewmodel.timestampDelta }
+    val timestampDeltaCenti by viewmodel.timestampDelta.collectAsStateWithLifecycle()
     val fontSize by viewmodel.editorFontSize.collectAsStateWithLifecycle()
 
     val selectionLineIndexes by remember(textFieldValue) {
@@ -95,8 +93,8 @@ fun EditorScreen(
         derivedStateOf {
             if (lyricsLines.isEmpty()) emptyList()
             else {
-                val safeStart = selectionLineIndexes.start.coerceIn(0, lyricsLines.lastIndex)
-                val safeEnd = selectionLineIndexes.endInclusive.coerceIn(0, lyricsLines.lastIndex)
+                val safeStart = selectionLineIndexes.first.coerceIn(0, lyricsLines.lastIndex)
+                val safeEnd = selectionLineIndexes.last.coerceIn(0, lyricsLines.lastIndex)
                 lyricsLines.slice(safeStart..safeEnd)
             }
         }
@@ -153,7 +151,7 @@ fun EditorScreen(
                 val newCursorPosition = if (nextLineIndex < lines.size) {
                     val newPosition = lines.take(nextLineIndex).sumOf { it.length + 1 }
                     timeStampRegex.findAll(lines[nextLineIndex]).lastOrNull()?.let {
-                        newPosition + it.range.endInclusive + 1
+                        newPosition + it.range.last + 1
                     } ?: newPosition
                 } else newLyrics.length
                 viewmodel.updateInputState(
@@ -310,8 +308,8 @@ fun EditorScreen(
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
-            var saveAsFileEnabled by rememberSaveable { mutableStateOf(viewmodel.saveAsFileEnabled) }
-            var embedIntoFiles by rememberSaveable { mutableStateOf(viewmodel.embedLyrics) }
+            val saveAsFileEnabled by viewmodel.saveAsFileEnabled.collectAsStateWithLifecycle()
+            val embedIntoFiles by viewmodel.embedLyrics.collectAsStateWithLifecycle()
             var showLyricsStorageSelection by rememberSaveable { mutableStateOf(false) }
             if (showLyricsStorageSelection) {
                 LyricsStorageSelection(
@@ -322,18 +320,12 @@ fun EditorScreen(
                         LyricsStorage(
                             label = stringResource(R.string.settings_save_as_file_label),
                             checked = saveAsFileEnabled,
-                            onCheckChange = {
-                                viewmodel.setSaveAsFile(it)
-                                saveAsFileEnabled = it
-                            }
+                            onCheckChange = { viewmodel.setSaveAsFile(it) }
                         )
                         LyricsStorage(
                             label = stringResource(R.string.settings_embed_into_song_file_label),
                             checked = embedIntoFiles,
-                            onCheckChange = {
-                                viewmodel.setEmbedLyrics(it)
-                                embedIntoFiles = it
-                            }
+                            onCheckChange = { viewmodel.setEmbedLyrics(it) }
                         )
                     }
                 )

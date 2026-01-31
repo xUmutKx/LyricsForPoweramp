@@ -24,7 +24,7 @@ fun AppThemeSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel
         icon = Icons.Default.ColorLens
     ) {
         var expanded by remember { mutableStateOf(false) }
-        val currentTheme by viewmodel.themeState.collectAsStateWithLifecycle()
+        val currentTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
         val allThemes = remember { AppPreference.getThemes() }
         BasicSettings(label = stringResource(R.string.settings_app_theme_description)) { interactionSource ->
             LaunchedEffect(interactionSource) {

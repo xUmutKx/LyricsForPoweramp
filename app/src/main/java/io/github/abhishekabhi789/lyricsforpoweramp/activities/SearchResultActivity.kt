@@ -6,13 +6,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.os.BundleCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
@@ -20,27 +22,22 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Track.Companion.KEY_FIL
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultScreen
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SearchResultViewmodel
 import java.io.Serializable
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchResultActivity : ComponentActivity() {
-    @Inject
-    lateinit var appPreference: AppPreference
-    private val viewmodel: SearchResultViewmodel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val searchResult: List<Lyrics>? = intent.extras?.let {
             BundleCompat.getParcelableArrayList(it, KEY_RESULT, Lyrics::class.java)
         }
-        val preferredTheme = appPreference.getTheme()
         val realId: Long? = getSerializableExtra(intent, Track.KEY_REAL_ID)
         val fileUri: String? = getSerializableExtra(intent, KEY_FILE_PATH)
-
         setContent {
+            val viewmodel: SearchResultViewmodel = viewModel()
+            val preferredTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
             LaunchedEffect(Unit) {
                 searchResult?.let { viewmodel.setSearchResults(it) }
                 realId?.let { viewmodel.setPowerampId(it) }

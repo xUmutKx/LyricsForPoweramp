@@ -65,7 +65,7 @@ fun ResultScreen(
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
     val permissionState = rememberFolderAccess(filePath.substringBeforeLast("/"))
     var lyricsForTagEdit: Lyrics? by remember { mutableStateOf(null) }
-    val preferredLyricsType = remember { viewmodel.preferredLyricsType }
+    val preferredLyricsType by viewmodel.preferredLyricsType.collectAsStateWithLifecycle()
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -117,7 +117,7 @@ fun ResultScreen(
                             val intent = Intent(context, EditorActivity::class.java).apply {
                                 putExtra(Track.KEY_REAL_ID, viewmodel.powerampId)
                                 putExtra(Track.KEY_FILE_PATH, filePath)
-                                putExtra(EditorActivity.KEY_PREFERRED_TYPE, lyricsType.name)
+                                putExtra(EditorActivity.KEY_LYRICS_TYPE, lyricsType.name)
                                 putParcelableArrayListExtra(
                                     Track.KEY_LYRICS, arrayListOf(lyrics)
                                 )

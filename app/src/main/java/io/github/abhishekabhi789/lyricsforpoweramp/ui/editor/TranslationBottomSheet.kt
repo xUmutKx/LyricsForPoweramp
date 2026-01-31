@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
@@ -71,7 +70,7 @@ fun TranslationBottomSheet(
     val tooltipPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(
         TooltipAnchorPosition.Above
     )
-    val services = remember(viewmodel.translators.size) { viewmodel.translators }
+    val translators by viewmodel.translators.collectAsStateWithLifecycle()
     val chosenTranslator by viewmodel.chosenTranslator.collectAsStateWithLifecycle()
     val targetLanguage by viewmodel.targetLanguage.collectAsStateWithLifecycle()
     val supportedLanguageState by viewmodel.supportedLanguageState.collectAsStateWithLifecycle()
@@ -103,43 +102,47 @@ fun TranslationBottomSheet(
         Column(modifier = modifier.padding(16.dp)) {
             Text(stringResource(R.string.translation_button_label))
             LazyRow(modifier = Modifier.fillMaxWidth()) {
-                items(items = services, key = { it.nameRes }) { translator ->
-                    val isConfigured =
-                        remember(translator) { viewmodel.isTranslatorConfigured(translator) }
-                    val tooltipState = rememberTooltipState()
-                    TooltipBox(
-                        state = tooltipState,
-                        positionProvider = tooltipPositionProvider,
-                        focusable = false,
-                        tooltip = {
-                            if (!isConfigured) {
-                                PlainTooltip {
-                                    Text(
-                                        stringResource(
-                                            R.string.translation_service_not_configured,
-                                            stringResource(translator.nameRes)
+                translators.forEach { (translator, apiKey) ->
+                    item(key = translator.key) {
+                        val tooltipState = rememberTooltipState()
+                        val isConfigured = !apiKey.isNullOrBlank()
+                        TooltipBox(
+                            state = tooltipState,
+                            positionProvider = tooltipPositionProvider,
+                            focusable = false,
+                            tooltip = {
+                                if (isConfigured) {
+                                    PlainTooltip {
+                                        Text(
+                                            stringResource(
+                                                R.string.translation_service_not_configured,
+                                                stringResource(translator.nameRes)
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                             }
-                        }
-                    ) {
-                        AssistChip(
-                            enabled = isConfigured,
-                            onClick = { viewmodel.setChosenTranslator(translator) },
-                            leadingIcon = {
-                                if (chosenTranslator == translator) Icon(Icons.Default.Check, null)
-                            },
-                            label = { Text(stringResource(translator.nameRes)) },
-                            trailingIcon = {
-                                if (!isConfigured) {
-                                    Icon(
-                                        Icons.Default.Error,
-                                        stringResource(R.string.error),
-                                        tint = MaterialTheme.colorScheme.error
+                        ) {
+                            AssistChip(
+                                enabled = isConfigured,
+                                onClick = { viewmodel.setChosenTranslator(translator) },
+                                leadingIcon = {
+                                    if (chosenTranslator == translator) Icon(
+                                        Icons.Default.Check,
+                                        null
                                     )
-                                }
-                            })
+                                },
+                                label = { Text(stringResource(translator.nameRes)) },
+                                trailingIcon = {
+                                    if (!isConfigured) {
+                                        Icon(
+                                            Icons.Default.Error,
+                                            stringResource(R.string.error),
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                })
+                        }
                     }
                 }
             }

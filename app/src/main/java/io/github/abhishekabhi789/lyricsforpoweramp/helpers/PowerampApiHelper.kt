@@ -5,24 +5,41 @@ import android.content.Intent
 import android.util.Log
 import com.maxmpz.poweramp.player.PowerampAPI
 import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.di.ApplicationScope
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.FilterType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
  * Contains functions helping to send and receive data with PowerAmp
  */
-class PowerampApiHelper @Inject constructor(private val appPreference: AppPreference) {
+class PowerampApiHelper @Inject constructor(
+    private val appPreference: AppPreference,
+    @ApplicationScope private val scope: CoroutineScope
+) {
+    private var filters: Map<FilterType, List<String>> = emptyMap()
 
+
+    init {
+        observePreferences()
+    }
+
+    private fun observePreferences() {
+        scope.launch {
+            appPreference.filters.collect { filters = it }
+        }
+    }
 
     /**
      * Makes a [Track] for the intent passed by PowerAmp
      * @param intent received from PowerAmp
      * @return an instance of [Track]
      */
-    fun makeTrack(context: Context, intent: Intent): Track? {
+    fun makeTrack(intent: Intent): Track? {
         val realId = intent.getLongExtra(PowerampAPI.Track.REAL_ID, PowerampAPI.ID_NO_ID)
         val title = intent.getStringExtra(PowerampAPI.Track.TITLE)
         if (realId == PowerampAPI.ID_NO_ID || title.isNullOrEmpty()) {
@@ -42,11 +59,11 @@ class PowerampApiHelper @Inject constructor(private val appPreference: AppPrefer
             if (!path.contains(":")) path.replaceFirst("/", ":") else path
         }
         val duration: Int? = (durationMs / 1000).let { if (it == 0) null else it }
-        return processField(context, FilterType.TITLE_FILTER, title)?.let {
+        return processField(FilterType.TITLE_FILTER, title)?.let {
             Track(
                 trackName = it,
-                artistName = processField(context, FilterType.ARTISTS_FILTER, artist),
-                albumName = processField(context, FilterType.ALBUM_FILTER, album),
+                artistName = processField(FilterType.ARTISTS_FILTER, artist),
+                albumName = processField(FilterType.ALBUM_FILTER, album),
                 duration = duration,
                 filePath = filePath ?: "",
                 realId = realId,
@@ -58,13 +75,13 @@ class PowerampApiHelper @Inject constructor(private val appPreference: AppPrefer
     /**
      * Corresponding filter words will be removed from the value.
      */
-    fun processField(context: Context, field: FilterType, value: String?): String? {
-        val filter = appPreference.getFilter(field).lines()
+    fun processField(type: FilterType, value: String?): String? {
+        val filter = filters[type] ?: emptyList()
         return filter.fold(value) { cleanedValue, filterItem ->
             try {
                 cleanedValue?.replace(Regex(filterItem, RegexOption.IGNORE_CASE), "")
             } catch (e: Exception) {
-                Log.w(TAG, "Invalid regex in filter for $field: '$filterItem'", e)
+                Log.w(TAG, "Invalid regex in filter for $type: '$filterItem'", e)
                 cleanedValue?.replace(filterItem, "")
             }
         } ?: value

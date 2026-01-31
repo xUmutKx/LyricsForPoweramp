@@ -22,36 +22,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import com.maxmpz.poweramp.player.PowerampAPI
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.BuildConfig
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.FirstTimeInfoDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.main.AppMain
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
-import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker.Companion.MANUAL_SEARCH_ACTION
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModel: MainActivityViewModel by viewModels()
 
     @Inject
     lateinit var powerampApiHelper: PowerampApiHelper
-
-    @Inject
-    lateinit var appPreference: AppPreference
 
     @SuppressLint("InlinedApi")
     @OptIn(ExperimentalPermissionsApi::class)
@@ -60,20 +53,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            LaunchedEffect(Unit) {
-                viewModel.updateTheme(appPreference.getTheme())
-            }
+            val viewModel: MainActivityViewModel by viewModels()
             val appTheme by viewModel.appTheme.collectAsState()
             val useDarkTheme = isDarkTheme(theme = appTheme)
-            var firstTimeInfoShown by rememberSaveable {
-                mutableStateOf(appPreference.getFirstTimeInfoShown())
-            }
+            val firstTimeInfoShown by viewModel.firstTimeInfo.collectAsStateWithLifecycle()
             var readyToShowFirstTimeInfo by rememberSaveable { mutableStateOf(false) }
             LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
                 /* should not ask from here if user disabled notifications from settings*/
-                val shouldAskForNotificationPermission = rememberSaveable {
-                    appPreference.getShowNotification()
-                }
+                val shouldAskForNotificationPermission by viewModel.showNotification.collectAsStateWithLifecycle()
                 val permissionState = rememberPermissionState(
                     permission = Manifest.permission.POST_NOTIFICATIONS
                 ) { isGranted ->
@@ -102,7 +89,7 @@ class MainActivity : ComponentActivity() {
                         },
                         onDismiss = { disableNotification ->
                             if (disableNotification) {
-                                appPreference.setShowNotification(false)
+                                viewModel.setShowNotification(false)
                                 makeToast(R.string.settings_permission_toast_notification_disabled)
                             }
                             showPermissionDialog = false
@@ -110,27 +97,14 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                 }
-                if (!BuildConfig.DEBUG && readyToShowFirstTimeInfo && !firstTimeInfoShown) FirstTimeInfoDialog {
-                    appPreference.setFirstTimeInfoShown(true)
-                    firstTimeInfoShown = true
-                }
+                if (!BuildConfig.DEBUG && readyToShowFirstTimeInfo && !firstTimeInfoShown)
+                    FirstTimeInfoDialog(onDismiss = { viewModel.setFirstTimeInfoShown(true) })
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.tertiaryContainer,
                 ) {
-                    when (intent?.action) {
-                        PowerampAPI.Lyrics.ACTION_LYRICS_LINK, MANUAL_SEARCH_ACTION -> {
-                            powerampApiHelper.makeTrack(this, intent)?.let { track ->
-                                viewModel.updateInputState(
-                                    InputState(
-                                        queryString = track.trackName,
-                                        queryTrack = track,
-                                        searchMode = if (track.artistName.isNullOrEmpty() && track.albumName.isNullOrEmpty())
-                                            InputState.SearchMode.Coarse else InputState.SearchMode.Fine
-                                    )
-                                )
-                            }
-                        }
+                    LaunchedEffect(Unit) {
+                        viewModel.updateLaunchIntent(intent)
                     }
                     AppMain(viewModel = viewModel)
                 }
@@ -138,11 +112,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onRestart() {
-        super.onRestart()
-        val preferredTheme = appPreference.getTheme()
-        viewModel.updateTheme(preferredTheme)
-    }
 
     companion object {
         const val TAG = "MainActivity"

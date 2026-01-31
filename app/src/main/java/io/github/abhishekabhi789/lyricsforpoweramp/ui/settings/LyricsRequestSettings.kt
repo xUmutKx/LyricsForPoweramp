@@ -231,7 +231,7 @@ fun LyricsRequestSettings(modifier: Modifier = Modifier, viewmodel: SettingsView
             label = stringResource(R.string.settings_mark_instrumental_tracks),
             description = stringResource(R.string.settings_mark_instrumental_tracks_description)
         ) { interactionSource ->
-            val markInstrumental by viewmodel.getMarkInstrumental.collectAsStateWithLifecycle()
+            val markInstrumental by viewmodel.markInstrumental.collectAsStateWithLifecycle()
             val onSwitchToggle = { enabled: Boolean -> viewmodel.setMarkInstrumental(enabled) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->

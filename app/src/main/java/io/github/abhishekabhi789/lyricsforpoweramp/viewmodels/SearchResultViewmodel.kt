@@ -13,7 +13,9 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsSendData
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Collections
@@ -26,6 +28,8 @@ class SearchResultViewmodel @Inject constructor(
     private val taglibHelper: TaglibHelper
 ) :
     ViewModel() {
+    val appTheme = appPreference.appTheme
+        .stateIn(viewModelScope, SharingStarted.Lazily, AppPreference.defaultTheme)
 
     private var _searchResults = MutableStateFlow<List<Lyrics>>(Collections.emptyList())
     private var pendingSend: LyricsSendData? = null
@@ -41,7 +45,8 @@ class SearchResultViewmodel @Inject constructor(
     private val _filePath = MutableStateFlow("")
     val filePath = _filePath.asStateFlow()
 
-    val preferredLyricsType by lazy { appPreference.getPreferredLyricsType() }
+    val preferredLyricsType = appPreference.preferredLyricsType
+        .stateIn(viewModelScope, SharingStarted.Lazily, LyricsType.SYNCED)
 
     fun setSearchResults(list: List<Lyrics>) {
         _searchResults.update { list }

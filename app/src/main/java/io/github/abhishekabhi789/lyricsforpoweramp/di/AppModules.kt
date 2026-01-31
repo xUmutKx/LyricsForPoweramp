@@ -15,6 +15,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.inject.Provider
@@ -56,7 +57,6 @@ object AppModules {
 
     @Provides
     fun provideTranslationHelper(
-        @ApplicationContext context: Context,
         appPreference: AppPreference,
         okHttpClientProvider: Provider<OkHttpClient>,
         gson: Gson
@@ -65,8 +65,9 @@ object AppModules {
     @Provides
     fun provideNotificationHelper(
         @ApplicationContext context: Context,
-        appPreference: AppPreference
+        appPreference: AppPreference,
+        @ApplicationScope scope: CoroutineScope
     ) =
-        NotificationHelper(context, appPreference)
+        NotificationHelper(context, appPreference, scope)
 
 }

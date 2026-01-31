@@ -12,9 +12,12 @@ import com.maxmpz.poweramp.player.PowerampAPI
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.MainActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
+import io.github.abhishekabhi789.lyricsforpoweramp.di.ApplicationScope
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,10 +25,12 @@ import javax.inject.Singleton
 @Singleton
 class NotificationHelper @Inject constructor(
     private val context: Context,
-    private val appPreference: AppPreference
+    private val appPreference: AppPreference,
+    @ApplicationScope private val scope: CoroutineScope
 ) {
-    private val isReqNotificationEnabled = appPreference.getShowNotification()
-    private var reqNotificationId: Int = generateRequestNotificationId()
+    private var isReqNotificationEnabled: Boolean = false
+    private var overwriteNotification: Boolean = false
+    private var reqNotificationId: Int = -1
     private val reqNotificationChannelName: String =
         context.getString(R.string.lyrics_request_handling_notifications)
     private val permissionNotificationId: Int = PERMISSION_NOTIFICATION_ID
@@ -37,6 +42,22 @@ class NotificationHelper @Inject constructor(
 
     init {
         createNotificationChannel()
+        observePreferences()
+    }
+
+    private fun observePreferences() {
+        scope.launch {
+            appPreference.notifyOnRequestFailure.collect {
+                isReqNotificationEnabled = it
+            }
+        }
+
+        scope.launch {
+            appPreference.overwriteNotification.collect {
+                overwriteNotification = it
+                reqNotificationId = generateRequestNotificationId()
+            }
+        }
     }
 
     private fun createNotificationChannel() {
@@ -103,7 +124,6 @@ class NotificationHelper @Inject constructor(
     }
 
     private fun generateRequestNotificationId(): Int {
-        val overwriteNotification = appPreference.getOverwriteNotification()
         return if (overwriteNotification) DEFAULT_REQ_NOTIFICATION_ID else UUID.randomUUID()
             .hashCode()
     }

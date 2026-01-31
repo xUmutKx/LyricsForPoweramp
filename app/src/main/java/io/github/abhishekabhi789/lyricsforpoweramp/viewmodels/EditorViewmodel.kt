@@ -18,8 +18,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -67,27 +69,43 @@ class EditorViewmodel @Inject constructor(
         MutableStateFlow(RequestState.Idle)
     val translatorState = _translatorState.asStateFlow()
 
-    val translators = translationHelper.getAvailableTranslators()
-
     private val _lyricsSavingState = MutableStateFlow(LyricsSavingState())
     val lyricsSavingState = _lyricsSavingState.asStateFlow()
 
-    val preferredLyricsType by lazy { appPreference.getPreferredLyricsType() }
-    val timestampDelta by lazy { appPreference.getTimestampDelta() }
-    val saveAsFileEnabled by lazy { appPreference.getSaveAsFile() }
-    fun setSaveAsFile(enabled: Boolean) = appPreference::setSaveAsFile
-    val embedLyrics by lazy { appPreference.getEmbedLyricsAsTag() }
-    fun setEmbedLyrics(enabled: Boolean) = appPreference::setEmbedLyricsAsTag
+    val preferredLyricsType = appPreference.preferredLyricsType
+        .stateIn(viewModelScope, SharingStarted.Lazily, LyricsType.SYNCED)
 
-    fun isTranslatorConfigured(translator: Translator): Boolean {
-        return appPreference.getTranslationApiKey(translator).isNotEmpty()
+    val timestampDelta = appPreference.timestampDelta
+        .stateIn(viewModelScope, SharingStarted.Lazily, 10)
+
+    val saveAsFileEnabled = appPreference.saveLyricsAsFile
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setSaveAsFile(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.SAVE_LYRICS_IN_FILE, enabled)
+        }
     }
 
-    private val _editorFontSize = MutableStateFlow(appPreference.getEditorFontSize())
-    val editorFontSize = _editorFontSize.asStateFlow()
+    val embedLyrics = appPreference.embedLyricsIntoFile
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setEmbedLyrics(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.EMBED_LYRICS_AS_TAG, enabled)
+        }
+    }
+
+    val translators = appPreference.translators
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+
+    val editorFontSize = appPreference.editorFontSize
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
+
     fun setEditorFontSize(size: Float) {
-        appPreference.setEditorFontSize(size)
-        _editorFontSize.value = size
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.EDITOR_FONT_SIZE_SP, size)
+        }
     }
 
     fun undo() {
@@ -290,6 +308,7 @@ class EditorViewmodel @Inject constructor(
         viewModelScope.launch {
             _chosenTranslator.value = Translator.getDefault()
         }
+        viewModelScope.launch { translationHelper.refreshProviders() }
     }
 
     override fun onCleared() {

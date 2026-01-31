@@ -1,3 +1,8 @@
+import com.android.build.gradle.ProguardFiles.getDefaultProguardFile
+import org.gradle.kotlin.dsl.android
+import org.gradle.kotlin.dsl.ksp
+import org.gradle.kotlin.dsl.libs
+import org.jetbrains.kotlin.gradle.internal.types.error.ErrorModuleDescriptor.platform
 
 plugins {
     alias(libs.plugins.android.application)
@@ -93,6 +98,7 @@ dependencies {
     implementation(libs.accompanist.permissions)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.datastore.preferences)
     implementation(libs.gson)
     implementation(libs.media3.exoplayer)
     implementation(libs.documentfile)

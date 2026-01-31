@@ -32,7 +32,7 @@ class LyricsRequestReceiver : BroadcastReceiver() {
                 PowerampAPI.Lyrics.ACTION_NEED_LYRICS -> {
                     val realId =
                         intent.getLongExtra(PowerampAPI.Track.REAL_ID, PowerampAPI.ID_NO_ID)
-                    val track = powerampApiHelper.makeTrack(context, intent)
+                    val track = powerampApiHelper.makeTrack(intent)
                     val workData = Data.Builder().run {
                         putLong(Track.KEY_REAL_ID, realId)
                         putString(Track.KEY_TRACK_NAME, track?.trackName)

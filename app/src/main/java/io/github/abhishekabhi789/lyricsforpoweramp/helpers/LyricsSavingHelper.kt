@@ -8,6 +8,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
@@ -23,15 +24,14 @@ class LyricsSavingHelper @Inject constructor(
         filePath: String,
         powerampId: Long,
         lyrics: Lyrics,
-        lyricsType: LyricsType = appPreference.getPreferredLyricsType(),
-        markInstrumental: Boolean = appPreference.getMarkInstrumental()
+        lyricsType: LyricsType,
+        markInstrumental: Boolean
     ): Flow<LyricsSavingState> = flow {
         //these configs are read everytime user saving lyrics, to get the up-to date values
-        val shouldSendToPA = appPreference.getSendLyricsToPoweramp()
-        val shouldSaveAsFile = appPreference.getSaveAsFile()
-        val embedIntoFile = appPreference.getEmbedLyricsAsTag()
-        val fixMetadata = appPreference.getFixMetadata()
-        val saveIdTagsInFile = appPreference.getSaveIdTagsInFile()
+        val shouldSendToPA = appPreference.sendLyricsToPoweramp.first()
+        val shouldSaveAsFile = appPreference.saveLyricsAsFile.first()
+        val embedIntoFile = appPreference.embedLyricsIntoFile.first()
+        val saveIdTagsInFile = appPreference.saveIdTagsInFile.first()
 
         var progress = 0.1f
         var state = LyricsSavingState(
@@ -109,10 +109,6 @@ class LyricsSavingHelper @Inject constructor(
                 }
                 taglibHelper.getTaglibSession(filePath, onError = onSessionError)?.use { session ->
                     session.updateLyricsTag(lyricsText)
-                    if (fixMetadata) {
-                        if (session.fixMetadata(lyrics)) Log.i(TAG, "saveLyrics: metadata updated")
-                        else Log.e(TAG, "saveLyrics: failed to update metadata")
-                    }
                     session.saveModifiedFile()
                     Log.i(TAG, "saveLyrics: embedded into song tag")
                     progress += stepSize

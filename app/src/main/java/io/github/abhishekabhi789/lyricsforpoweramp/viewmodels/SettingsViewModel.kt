@@ -2,30 +2,35 @@ package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 
 import android.net.Uri
 import androidx.core.net.toUri
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(private val appPreference: AppPreference) :
     ViewModel() {
-    private val _themeState = MutableStateFlow(appPreference.getTheme())
-    val themeState: StateFlow<AppPreference.AppTheme> = _themeState.asStateFlow()
+    val appTheme = appPreference.appTheme
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppPreference.defaultTheme)
 
     private val _accessRequestedPath: MutableStateFlow<Uri?> = MutableStateFlow(null)
     val accessRequestedPath = _accessRequestedPath.asStateFlow()
 
     fun updateTheme(newTheme: AppPreference.AppTheme) {
-        _themeState.value = newTheme
-        appPreference.setTheme(newTheme)
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.APP_THEME, newTheme.name)
+        }
     }
 
     fun setAccessRequestedPath(path: String?) {
@@ -34,118 +39,124 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
         }
     }
 
-    private val _fallbackSearch = MutableStateFlow(appPreference.getSearchIfGetFailed())
-    val fallbackToSearch = _fallbackSearch.asStateFlow()
+    val fallbackToSearch = appPreference.fallbackSearch
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
     fun setFallbackToSearchMode(enabled: Boolean) {
-        appPreference.setSearchIfGetFailed(enabled)
-        _fallbackSearch.value = enabled
-    }
-
-    private val _showNotification = MutableStateFlow(appPreference.getShowNotification())
-    val showNotification = _showNotification.asStateFlow()
-    fun setShowNotification(enabled: Boolean) {
-        appPreference.setShowNotification(enabled)
-        _showNotification.value = enabled
-    }
-
-    private val _overwriteNotification = MutableStateFlow(appPreference.getOverwriteNotification())
-    val overwriteNotification = _overwriteNotification.asStateFlow()
-    fun setOverwriteNotification(enabled: Boolean) {
-        appPreference.setOverwriteNotification(enabled)
-        _overwriteNotification.value = enabled
-    }
-
-    private val _preferredLyricsType = MutableStateFlow(appPreference.getPreferredLyricsType())
-    val preferredLyricsType = _preferredLyricsType.asStateFlow()
-    fun setPreferredLyricsType(type: LyricsType) {
-        appPreference.setPreferredLyricsType(type)
-        _preferredLyricsType.value = type
-    }
-
-    private val _markInstrumental = MutableStateFlow(appPreference.getMarkInstrumental())
-    val getMarkInstrumental = _markInstrumental.asStateFlow()
-    fun setMarkInstrumental(enabled: Boolean) {
-        appPreference.setMarkInstrumental(enabled)
-        _markInstrumental.value = enabled
-    }
-
-    private val _sendLyricsToPoweramp = MutableStateFlow(appPreference.getSendLyricsToPoweramp())
-    val sendLyricsToPoweramp = _sendLyricsToPoweramp.asStateFlow()
-    fun setSendLyricsToPoweramp(enabled: Boolean) {
-        appPreference.setSendLyricsToPoweramp(enabled)
-        _sendLyricsToPoweramp.value = enabled
-    }
-
-    private val _saveAsFile = MutableStateFlow(appPreference.getSaveAsFile())
-    val saveAsFile = _saveAsFile.asStateFlow()
-    fun setSaveAsFile(enabled: Boolean) {
-        appPreference.setSaveAsFile(enabled)
-        _saveAsFile.value = enabled
-    }
-
-    private val _saveIdTagsInFile = MutableStateFlow(appPreference.getSaveIdTagsInFile())
-    val saveIdTagsInFile = _saveIdTagsInFile.asStateFlow()
-    fun setSaveIdTagsInFile(enabled: Boolean) {
-        appPreference.setSaveIdTagsInFile(enabled)
-        _saveIdTagsInFile.value = enabled
-    }
-
-    private val _embedLyricsIntoFile = MutableStateFlow(appPreference.getEmbedLyricsAsTag())
-    val embedLyricsIntoFile = _embedLyricsIntoFile.asStateFlow()
-    fun setEmbedLyricsIntoFile(enabled: Boolean) {
-        appPreference.setEmbedLyricsAsTag(enabled)
-        _embedLyricsIntoFile.value = enabled
-    }
-
-    private val _fixMetadata = MutableStateFlow(appPreference.getFixMetadata())
-    val fixMetadata = _fixMetadata.asStateFlow()
-    fun setFixMetadata(enabled: Boolean) {
-        appPreference.setFixMetadata(enabled)
-        _fixMetadata.value = enabled
-    }
-
-    private val _savedUris = MutableStateFlow(appPreference.getSavedUris())
-    val savedUris = _savedUris.asStateFlow()
-    fun saveNewUri(uri: Uri) {
-        appPreference.saveFolderUri(uri)
-        _savedUris.value.toMutableSet().apply { add(uri) }.distinct().toList().let {
-            _savedUris.value = it
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.FALLBACK_SEARCH, enabled)
         }
+    }
+
+    val showNotification = appPreference.notifyOnRequestFailure
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setShowNotification(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.SHOW_LYRICS_REQUEST_NOTIFICATION, enabled)
+        }
+    }
+
+    val overwriteNotification = appPreference.overwriteNotification
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setOverwriteNotification(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.OVERWRITE_NOTIFICATION, enabled)
+        }
+    }
+
+    val preferredLyricsType = appPreference.preferredLyricsType
+        .stateIn(viewModelScope, SharingStarted.Lazily, LyricsType.SYNCED)
+
+    fun setPreferredLyricsType(type: LyricsType) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.PREFERRED_LYRICS_TYPE, type.name)
+        }
+    }
+
+    val markInstrumental = appPreference.markInstrumental
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setMarkInstrumental(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.MARK_INSTRUMENTAL_LYRICS, enabled)
+        }
+    }
+
+    val sendLyricsToPoweramp = appPreference.sendLyricsToPoweramp
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setSendLyricsToPoweramp(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.SEND_LYRICS_TO_POWERAMP, enabled)
+        }
+    }
+
+    val saveAsFile = appPreference.saveLyricsAsFile
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setSaveAsFile(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.SAVE_LYRICS_IN_FILE, enabled)
+        }
+    }
+
+    val saveIdTagsInFile = appPreference.saveIdTagsInFile
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setSaveIdTagsInFile(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.SAVE_ID_TAGS_IN_FILE, enabled)
+        }
+    }
+
+    val embedLyricsIntoFile = appPreference.embedLyricsIntoFile
+        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+
+    fun setEmbedLyricsIntoFile(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.EMBED_LYRICS_AS_TAG, enabled)
+        }
+    }
+
+    val savedUris = appPreference.savedUris
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    fun saveNewUri(uri: Uri) {
+        viewModelScope.launch { appPreference.saveUri(uri) }
         setAccessRequestedPath(null)
     }
 
     fun removeUri(uri: Uri) {
-        appPreference.removeSavedFolder(uri)
-        _savedUris.value.toMutableSet().apply { remove(uri) }.distinct().let {
-            _savedUris.value = it
+        viewModelScope.launch { appPreference.removeUri(uri) }
+    }
+
+    val timestampDelta = appPreference.timestampDelta
+        .stateIn(viewModelScope, SharingStarted.Lazily, 10)
+
+    fun setTimestampDelta(value: Int) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.TIMESTAMP_DELTA, value)
         }
     }
 
-    private val _timestampDelta = MutableStateFlow(appPreference.getTimestampDelta())
-    val timestampDelta = _timestampDelta.asStateFlow()
-    fun setTimestampDelta(value: Int) {
-        _timestampDelta.value = value
-        appPreference.setTimestampDelta(value)
-    }
-
-    private val _translationApiKey =
-        MutableStateFlow(Translator.entries.associateWith { appPreference.getTranslationApiKey(it) })
-    val translationApiKey = _translationApiKey.asStateFlow()
     fun setTranslationApiKey(translator: Translator, apiKey: String) {
-        _translationApiKey.update { map -> map.toMutableMap().apply { set(translator, apiKey) } }
-        appPreference.setTranslatorApiKey(apiKey, translator)
+        viewModelScope.launch { appPreference.setTranslatorApiKey(translator, apiKey) }
     }
 
-    private val _filters =
-        MutableStateFlow(AppPreference.FilterType.entries.associateWith {
-            appPreference.getFilter(it).lines()
-        })
-    val filters = _filters.asStateFlow()
+    suspend fun getTranslatorApiKey(translator: Translator): String? {
+        return appPreference.getTranslatorApiKey(translator)
+    }
+
+
+    val filters = appPreference.filters
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+
     fun setFilter(type: AppPreference.FilterType, value: List<String>) {
-        _filters.update { map -> map.toMutableMap().apply { set(type, value) } }
-        appPreference.setFilter(
-            type,
-            value.let { if (it.isEmpty()) null else it.joinToString("\n") })
+        val prefKey = stringPreferencesKey(type.key)
+        val prefValue = value.let { if (it.isEmpty()) "" else it.joinToString("\n") }
+        viewModelScope.launch { appPreference.setPreference(prefKey, prefValue) }
     }
 
     private fun getStorageUriFromPath(path: String): Uri {

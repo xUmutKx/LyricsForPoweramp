@@ -24,6 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -41,6 +42,8 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,8 +74,12 @@ fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
                     icon = Icons.Default.Info,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
-                val translatorKeys by viewmodel.translationApiKey.collectAsStateWithLifecycle()
-                translatorKeys.forEach { (translator, apiKey) ->
+                Translator.entries.forEach { translator ->
+                    val apiKey: String by produceState(initialValue = "", key1 = translator) {
+                        value = withContext(Dispatchers.IO) {
+                            viewmodel.getTranslatorApiKey(translator) ?: ""
+                        }
+                    }
                     TranslatorApiKey(
                         translator = translator,
                         apiKey = apiKey,
@@ -86,13 +93,13 @@ fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
             label = stringResource(R.string.settings_timestamp_step_title),
             description = stringResource(R.string.settings_timestamp_step_summary)
         ) {
-            val suggstedSteps = listOf(1, 5, 10, 25, 50)
+            val suggestedSteps = listOf(1, 5, 10, 25, 50)
             var expanded by remember { mutableStateOf(false) }
             val savedValue by viewmodel.timestampDelta.collectAsStateWithLifecycle()
             DropdownSettings(
                 expanded = expanded,
                 currentValue = savedValue,
-                values = suggstedSteps,
+                values = suggestedSteps,
                 onExpandChanged = { expanded = it },
                 getLabel = { stringResource(R.string.settings_timestamp_step_dropdown_item, it) },
                 onSelection = { viewmodel.setTimestampDelta(it) },

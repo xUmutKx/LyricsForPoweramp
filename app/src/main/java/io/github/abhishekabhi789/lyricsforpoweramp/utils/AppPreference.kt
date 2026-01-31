@@ -1,6 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.utils
 
-import android.content.SharedPreferences
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import androidx.compose.material.icons.Icons
@@ -8,185 +8,126 @@ import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.InterpreterMode
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.SharedPreferencesMigration
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Provider
 import javax.inject.Singleton
 
+val Context.appDataStore by preferencesDataStore(
+    name = "app_preferences",
+    produceMigrations = { context ->
+        listOf(
+            SharedPreferencesMigration(context, AppPreference.OTHER_PREF),
+            SharedPreferencesMigration(context, AppPreference.UI_PREF_NAME),
+            SharedPreferencesMigration(context, AppPreference.FILTER_PREF_NAME)
+        )
+    }
+)
+
 @Singleton
-class AppPreference @Inject constructor(
-    @Named(OTHER_PREF) private val appPreferenceProvider: Provider<SharedPreferences>,
-    @Named(UI_PREF_NAME) private val uiPreferenceProvider: Provider<SharedPreferences>,
-    @Named(FILTER_PREF_NAME) private val filterPreferenceProvider: Provider<SharedPreferences>
-) {
-    private val appPreference by lazy { appPreferenceProvider.get() }
-    private val uiPreference by lazy { uiPreferenceProvider.get() }
-    private val filterPreference by lazy { filterPreferenceProvider.get() }
+class AppPreference @Inject constructor(private val dataStore: DataStore<Preferences>) {
 
-    fun getFilter(filterType: FilterType): String {
-        return filterPreference.getString(filterType.key, "") ?: ""
+    val appTheme = dataStore.data.map { preferences ->
+        preferences[APP_THEME]?.let { AppTheme.valueOf(it) } ?: defaultTheme
     }
 
-    fun setFilter(filterType: FilterType, value: String?) {
-        filterPreference.edit { putString(filterType.key, value) }
+    val firstTimeInfoShown = dataStore.data.map { it[FIRST_TIME_INFO_SHOWN] ?: false }
+
+    val fallbackSearch = dataStore.data.map { it[FALLBACK_SEARCH] ?: false }
+
+    val notifyOnRequestFailure =
+        dataStore.data.map { it[SHOW_LYRICS_REQUEST_NOTIFICATION] ?: false }
+
+    val overwriteNotification = dataStore.data.map { it[OVERWRITE_NOTIFICATION] ?: false }
+
+    val preferredLyricsType = dataStore.data.map { preference ->
+        preference[PREFERRED_LYRICS_TYPE]?.let { LyricsType.valueOf(it) } ?: LyricsType.SYNCED
     }
 
-    fun getFirstTimeInfoShown(): Boolean {
-        return appPreference.getBoolean(FIRST_TIME_INFO_SHOWN, false)
+    val markInstrumental = dataStore.data.map { it[MARK_INSTRUMENTAL_LYRICS] ?: false }
+
+    val sendLyricsToPoweramp = dataStore.data.map { it[SEND_LYRICS_TO_POWERAMP] ?: false }
+
+    val saveLyricsAsFile = dataStore.data.map { it[SAVE_LYRICS_IN_FILE] ?: false }
+
+    val saveIdTagsInFile = dataStore.data.map { it[SAVE_ID_TAGS_IN_FILE] ?: false }
+
+    val embedLyricsIntoFile = dataStore.data.map { it[EMBED_LYRICS_AS_TAG] ?: false }
+
+    val savedUris = dataStore.data.map { preference ->
+        preference[FOLDER_URIS]?.map { it.toUri() } ?: emptyList()
     }
 
-    fun setFirstTimeInfoShown(value: Boolean) {
-        appPreference.edit { putBoolean(FIRST_TIME_INFO_SHOWN, value) }
-    }
+    val timestampDelta = dataStore.data.map { it[TIMESTAMP_DELTA] ?: 10 }
 
-    fun getTheme(): AppTheme {
-        val defaultTheme =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AppTheme.Auto else AppTheme.Light
-        val preferredTheme = uiPreference.getString(UI_THEME_KEY, defaultTheme.name)
-        return AppTheme.valueOf(preferredTheme ?: defaultTheme.name)
-    }
+    val editorFontSize = dataStore.data.map { it[EDITOR_FONT_SIZE_SP] }
 
-
-    fun setTheme(theme: AppTheme) {
-        uiPreference.edit { putString(UI_THEME_KEY, theme.name) }
-    }
-
-    fun getSearchIfGetFailed(): Boolean {
-        return appPreference.getBoolean(SEARCH_IF_GET_FAILED, false)
-    }
-
-    fun setSearchIfGetFailed(choice: Boolean) {
-        appPreference.edit { putBoolean(SEARCH_IF_GET_FAILED, choice) }
-    }
-
-    fun getShowNotification(): Boolean {
-        return appPreference.getBoolean(SHOW_LYRICS_REQUEST_NOTIFICATION, true)
-    }
-
-    fun setShowNotification(choice: Boolean) {
-        appPreference.edit { putBoolean(SHOW_LYRICS_REQUEST_NOTIFICATION, choice) }
-    }
-
-    fun getOverwriteNotification(): Boolean {
-        return appPreference.getBoolean(OVERWRITE_NOTIFICATION, false)
-    }
-
-    fun setOverwriteNotification(choice: Boolean) {
-        appPreference?.edit { putBoolean(OVERWRITE_NOTIFICATION, choice) }
-    }
-
-    fun getPreferredLyricsType(): LyricsType {
-        val defaultType = LyricsType.SYNCED
-        val preferredType = appPreference.getString(PREFERRED_LYRICS_TYPE, defaultType.name)
-        return LyricsType.valueOf(preferredType ?: defaultType.name)
-    }
-
-    fun setPreferredLyricsType(type: LyricsType) {
-        appPreference.edit { putString(PREFERRED_LYRICS_TYPE, type.name) }
-    }
-
-    fun getMarkInstrumental(): Boolean {
-        return appPreference.getBoolean(MARK_INSTRUMENTAL_LYRICS, false)
-    }
-
-    fun setMarkInstrumental(choice: Boolean) {
-        appPreference.edit { putBoolean(MARK_INSTRUMENTAL_LYRICS, choice) }
-    }
-
-    fun getSendLyricsToPoweramp(): Boolean {
-        return appPreference.getBoolean(SEND_LYRICS_TO_POWERAMP, true)
-    }
-
-    fun setSendLyricsToPoweramp(value: Boolean) {
-        appPreference.edit { putBoolean(SEND_LYRICS_TO_POWERAMP, value) }
-    }
-
-
-    fun getSaveAsFile(): Boolean {
-        return appPreference.getBoolean(SAVE_LYRICS_IN_FILE, false)
-    }
-
-    fun setSaveAsFile(value: Boolean) {
-        appPreference.edit { putBoolean(SAVE_LYRICS_IN_FILE, value) }
-    }
-
-    fun getSaveIdTagsInFile(): Boolean {
-        return appPreference.getBoolean(SAVE_ID_TAGS_IN_FILE, false)
-    }
-
-    fun setSaveIdTagsInFile(value: Boolean) {
-        appPreference.edit { putBoolean(SAVE_ID_TAGS_IN_FILE, value) }
-    }
-
-    fun getEmbedLyricsAsTag(): Boolean {
-        return appPreference.getBoolean(EMBED_LYRICS_AS_TAG, false)
-    }
-
-    fun setEmbedLyricsAsTag(value: Boolean) {
-        appPreference.edit { putBoolean(EMBED_LYRICS_AS_TAG, value) }
-    }
-
-    fun getFixMetadata(): Boolean {
-        return appPreference.getBoolean(FIX_METADATA, false)
-    }
-
-    fun setFixMetadata(value: Boolean) {
-        appPreference.edit { putBoolean(FIX_METADATA, value) }
-    }
-
-    fun getSavedUris(): List<Uri> {
-        return appPreference.getStringSet(FOLDER_URIS, emptySet<String>())
-            ?.map { it.toUri() } ?: emptyList()
-    }
-
-    fun saveFolderUri(uri: Uri) {
-        val savedUri = getSavedUris().toMutableSet().apply { add(uri) }
-        val uriStringSet = savedUri.map { it.toString() }.toSet()
-        appPreference.edit { putStringSet(FOLDER_URIS, uriStringSet) }
-    }
-
-    fun removeSavedFolder(uri: Uri): Boolean {
-        val savedUris = getSavedUris().toMutableSet()
-        val success = savedUris.remove(uri)
-        savedUris.map { it.toString() }.let {
-            appPreference.edit { putStringSet(FOLDER_URIS, it.toSet()) }
+    val filters: Flow<Map<FilterType, List<String>>> = dataStore.data.map { preference ->
+        FilterType.entries.associateWith {
+            preference[stringPreferencesKey(it.key)]?.lines() ?: emptyList()
         }
-        return success
     }
 
-    fun setTranslatorApiKey(apiKey: String, translator: Translator) {
-        val prefKey = when (translator) {
-            Translator.GEMINI -> GEMINI_API_KEY
+    val translators = dataStore.data.map { preferences ->
+        Translator.entries.associateWith { preferences[stringPreferencesKey(it.key)] }
+    }
+
+
+    suspend fun saveUri(uri: Uri) {
+        val savedUris = runCatching { savedUris.last() }.getOrNull() ?: emptyList()
+        val updatedUris = savedUris.toMutableList().apply { add(uri) }
+        val uriSet = updatedUris.map { it.toString() }.toSet()
+        dataStore.updateData { preferences ->
+            preferences.toMutablePreferences().apply { this[FOLDER_URIS] = uriSet }
         }
-        appPreference.edit { putString(prefKey, apiKey) }
     }
 
-    fun getTranslationApiKey(translator: Translator): String {
-        val prefKey = when (translator) {
-            Translator.GEMINI -> GEMINI_API_KEY
+    suspend fun removeUri(uri: Uri) {
+        val savedUris = runCatching { savedUris.last() }.getOrNull()
+        if (savedUris.isNullOrEmpty()) return
+        val updatedUris = savedUris.toMutableList().apply { remove(uri) }
+        val uriSet = updatedUris.map { it.toString() }.toSet()
+        dataStore.updateData { preferences ->
+            preferences.toMutablePreferences().apply { this[FOLDER_URIS] = uriSet }
         }
-        return appPreference.getString(prefKey, null) ?: ""
     }
 
-    fun setTimestampDelta(deltaInCentiseconds: Int) {
-        appPreference.edit { putInt(TIMESTAMP_DELTA, deltaInCentiseconds) }
+    suspend fun setTranslatorApiKey(translator: Translator, apiKey: String) {
+        setPreference(stringPreferencesKey(translator.key), apiKey)
     }
 
-    fun getTimestampDelta(): Int {
-        return appPreference.getInt(TIMESTAMP_DELTA, 10)
+    suspend fun getTranslatorApiKey(translator: Translator): String? {
+        return getPreference(stringPreferencesKey(translator.key))
     }
 
-    fun setEditorFontSize(fontSize: Float) {
-        appPreference.edit { putFloat(EDITOR_FONT_SIZE_SP, fontSize) }
+    suspend fun <T> setPreference(key: Preferences.Key<T>, value: T) {
+        dataStore.updateData { preferences ->
+            preferences.toMutablePreferences().apply { this[key] = value }
+        }
     }
 
-    fun getEditorFontSize(): Float? {
-        return appPreference.getFloat(EDITOR_FONT_SIZE_SP, 0f).takeIf { it > 0f }
+    suspend fun <T> getPreference(key: Preferences.Key<T>): T? {
+        return runCatching { dataStore.data.map { it[key] }.firstOrNull() }.getOrNull()
+    }
+
+    suspend fun <T> getPreference(key: Preferences.Key<T>, default: T): T {
+        return runCatching { dataStore.data.map { it[key] }.firstOrNull() ?: default }
+            .getOrDefault(default)
     }
 
     enum class AppTheme(val labelResId: Int) {
@@ -204,25 +145,35 @@ class AppPreference @Inject constructor(
     }
 
     companion object {
+        @Deprecated("migrated to datastore")
         const val FILTER_PREF_NAME = "filter_preference"
+
+        @Deprecated("migrated to datastore")
         const val UI_PREF_NAME = "ui_preference"
+
+        @Deprecated("migrated to datastore")
         const val OTHER_PREF = "other_preference"
-        private const val FIRST_TIME_INFO_SHOWN = "first_time_info_shown"
-        private const val UI_THEME_KEY = "app_theme"
-        private const val SEARCH_IF_GET_FAILED = "perform_search_if_get_failed"
-        private const val SHOW_LYRICS_REQUEST_NOTIFICATION = "lyrics_requests_show_notification"
-        private const val OVERWRITE_NOTIFICATION = "lyrics_requests_overwrite_existing_notification"
-        private const val PREFERRED_LYRICS_TYPE = "preferred_lyrics_type"
-        private const val SEND_LYRICS_TO_POWERAMP = "send_lyrics_to_poweramp"
-        private const val SAVE_LYRICS_IN_FILE = "save_lyrics_in_file"
-        private const val SAVE_ID_TAGS_IN_FILE = "save_id_tags_in_file"
-        private const val EMBED_LYRICS_AS_TAG = "embed_lyrics_as_tag"
-        private const val FIX_METADATA = "fix_metadata_from_result"
-        private const val FOLDER_URIS = "folder_uri_list"
-        private const val MARK_INSTRUMENTAL_LYRICS = "mark_instrumental_lyrics"
-        private const val GEMINI_API_KEY = "ai_key_gemini"
-        private const val TIMESTAMP_DELTA = "timestamp_delta_in_centi_seconds"
-        private const val EDITOR_FONT_SIZE_SP = "editor_font_size_sp"
+
+        val FIRST_TIME_INFO_SHOWN = booleanPreferencesKey("first_time_info_shown")
+        val APP_THEME = stringPreferencesKey("app_theme")
+        val FALLBACK_SEARCH = booleanPreferencesKey("perform_search_if_get_failed")
+        val SHOW_LYRICS_REQUEST_NOTIFICATION =
+            booleanPreferencesKey("lyrics_requests_show_notification")
+        val OVERWRITE_NOTIFICATION =
+            booleanPreferencesKey("lyrics_requests_overwrite_existing_notification")
+        val PREFERRED_LYRICS_TYPE = stringPreferencesKey("preferred_lyrics_type")
+        val SEND_LYRICS_TO_POWERAMP = booleanPreferencesKey("send_lyrics_to_poweramp")
+        val SAVE_LYRICS_IN_FILE = booleanPreferencesKey("save_lyrics_in_file")
+        val SAVE_ID_TAGS_IN_FILE = booleanPreferencesKey("save_id_tags_in_file")
+        val EMBED_LYRICS_AS_TAG = booleanPreferencesKey("embed_lyrics_as_tag")
+        val FOLDER_URIS = stringSetPreferencesKey("folder_uri_list")
+        val MARK_INSTRUMENTAL_LYRICS = booleanPreferencesKey("mark_instrumental_lyrics")
+        val TIMESTAMP_DELTA = intPreferencesKey("timestamp_delta_in_centi_seconds")
+        val EDITOR_FONT_SIZE_SP = floatPreferencesKey("editor_font_size_sp")
+
+        val defaultTheme =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AppTheme.Auto else AppTheme.Light
+
         fun getThemes(): List<AppTheme> {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AppTheme.entries.toList()
             else listOf(AppTheme.Light, AppTheme.Dark)
