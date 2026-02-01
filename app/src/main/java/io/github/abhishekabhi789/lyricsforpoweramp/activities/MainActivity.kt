@@ -30,7 +30,6 @@ import com.google.accompanist.permissions.shouldShowRationale
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.BuildConfig
 import io.github.abhishekabhi789.lyricsforpoweramp.R
-import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.FirstTimeInfoDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.main.AppMain
@@ -38,13 +37,9 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpThe
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var powerampApiHelper: PowerampApiHelper
 
     @SuppressLint("InlinedApi")
     @OptIn(ExperimentalPermissionsApi::class)

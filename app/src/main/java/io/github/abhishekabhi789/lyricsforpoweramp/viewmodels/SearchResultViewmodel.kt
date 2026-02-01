@@ -23,13 +23,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchResultViewmodel @Inject constructor(
-    private val appPreference: AppPreference,
+    appPreference: AppPreference,
     private val lyricsSavingHelper: LyricsSavingHelper,
     private val taglibHelper: TaglibHelper
 ) :
     ViewModel() {
     val appTheme = appPreference.appTheme
-        .stateIn(viewModelScope, SharingStarted.Lazily, AppPreference.defaultTheme)
 
     private var _searchResults = MutableStateFlow<List<Lyrics>>(Collections.emptyList())
     private var pendingSend: LyricsSendData? = null

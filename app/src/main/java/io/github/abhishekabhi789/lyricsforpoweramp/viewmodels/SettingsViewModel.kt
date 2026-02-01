@@ -9,6 +9,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.FilterType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,12 +24,11 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(private val appPreference: AppPreference) :
     ViewModel() {
     val appTheme = appPreference.appTheme
-        .stateIn(viewModelScope, SharingStarted.Eagerly, AppPreference.defaultTheme)
 
     private val _accessRequestedPath: MutableStateFlow<Uri?> = MutableStateFlow(null)
     val accessRequestedPath = _accessRequestedPath.asStateFlow()
 
-    fun updateTheme(newTheme: AppPreference.AppTheme) {
+    fun updateTheme(newTheme: AppTheme) {
         viewModelScope.launch {
             appPreference.setPreference(AppPreference.APP_THEME, newTheme.name)
         }
@@ -153,7 +154,7 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
     val filters = appPreference.filters
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
-    fun setFilter(type: AppPreference.FilterType, value: List<String>) {
+    fun setFilter(type: FilterType, value: List<String>) {
         val prefKey = stringPreferencesKey(type.key)
         val prefValue = value.let { if (it.isEmpty()) "" else it.joinToString("\n") }
         viewModelScope.launch { appPreference.setPreference(prefKey, prefValue) }

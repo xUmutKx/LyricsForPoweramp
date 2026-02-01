@@ -2,7 +2,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.utils
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.AppTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 
 @Composable
 fun isDarkTheme(theme: AppTheme): Boolean {

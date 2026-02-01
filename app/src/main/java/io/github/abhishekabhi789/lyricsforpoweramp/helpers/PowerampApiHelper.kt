@@ -9,7 +9,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.di.ApplicationScope
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
-import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference.FilterType
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.FilterType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject

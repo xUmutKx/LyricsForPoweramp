@@ -3,11 +3,6 @@ package io.github.abhishekabhi789.lyricsforpoweramp.utils
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.InterpreterMode
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.SharedPreferencesMigration
@@ -18,13 +13,16 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.di.ApplicationScope
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,11 +38,14 @@ val Context.appDataStore by preferencesDataStore(
 )
 
 @Singleton
-class AppPreference @Inject constructor(private val dataStore: DataStore<Preferences>) {
+class AppPreference @Inject constructor(
+    private val dataStore: DataStore<Preferences>,
+    @ApplicationScope scope: CoroutineScope
+) {
 
     val appTheme = dataStore.data.map { preferences ->
         preferences[APP_THEME]?.let { AppTheme.valueOf(it) } ?: defaultTheme
-    }
+    }.stateIn(scope, SharingStarted.Eagerly, defaultTheme)
 
     val firstTimeInfoShown = dataStore.data.map { it[FIRST_TIME_INFO_SHOWN] ?: false }
 
@@ -128,20 +129,6 @@ class AppPreference @Inject constructor(private val dataStore: DataStore<Prefere
     suspend fun <T> getPreference(key: Preferences.Key<T>, default: T): T {
         return runCatching { dataStore.data.map { it[key] }.firstOrNull() ?: default }
             .getOrDefault(default)
-    }
-
-    enum class AppTheme(val labelResId: Int) {
-        Auto(R.string.settings_theme_auto_label),
-        Light(R.string.settings_theme_light_label),
-        Dark(R.string.settings_theme_dark_label)
-    }
-
-    enum class FilterType(val key: String, val labelResId: Int, val icon: ImageVector) {
-        TITLE_FILTER("title_filter", R.string.settings_filter_title_label, Icons.Default.MusicNote),
-        ARTISTS_FILTER(
-            "artists_filter", R.string.settings_filter_artists_label, Icons.Default.InterpreterMode
-        ),
-        ALBUM_FILTER("album_filter", R.string.settings_filter_album_label, Icons.Default.Album),
     }
 
     companion object {

@@ -33,7 +33,6 @@ class MainActivityViewModel @Inject constructor(
 ) : ViewModel() {
 
     val appTheme = appPreference.appTheme
-        .stateIn(viewModelScope, SharingStarted.Lazily, AppPreference.defaultTheme)
 
     val firstTimeInfo = appPreference.firstTimeInfoShown
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
