@@ -209,11 +209,7 @@ fun LyricsStorageSettings(
                 for ((i, uri) in savedUris.withIndex()) {
                     val path by remember(uri) { derivedStateOf { uri.getTreeDocumentId() } }
                     val folderAccessState = rememberFolderAccess(path)
-                    val onPermissionRequest = {
-                        folderAccessState.requestAccess { uri ->
-                            uri?.let { viewmodel.saveNewUri(it) }
-                        }
-                    }
+                    val onPermissionRequest = { folderAccessState.requestAccess() }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier

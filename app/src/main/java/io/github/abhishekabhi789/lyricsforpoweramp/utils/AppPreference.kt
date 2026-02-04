@@ -3,6 +3,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.utils
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.SharedPreferencesMigration
@@ -19,8 +20,8 @@ import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -88,9 +89,10 @@ class AppPreference @Inject constructor(
         Translator.entries.associateWith { preferences[stringPreferencesKey(it.key)] }
     }
 
-
     suspend fun saveUri(uri: Uri) {
-        val savedUris = runCatching { savedUris.last() }.getOrNull() ?: emptyList()
+        val savedUris = runCatching { savedUris.first() }
+            .onFailure { Log.e(TAG, "saveUri: failed to get latest savedUri", it) }
+            .getOrNull() ?: emptyList()
         val updatedUris = savedUris.toMutableList().apply { add(uri) }
         val uriSet = updatedUris.map { it.toString() }.toSet()
         dataStore.updateData { preferences ->
@@ -99,7 +101,9 @@ class AppPreference @Inject constructor(
     }
 
     suspend fun removeUri(uri: Uri) {
-        val savedUris = runCatching { savedUris.last() }.getOrNull()
+        val savedUris = runCatching { savedUris.first() }
+            .onFailure { Log.e(TAG, "removeUri: failed to get latest savedUri", it) }
+            .getOrNull()
         if (savedUris.isNullOrEmpty()) return
         val updatedUris = savedUris.toMutableList().apply { remove(uri) }
         val uriSet = updatedUris.map { it.toString() }.toSet()
@@ -132,6 +136,8 @@ class AppPreference @Inject constructor(
     }
 
     companion object {
+        private const val TAG = "AppPreference"
+
         @Deprecated("migrated to datastore")
         const val FILTER_PREF_NAME = "filter_preference"
 

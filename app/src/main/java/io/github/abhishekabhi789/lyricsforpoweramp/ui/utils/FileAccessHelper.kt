@@ -100,11 +100,11 @@ fun rememberFolderAccess(
             return@rememberLauncherForActivityResult
         }
         val pickedUriPath = pickedUri.getTreeDocumentId()
-        context.contentResolver.takePersistableUriPermission(pickedUri, modeFlags)
         Log.i(TAG, "rememberFolderAccess: picked uri $pickedUriPath")
+        context.contentResolver.takePersistableUriPermission(pickedUri, modeFlags)
+        settingsViewModel.saveNewUri(pickedUri)
         val isValidParentPicked = normalizedDocumentId.startsWith(pickedUriPath)
         if (isValidParentPicked) {
-            settingsViewModel.saveNewUri(pickedUri)
             invokePendingResultCallback(pickedUri)
         }
         askPermission = !isValidParentPicked
