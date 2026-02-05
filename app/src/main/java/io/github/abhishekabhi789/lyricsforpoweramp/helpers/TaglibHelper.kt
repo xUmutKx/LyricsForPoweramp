@@ -111,49 +111,50 @@ class TaglibHelper @Inject constructor(private val context: Context) {
                 tempFile.delete()
             }
         }
+        suspend fun closeSafely() = withContext(Dispatchers.IO) {
+            if (closed.compareAndSet(false, true)) {
+                fd.closeQuietly()
+                tempFile.delete()
+            }
+        }
     }
 
     suspend fun getTaglibSession(
         filePath: String,
         onError: (error: StorageHelper.Result) -> Unit
-    ): TagLibSession? {
-        var trackFile: DocumentFile?
+    ): TagLibSession? = withContext(Dispatchers.IO) {
         try {
-            val parentFolder = StorageHelper.getParentFolder(context, filePath)
-            if (parentFolder == null) {
+            val parentFolder = StorageHelper.getParentFolder(context, filePath) ?: run {
                 Log.e(TAG, "prepareFile: no access to file path; returning")
                 onError(StorageHelper.Result.NO_PERMISSION)
-                return null
+                return@withContext null
             }
-            trackFile = parentFolder.findFile(filePath.substringAfterLast("/"))
+            val trackFile = parentFolder.findFile(filePath.substringAfterLast("/"))
             if (trackFile == null || !trackFile.exists() || !trackFile.isFile) {
                 Log.e(TAG, "prepareFile: failed to find track file; returning")
                 onError(StorageHelper.Result.NO_PERMISSION)//may get fixed by re-selecting the path
-                return null
+                return@withContext null
             }
             context.contentResolver.openInputStream(trackFile.uri).use { inputStream ->
                 if (inputStream == null) {
                     Log.e(TAG, "prepareFile: input stream is null; returning")
                     onError(StorageHelper.Result.INVALID_FILEPATH)
-                    return null
+                    return@withContext null
                 }
                 val fileName = trackFile.name
                 if (fileName.isNullOrBlank()) {
                     Log.e(TAG, "prepareFile: invalid filename; returning")
                     onError(StorageHelper.Result.INVALID_FILEPATH)
-                    return null
+                    return@withContext null
                 }
                 val tempFile = File(context.cacheDir, fileName)
-                tempFile.outputStream()
-                    .use { outputStream -> inputStream.copyTo(outputStream) }
-                val fd = withContext(Dispatchers.IO) {
-                    ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_WRITE)
-                }
-                return TagLibSession(fd, trackFile, tempFile)
+                tempFile.outputStream().use { os -> inputStream.copyTo(os) }
+                val fd = ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_WRITE)
+                return@withContext TagLibSession(fd, trackFile, tempFile)
             }
         } catch (e: Exception) {
             Log.e(TAG, "prepareFile: ${e.message}", e)
-            return null
+            return@withContext null
         }
     }
 

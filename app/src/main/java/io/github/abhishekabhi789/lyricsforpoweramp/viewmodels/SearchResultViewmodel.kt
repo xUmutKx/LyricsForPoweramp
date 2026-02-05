@@ -68,7 +68,7 @@ class SearchResultViewmodel @Inject constructor(
         viewModelScope.launch {
             if (path == null) {
                 Log.d(TAG, "prepareTaglibSession: closing taglib session")
-                _tagLibSession.value?.close()
+                _tagLibSession.value?.closeSafely()
                 _tagLibSession.value = null
                 Log.d(TAG, "prepareTaglibSession: session closed")
             } else {
