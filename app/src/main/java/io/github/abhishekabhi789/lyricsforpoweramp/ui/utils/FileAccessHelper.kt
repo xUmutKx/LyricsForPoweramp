@@ -76,7 +76,6 @@ fun rememberFolderAccess(
                 .let { uris -> findParentUri(uris, normalizedDocumentId) }
         }
     }
-    Log.d(TAG, "rememberFolderAccess: accessible parent $accessibleParentFolder")
     //this saved uri helps the picker to open correct folder
     val savedParentFolder: Uri? by remember(normalizedDocumentId, askPermission) {
         derivedStateOf { findParentUri(savedUris, normalizedDocumentId) }

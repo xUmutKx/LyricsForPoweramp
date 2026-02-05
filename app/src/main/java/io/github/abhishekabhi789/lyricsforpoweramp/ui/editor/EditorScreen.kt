@@ -35,11 +35,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -62,7 +64,12 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomS
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -84,7 +91,21 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
     val lyricsContent by remember(inputState) { derivedStateOf { inputState.lyrics } }
     val lyricsLines by remember(lyricsContent) { derivedStateOf { lyricsContent.lines() } }
     val timestampDeltaCenti by viewmodel.timestampDelta.collectAsStateWithLifecycle()
-    val fontSize by viewmodel.editorFontSize.collectAsStateWithLifecycle()
+    val savedFontSize by viewmodel.editorFontSize.collectAsStateWithLifecycle()
+    var fontSize by remember {
+        mutableFloatStateOf(savedFontSize ?: defaultFontSize)
+    }
+
+    LaunchedEffect(savedFontSize) {
+        if (fontSize == defaultFontSize) savedFontSize?.let { fontSize = it }
+    }
+
+    @OptIn(FlowPreview::class)
+    LaunchedEffect(fontSize) {
+        snapshotFlow { fontSize }
+            .debounce(500.milliseconds)
+            .collect { viewmodel.setEditorFontSize(fontSize) }
+    }
 
     val selectionLineIndexes by remember(textFieldValue) {
         derivedStateOf { getLineIndexesForSelection(textFieldValue) }
@@ -216,7 +237,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                     )
                 }
             }
-            var fileUri: Uri? by rememberSaveable(filePath) { mutableStateOf(null) }
+            var fileUri: Uri? by rememberSaveable { mutableStateOf(null) }
             val folderAccessState = rememberFolderAccess(filePath)
             LaunchedEffect(folderAccessState) {
                 if (!folderAccessState.hasPermission) {
@@ -237,21 +258,25 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
             }
 
             val lyricsFromFile by produceState<String?>(null, fileUri) {
-                value = fileUri?.let { uri ->
-                    try {
-                        context.contentResolver.openInputStream(uri)?.bufferedReader()
-                            ?.use { it.readText().replace("\r\n", "\n") }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to read lyrics", e)
-                        null
+                value = withContext(Dispatchers.IO) {
+                    fileUri?.let { uri ->
+                        try {
+                            context.contentResolver.openInputStream(uri)?.bufferedReader()
+                                ?.use { it.readText().replace("\r\n", "\n") }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to read lyrics", e)
+                            null
+                        }
                     }
                 }
             }
             val embeddedLyrics by produceState<String?>(null, filePath) {
-                taglibHelper.getTaglibSession(filePath, onError = {
-                    Log.e(TAG, "EditorScreen: failed to get lyrics tag info")
-                })?.use { session ->
-                    value = session.getLyricsTag()
+                value = withContext(Dispatchers.IO) {
+                    taglibHelper.getTaglibSession(filePath, onError = {
+                        Log.e(TAG, "EditorScreen: failed to get lyrics tag info")
+                    })?.use { session ->
+                        session.getLyricsTag()
+                    }
                 }
             }
             var showLyricsSourceSelection by remember { mutableStateOf(false) }
@@ -375,7 +400,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = FontFamily.Monospace,
-                    fontSize = TextUnit(fontSize ?: defaultFontSize, TextUnitType.Sp)
+                    fontSize = TextUnit(fontSize, TextUnitType.Sp)
                 ),
                 decorationBox = { innerTextField ->
                     if (lyricsContent.isEmpty()) {
@@ -404,11 +429,8 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                     .weight(1f) //needed to show playback control
                     .pointerInput(Unit) {
                         detectTransformGestures { _, _, zoom, _ ->
-                            val newSize =
-                                (fontSize ?: defaultFontSize).times(zoom).coerceIn(9f, 30f)
-                            if (newSize != fontSize) {
-                                viewmodel.setEditorFontSize(newSize)
-                            }
+                            val newSize = fontSize.times(zoom).coerceIn(9f, 30f)
+                            if (newSize != fontSize) fontSize = newSize
                         }
                     },
             )
