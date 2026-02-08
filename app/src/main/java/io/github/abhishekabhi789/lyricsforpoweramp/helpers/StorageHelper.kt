@@ -20,10 +20,14 @@ object StorageHelper {
 
     suspend fun writeLyricsFile(
         context: Context,
-        filePath: String,
+        filePath: String?,
         lyricsContent: String,
         lyricsType: LyricsType,
     ): Result = withContext(Dispatchers.IO) {
+        if (filePath == null) {
+            Log.e(TAG, "writeLyricsFile: filepath is null; aborting")
+            return@withContext Result.INVALID_FILEPATH
+        }
         if (lyricsContent.isBlank()) {
             Log.e(TAG, "writeLyricsFile: aborting lyrics write due to null lyrics")
             return@withContext Result.INVALID_LYRICS

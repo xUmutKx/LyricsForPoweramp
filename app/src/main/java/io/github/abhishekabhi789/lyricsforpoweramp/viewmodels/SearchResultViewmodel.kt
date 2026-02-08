@@ -11,6 +11,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsSendData
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
+import io.github.abhishekabhi789.lyricsforpoweramp.model.SearchResultData
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.SearchRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.Collections
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,20 +30,13 @@ class SearchResultViewmodel @Inject constructor(
 ) :
     ViewModel() {
     val appTheme = appPreference.appTheme
+    private val _searchResultData = MutableStateFlow<SearchResultData?>(null)
+    val searchResultData = _searchResultData.asStateFlow()
 
-    private var _searchResults = MutableStateFlow<List<Lyrics>>(Collections.emptyList())
     private var pendingSend: LyricsSendData? = null
-
-    /** Search results as [List]<[Lyrics]>*/
-    val searchResults = _searchResults.asStateFlow()
 
     private val _lyricsSavingState = MutableStateFlow(LyricsSavingState())
     val lyricsSavingState = _lyricsSavingState.asStateFlow()
-
-    var powerampId: Long? = null
-
-    private val _filePath = MutableStateFlow("")
-    val filePath = _filePath.asStateFlow()
 
     val preferredLyricsType = appPreference.preferredLyricsType
         .stateIn(viewModelScope, SharingStarted.Lazily, LyricsType.SYNCED)
@@ -54,9 +47,7 @@ class SearchResultViewmodel @Inject constructor(
             Log.e(TAG, "setSearchResultDataKey: no data found for key $key")
             return false
         }
-        _filePath.value = data.filepath ?: ""
-        powerampId = data.powerampId
-        _searchResults.value = data.results
+        _searchResultData.value = data
         searchRepository.clearResult(key)
         return true
     }
@@ -89,10 +80,15 @@ class SearchResultViewmodel @Inject constructor(
     ) {
         pendingSend = LyricsSendData(lyrics, lyricsType, markInstrumental)
         clearResultState()
+        val data = _searchResultData.value
+        if (data == null) {
+            Log.w(TAG, "sendLyricsToPoweramp: searchResultData is null, aborting")
+            return
+        }
         viewModelScope.launch {
-            powerampId?.let { realId ->
+            data.powerampId?.let { realId ->
                 lyricsSavingHelper.saveLyrics(
-                    filePath = _filePath.value,
+                    filePath = data.filepath,
                     powerampId = realId,
                     lyrics = lyrics,
                     lyricsType = lyricsType,

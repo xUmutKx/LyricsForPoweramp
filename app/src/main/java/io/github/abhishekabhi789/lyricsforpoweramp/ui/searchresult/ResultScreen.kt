@@ -22,8 +22,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,16 +54,18 @@ fun ResultScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val result by viewmodel.searchResults.collectAsState()
-    val isLaunchedFromPoweramp by remember { derivedStateOf { viewmodel.powerampId != null } }
-    val sendLyricsState by viewmodel.lyricsSavingState.collectAsState()
+    val searchResultData by viewmodel.searchResultData.collectAsStateWithLifecycle()
+    val result = searchResultData?.results ?: emptyList()
+    val showLyricsActions = searchResultData?.powerampId != null
+    val sendLyricsState by viewmodel.lyricsSavingState.collectAsStateWithLifecycle()
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val tagLibSession by viewmodel.tagLibSession.collectAsStateWithLifecycle()
-    val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
+    val filePath = searchResultData?.filepath ?: ""
     val permissionState = rememberFolderAccess(filePath.substringBeforeLast("/"))
     var lyricsForTagEdit: Lyrics? by remember { mutableStateOf(null) }
     val preferredLyricsType by viewmodel.preferredLyricsType.collectAsStateWithLifecycle()
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
@@ -101,7 +101,7 @@ fun ResultScreen(
             items(items = result) { lyrics ->
                 LyricItem(
                     lyrics = lyrics,
-                    isLaunchedFromPowerAmp = isLaunchedFromPoweramp,
+                    isLaunchedFromPowerAmp = showLyricsActions,
                     preferredLyricsType = preferredLyricsType,
                     onLyricChosen = { lyricsType ->
                         showBottomSheet = true
@@ -115,7 +115,7 @@ fun ResultScreen(
                     onEditLyrics = { lyricsType ->
                         try {
                             val intent = Intent(context, EditorActivity::class.java).apply {
-                                putExtra(Track.KEY_REAL_ID, viewmodel.powerampId)
+                                putExtra(Track.KEY_REAL_ID, searchResultData?.powerampId)
                                 putExtra(Track.KEY_FILE_PATH, filePath)
                                 putExtra(EditorActivity.KEY_LYRICS_TYPE, lyricsType.name)
                                 putParcelableArrayListExtra(

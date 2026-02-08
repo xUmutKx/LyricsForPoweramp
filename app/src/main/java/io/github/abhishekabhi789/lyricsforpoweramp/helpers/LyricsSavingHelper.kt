@@ -21,7 +21,7 @@ class LyricsSavingHelper @Inject constructor(
     private val taglibHelper: TaglibHelper,
 ) {
     fun saveLyrics(
-        filePath: String,
+        filePath: String?,
         powerampId: Long,
         lyrics: Lyrics,
         lyricsType: LyricsType,
@@ -101,20 +101,28 @@ class LyricsSavingHelper @Inject constructor(
                 emit(state)
             }
             if (embedIntoFile) {
-                val onSessionError = { error: StorageHelper.Result ->
+                if (filePath != null) {
+                    val onSessionError = { error: StorageHelper.Result ->
+                        state = state.copy(
+                            progress = progress,
+                            embedIntoFile = state.embedIntoFile.copy(result = error)
+                        )
+                    }
+                    taglibHelper.getTaglibSession(filePath, onError = onSessionError)
+                        ?.use { session ->
+                            session.updateLyricsTag(lyricsText)
+                            session.saveModifiedFile()
+                            Log.i(TAG, "saveLyrics: embedded into song tag")
+                            progress += stepSize
+                            state = state.copy(
+                                progress = progress,
+                                embedIntoFile = state.embedIntoFile.copy(result = StorageHelper.Result.SUCCESS)
+                            )
+                        }
+                } else {
                     state = state.copy(
                         progress = progress,
-                        embedIntoFile = state.embedIntoFile.copy(result = error)
-                    )
-                }
-                taglibHelper.getTaglibSession(filePath, onError = onSessionError)?.use { session ->
-                    session.updateLyricsTag(lyricsText)
-                    session.saveModifiedFile()
-                    Log.i(TAG, "saveLyrics: embedded into song tag")
-                    progress += stepSize
-                    state = state.copy(
-                        progress = progress,
-                        embedIntoFile = state.embedIntoFile.copy(result = StorageHelper.Result.SUCCESS)
+                        embedIntoFile = state.embedIntoFile.copy(result = StorageHelper.Result.INVALID_FILEPATH)
                     )
                 }
                 emit(state)
