@@ -10,7 +10,9 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LrclibApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
+import io.github.abhishekabhi789.lyricsforpoweramp.model.SearchResultData
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.SearchRepository
 import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker.Companion.MANUAL_SEARCH_ACTION
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -29,7 +31,8 @@ import kotlin.coroutines.cancellation.CancellationException
 class MainActivityViewModel @Inject constructor(
     private val lrclibApiHelper: LrclibApiHelper,
     private val appPreference: AppPreference,
-    private val powerampApiHelper: PowerampApiHelper
+    private val powerampApiHelper: PowerampApiHelper,
+    private val searchRepository: SearchRepository
 ) : ViewModel() {
 
     val appTheme = appPreference.appTheme
@@ -67,10 +70,10 @@ class MainActivityViewModel @Inject constructor(
     /** Carries errors related search job*/
     val searchErrorFlow: SharedFlow<LrclibApiHelper.Error> = _searchErrorFlow
 
-    private var _searchResult = MutableSharedFlow<List<Lyrics>>()
+    private var _searchResultKey = MutableSharedFlow<String>()
 
-    /** Search results as [List]<[Lyrics]>*/
-    val searchResultFlow: SharedFlow<List<Lyrics>> = _searchResult
+    /** key of search result stored in [SearchRepository]>*/
+    val searchResultKeyFlow: SharedFlow<String> = _searchResultKey
 
     private var _isSearching = MutableStateFlow(false)
 
@@ -172,8 +175,15 @@ class MainActivityViewModel @Inject constructor(
 
     private fun emitSearchResult(result: List<Lyrics>) {
         viewModelScope.launch {
-            if (searchJob?.isCancelled == false)
-                _searchResult.emit(result)
+            if (searchJob?.isCancelled == false) {
+                val resultData = SearchResultData(
+                    powerampId = _inputState.value.queryTrack.realId,
+                    filepath = _inputState.value.queryTrack.filePath,
+                    results = result
+                )
+                val key = searchRepository.saveResultData(resultData)
+                _searchResultKey.emit(key)
+            }
         }
     }
 

@@ -49,6 +49,7 @@
     <string name="add_custom_lyrics">Write lyrics</string>
 
     <!-- lyrics result -->
+    <string name="failed_to_prepare_search_result">Failed to prepare result</string>
     <string name="result_topbar_title">Results</string>
     <string name="send_lyrics_button">Send</string>
     <string name="change_preferred_lyrics_type">Change lyrics type</string>

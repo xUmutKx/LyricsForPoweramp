@@ -84,18 +84,10 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             }
         }
     }
-    LaunchedEffect(viewModel.searchResultFlow) {
-        viewModel.searchResultFlow.collectLatest { result ->
+    LaunchedEffect(viewModel.searchResultKeyFlow) {
+        viewModel.searchResultKeyFlow.collectLatest { key ->
             val intent = Intent(context, SearchResultActivity::class.java).apply {
-                putParcelableArrayListExtra(SearchResultActivity.KEY_RESULT, ArrayList(result))
-                putExtra(
-                    Track.KEY_REAL_ID,
-                    viewModel.inputState.value.queryTrack.realId
-                )
-                putExtra(
-                    Track.KEY_FILE_PATH,
-                    viewModel.inputState.value.queryTrack.filePath
-                )
+                putExtra(SearchResultActivity.KEY_RESULT_DATA, key)
             }
             context.startActivity(intent)
         }

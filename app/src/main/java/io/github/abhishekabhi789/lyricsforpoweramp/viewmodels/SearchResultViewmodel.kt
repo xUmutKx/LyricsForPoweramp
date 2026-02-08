@@ -12,11 +12,11 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsSendData
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.SearchRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Collections
 import javax.inject.Inject
@@ -25,7 +25,8 @@ import javax.inject.Inject
 class SearchResultViewmodel @Inject constructor(
     appPreference: AppPreference,
     private val lyricsSavingHelper: LyricsSavingHelper,
-    private val taglibHelper: TaglibHelper
+    private val taglibHelper: TaglibHelper,
+    private val searchRepository: SearchRepository
 ) :
     ViewModel() {
     val appTheme = appPreference.appTheme
@@ -47,16 +48,17 @@ class SearchResultViewmodel @Inject constructor(
     val preferredLyricsType = appPreference.preferredLyricsType
         .stateIn(viewModelScope, SharingStarted.Lazily, LyricsType.SYNCED)
 
-    fun setSearchResults(list: List<Lyrics>) {
-        _searchResults.update { list }
-    }
-
-    fun setPowerampId(realId: Long) {
-        powerampId = realId
-    }
-
-    fun setFilePath(path: String) {
-        _filePath.value = path
+    fun setSearchResultDataKey(key: String): Boolean {
+        val data = searchRepository.getResult(key)
+        if (data == null) {
+            Log.e(TAG, "setSearchResultDataKey: no data found for key $key")
+            return false
+        }
+        _filePath.value = data.filepath ?: ""
+        powerampId = data.powerampId
+        _searchResults.value = data.results
+        searchRepository.clearResult(key)
+        return true
     }
 
     private var _tagLibSession = MutableStateFlow<TaglibHelper.TagLibSession?>(null)

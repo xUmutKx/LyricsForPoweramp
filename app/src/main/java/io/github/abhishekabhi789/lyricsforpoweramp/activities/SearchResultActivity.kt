@@ -1,8 +1,7 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.activities
 
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,36 +11,36 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.core.os.BundleCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
-import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
-import io.github.abhishekabhi789.lyricsforpoweramp.model.Track.Companion.KEY_FILE_PATH
+import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultScreen
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SearchResultViewmodel
-import java.io.Serializable
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class SearchResultActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val searchResult: List<Lyrics>? = intent.extras?.let {
-            BundleCompat.getParcelableArrayList(it, KEY_RESULT, Lyrics::class.java)
-        }
-        val realId: Long? = getSerializableExtra(intent, Track.KEY_REAL_ID)
-        val fileUri: String? = getSerializableExtra(intent, KEY_FILE_PATH)
+        val searchResultData = intent.getStringExtra(KEY_RESULT_DATA)
         setContent {
             val viewmodel: SearchResultViewmodel = viewModel()
             val preferredTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
             LaunchedEffect(Unit) {
-                searchResult?.let { viewmodel.setSearchResults(it) }
-                realId?.let { viewmodel.setPowerampId(it) }
-                fileUri?.let { viewmodel.setFilePath(it) }
+                searchResultData?.let {
+                    if (!viewmodel.setSearchResultDataKey(it)) {
+                        Log.w(TAG, "onCreate: failed to prepare search result with key $it")
+                        makeToast(R.string.failed_to_prepare_search_result)
+                        delay(3.seconds)
+                        finish()
+                    }
+                }
             }
             val useDarkTheme = isDarkTheme(theme = preferredTheme)
             LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
@@ -59,20 +58,8 @@ class SearchResultActivity : ComponentActivity() {
         }
     }
 
-    private inline fun <reified T : Serializable> getSerializableExtra(
-        intent: Intent,
-        key: String
-    ): T? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra(key, T::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getSerializableExtra(key) as? T
-        }
-    }
-
     companion object {
         const val TAG = "SearchResultActivity"
-        const val KEY_RESULT = "search_result"
+        const val KEY_RESULT_DATA = "search_result_data_cache_key"
     }
 }
