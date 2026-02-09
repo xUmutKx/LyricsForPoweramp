@@ -12,8 +12,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 
 fun transformLyrics(
     text: AnnotatedString,
@@ -50,8 +50,8 @@ fun transformLyrics(
             )
             withStyle(
                 ParagraphStyle(
-                    textIndent = TextIndent(restLine = TextUnit(6.5f, TextUnitType.Em)),
-                    lineHeight = TextUnit(1.4f, TextUnitType.Em)
+                    textIndent = TextIndent(firstLine = 0.sp, restLine = 50.sp),
+                    lineHeight = 1.4.em
                 )
             ) {
                 var currentIndex = 0
