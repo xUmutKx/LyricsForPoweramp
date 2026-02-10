@@ -5,7 +5,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 /**Stores user inputs*/
 data class InputState(
     /**Query for [SearchMode.Coarse]*/
-    var queryString: String = "",
+    val queryString: String = "",
     /** An instance of [Track] contains input for [SearchMode.Fine]. */
     val queryTrack: Track = Track(),
     /** Stores which mode of search should be performed*/

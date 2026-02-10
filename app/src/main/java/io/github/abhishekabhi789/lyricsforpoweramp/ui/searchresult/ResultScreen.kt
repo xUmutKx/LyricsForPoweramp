@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -96,7 +97,9 @@ fun ResultScreen(
             verticalItemSpacing = 8.dp,
             contentPadding = paddingValues,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.consumeWindowInsets(paddingValues)
+            modifier = Modifier
+                .consumeWindowInsets(paddingValues)
+                .padding(horizontal = 8.dp)
         ) {
             items(items = result) { lyrics ->
                 LyricItem(

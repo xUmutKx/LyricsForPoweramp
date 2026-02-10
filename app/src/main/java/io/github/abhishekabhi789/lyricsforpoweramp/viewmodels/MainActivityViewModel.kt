@@ -129,10 +129,16 @@ class MainActivityViewModel @Inject constructor(
             updateInputValidStatus(false)
             return
         }
+        val inputState = _inputState.value
+        searchRepository.getKeyForInputState(inputState)?.let {
+            Log.d(TAG, "performSearch: saved result found for input")
+            viewModelScope.launch { _searchResultKey.emit(it) }
+            return
+        }
         emitSearchStatus(true)
-        val searchQuery: Any = when (_inputState.value.searchMode) {
-            InputState.SearchMode.Coarse -> _inputState.value.queryString
-            InputState.SearchMode.Fine -> _inputState.value.queryTrack
+        val searchQuery: Any = when (inputState.searchMode) {
+            InputState.SearchMode.Coarse -> inputState.queryString
+            InputState.SearchMode.Fine -> inputState.queryTrack
         }
         searchJob?.cancel()
         searchJob = null
@@ -174,14 +180,15 @@ class MainActivityViewModel @Inject constructor(
     }
 
     private fun emitSearchResult(result: List<Lyrics>) {
+        val inputState = _inputState.value
         viewModelScope.launch {
             if (searchJob?.isCancelled == false) {
                 val resultData = SearchResultData(
-                    powerampId = _inputState.value.queryTrack.realId,
-                    filepath = _inputState.value.queryTrack.filePath,
+                    powerampId = inputState.queryTrack.realId,
+                    filepath = inputState.queryTrack.filePath,
                     results = result
                 )
-                val key = searchRepository.saveResultData(resultData)
+                val key = searchRepository.saveResultData(inputState, resultData)
                 _searchResultKey.emit(key)
             }
         }

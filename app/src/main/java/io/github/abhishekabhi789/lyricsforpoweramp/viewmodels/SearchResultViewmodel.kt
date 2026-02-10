@@ -48,7 +48,6 @@ class SearchResultViewmodel @Inject constructor(
             return false
         }
         _searchResultData.value = data
-        searchRepository.clearResult(key)
         return true
     }
 
