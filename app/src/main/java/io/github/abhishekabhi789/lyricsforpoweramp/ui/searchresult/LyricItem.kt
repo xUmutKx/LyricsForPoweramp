@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberBasicTooltipState
@@ -57,6 +59,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -76,6 +79,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
@@ -89,6 +93,7 @@ import kotlin.math.abs
 fun LyricItem(
     modifier: Modifier = Modifier,
     lyrics: Lyrics,
+    trackDuration: Int? = null,
     isLaunchedFromPowerAmp: Boolean,
     preferredLyricsType: LyricsType,
     onLyricChosen: (preferredLyricsType: LyricsType) -> Unit,
@@ -171,7 +176,10 @@ fun LyricItem(
                     }
                 }
             }
-            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.Timer,
                     contentDescription = null,
@@ -183,6 +191,33 @@ fun LyricItem(
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(start = 8.dp)
                 )
+                trackDuration?.let { duration ->
+                    Spacer(Modifier.width(8.dp))
+                    val difference by remember(duration) {
+                        derivedStateOf { (lyrics.duration - duration).toInt() }
+                    }
+                    val bgColor = MaterialTheme.colorScheme.secondaryContainer
+                    Surface(
+                        color = bgColor,
+                        contentColor = contentColorFor(bgColor),
+                        shape = MaterialTheme.shapes.extraSmall,
+                        shadowElevation = 2.dp,
+                        border = BorderStroke(Dp.Hairline, MaterialTheme.colorScheme.outline)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .wrapContentWidth()
+                                .padding(horizontal = 4.dp)
+                        ) {
+                            if (difference == 0) {
+                                Icon(Icons.Default.Done, "Same Duration")
+                            } else {
+                                Text(text = if (difference > 0) "+" else "-")
+                                Text("${abs(difference)} s")
+                            }
+                        }
+                    }
+                }
             }
             FlowRow(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -421,9 +456,9 @@ fun <T> SelectableButton(
 fun PreviewLyricItem() {
     val lyrics = LoremIpsum(words = 20).values.joinToString(" ")
     val data = Lyrics(
-        trackName = "Track Name 1",
-        artistName = "Artists Name 1",
-        albumName = "Album Name 1",
+        trackName = "Track Name",
+        artistName = "Artists Name",
+        albumName = "Album Name",
         duration = 200.0,
         instrumental = false,
         plainLyrics = lyrics,
@@ -431,6 +466,7 @@ fun PreviewLyricItem() {
     )
     LyricItem(
         lyrics = data,
+        trackDuration = 210,
         isLaunchedFromPowerAmp = true,
         preferredLyricsType = LyricsType.SYNCED,
         onLyricChosen = { },

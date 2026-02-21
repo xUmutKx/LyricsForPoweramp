@@ -104,6 +104,7 @@ fun ResultScreen(
             items(items = result) { lyrics ->
                 LyricItem(
                     lyrics = lyrics,
+                    trackDuration = searchResultData?.trackDuration,
                     isLaunchedFromPowerAmp = showLyricsActions,
                     preferredLyricsType = preferredLyricsType,
                     onLyricChosen = { lyricsType ->

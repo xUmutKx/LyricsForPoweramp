@@ -95,6 +95,7 @@ class NotificationHelper @Inject constructor(
                 putExtra(PowerampAPI.Track.ARTIST, track.artistName)
                 putExtra(PowerampAPI.Track.ALBUM, track.albumName)
                 putExtra(PowerampAPI.Track.PATH, track.filePath)
+                putExtra(PowerampAPI.Track.DURATION, track.duration)
             }
 
             PendingIntent.getActivity(

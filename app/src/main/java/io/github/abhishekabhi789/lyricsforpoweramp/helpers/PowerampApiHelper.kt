@@ -54,11 +54,10 @@ class PowerampApiHelper @Inject constructor(
         }
         val album = intent.getStringExtra(PowerampAPI.Track.ALBUM)
         val artist = intent.getStringExtra(PowerampAPI.Track.ARTIST)
-        val durationMs = intent.getIntExtra(PowerampAPI.Track.DURATION, 0)
+        val duration = intent.getIntExtra(PowerampAPI.Track.DURATION, 0)
         val filePath = intent.getStringExtra(PowerampAPI.Track.PATH)?.let { path ->
             if (!path.contains(":")) path.replaceFirst("/", ":") else path
         }
-        val duration: Int? = (durationMs / 1000).let { if (it == 0) null else it }
         return processField(FilterType.TITLE_FILTER, title)?.let {
             Track(
                 trackName = it,

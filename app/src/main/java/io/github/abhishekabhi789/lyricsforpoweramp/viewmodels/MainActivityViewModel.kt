@@ -186,7 +186,8 @@ class MainActivityViewModel @Inject constructor(
                 val resultData = SearchResultData(
                     powerampId = inputState.queryTrack.realId,
                     filepath = inputState.queryTrack.filePath,
-                    results = result
+                    results = result,
+                    trackDuration = inputState.queryTrack.duration
                 )
                 val key = searchRepository.saveResultData(inputState, resultData)
                 _searchResultKey.emit(key)
