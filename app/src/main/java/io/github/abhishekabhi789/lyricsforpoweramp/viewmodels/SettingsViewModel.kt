@@ -133,6 +133,30 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
         viewModelScope.launch { appPreference.removeUri(uri) }
     }
 
+    val lrclibApiInstances = appPreference.lrclibApiInstances
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    fun updateLrclibInstancesList(list: List<String>) {
+        val finalList = buildList {
+            //default server should be preserved as first item
+            addAll(AppPreference.DEFAULT_LRCLIB_API_URLS)
+            list.filterNot { AppPreference.DEFAULT_LRCLIB_API_URLS.contains(it) }
+                .distinct()
+                .forEach { add(it) }
+        }
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.SAVED_LRCLIB_API_URL, finalList.toSet())
+        }
+    }
+
+    val selectedLrcLibInstanceUrl = appPreference.selectedLrcLibInstanceUrl
+
+    fun updateSelectedLrclibUrl(url: String) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.SELECTED_LRCLIB_API_URL, url)
+        }
+    }
+
     val timestampDelta = appPreference.timestampDelta
         .stateIn(viewModelScope, SharingStarted.Lazily, 10)
 

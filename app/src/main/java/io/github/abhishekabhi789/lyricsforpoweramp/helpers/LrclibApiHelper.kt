@@ -6,6 +6,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.BuildConfig
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -27,7 +28,8 @@ import kotlin.coroutines.resume
 /**Helper to interacts with LRCLIB*/
 class LrclibApiHelper @Inject constructor(
     private val gson: Gson,
-    private val okHttpClientProvider: Provider<OkHttpClient>
+    private val okHttpClientProvider: Provider<OkHttpClient>,
+    private val appPreference: AppPreference
 ) {
     private val client by lazy { okHttpClientProvider.get() }
 
@@ -43,7 +45,8 @@ class LrclibApiHelper @Inject constructor(
     ) {
         Log.d(TAG, "makeApiRequest: $params")
         try {
-            val httpUrl = (API_BASE_URL + params).toHttpUrlOrNull()
+            val apiUrl = appPreference.selectedLrcLibInstanceUrl.value
+            val httpUrl = (apiUrl + params).toHttpUrlOrNull()
             if (httpUrl != null) {
                 val request = Request.Builder().run {
                     url(httpUrl)
@@ -154,7 +157,7 @@ class LrclibApiHelper @Inject constructor(
             track.artistName?.let { "artist_name=${encode(it)}" },
             track.albumName?.let { "album_name=${encode(it)}" },
             track.duration?.takeIf { it > 0 }?.let { "duration=$it" }
-        ).joinToString(separator = "&", prefix = "get?")
+        ).joinToString(separator = "&", prefix = "/get?")
         makeApiRequest(requestParams, dispatcher) { output ->
             when (output) {
                 is ApiResult.Failure -> {
@@ -182,7 +185,7 @@ class LrclibApiHelper @Inject constructor(
         onError: (Error) -> Unit
     ) {
         val requestParams: String = when (query) {
-            is String -> "search?q=${encode(query)}"
+            is String -> "/search?q=${encode(query)}"
 
             is Track -> {
                 if (query.trackName.isEmpty()) {
@@ -193,7 +196,7 @@ class LrclibApiHelper @Inject constructor(
                     "track_name=${encode(query.trackName)}",
                     query.artistName?.let { "artist_name=${encode(it)}" },
                     query.albumName?.let { "album_name=${encode(it)}" }
-                ).joinToString(separator = "&", prefix = "search?")
+                ).joinToString(separator = "&", prefix = "/search?")
             }
 
             else -> {
@@ -247,6 +250,5 @@ class LrclibApiHelper @Inject constructor(
 
     companion object {
         private const val TAG = "LrclibApiHelper"
-        private const val API_BASE_URL = "https://lrclib.net/api/"
     }
 }

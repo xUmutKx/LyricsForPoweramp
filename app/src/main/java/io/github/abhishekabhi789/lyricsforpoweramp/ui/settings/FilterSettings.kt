@@ -39,8 +39,8 @@ fun FilterSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
                 TextInputWithChips(
                     fieldLabel = stringResource(filterType.labelResId),
                     leadingIcon = filterType.icon,
-                    initialValue = value,
-                    onInputChange = { viewmodel.setFilter(filterType, it) },
+                    chipItems = value,
+                    onChipListChange = { viewmodel.setFilter(filterType, it) },
                 )
             }
         }

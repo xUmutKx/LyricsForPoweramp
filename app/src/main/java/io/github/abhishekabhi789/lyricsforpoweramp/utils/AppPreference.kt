@@ -89,6 +89,13 @@ class AppPreference @Inject constructor(
         Translator.entries.associateWith { preferences[stringPreferencesKey(it.key)] }
     }
 
+    val lrclibApiInstances =
+        dataStore.data.map { it[SAVED_LRCLIB_API_URL]?.toList() ?: DEFAULT_LRCLIB_API_URLS }
+
+    val selectedLrcLibInstanceUrl =
+        dataStore.data.map { it[SELECTED_LRCLIB_API_URL] ?: DEFAULT_LRCLIB_API_URLS.first() }
+            .stateIn(scope, SharingStarted.Eagerly, DEFAULT_LRCLIB_API_URLS.first())
+
     suspend fun saveUri(uri: Uri) {
         val savedUris = runCatching { savedUris.first() }
             .onFailure { Log.e(TAG, "saveUri: failed to get latest savedUri", it) }
@@ -163,7 +170,10 @@ class AppPreference @Inject constructor(
         val MARK_INSTRUMENTAL_LYRICS = booleanPreferencesKey("mark_instrumental_lyrics")
         val TIMESTAMP_DELTA = intPreferencesKey("timestamp_delta_in_centi_seconds")
         val EDITOR_FONT_SIZE_SP = floatPreferencesKey("editor_font_size_sp")
+        val SAVED_LRCLIB_API_URL = stringSetPreferencesKey("lrclib_api_urls")
+        val SELECTED_LRCLIB_API_URL = stringPreferencesKey("lrclib_api_url")
 
+        val DEFAULT_LRCLIB_API_URLS = listOf("https://lrclib.net/api")
         val defaultTheme =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AppTheme.Auto else AppTheme.Light
 

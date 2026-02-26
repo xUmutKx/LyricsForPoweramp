@@ -151,6 +151,15 @@
     <string name="settings_add_folder_button_remove">Quitar</string>
     <string name="settings_add_folder_empty_list">No hay carpetas seleccionadas</string>
     <string name="settings_add_folder_permission_explanation">Necesitas conceder permiso para acceder a %1$s para guardar letras.</string>
+    <string name="settings_lyrics_providers_label">Proveedores de letras</string>
+    <string name="settings_lyrics_providers_modify_lrclib_api_label">URLs de la API de Lrclib</string>
+    <string name="settings_lyrics_providers_modify_lrclib_api_description">Agrega endpoints personalizados de servidores Lrclib. Solo se admiten APIs compatibles con Lrclib debido a diferencias en el formato de respuesta.</string>
+    <string name="settings_lyrics_providers_add_new_lrclib_api_url_label">Agregar nueva URL de la API</string>
+    <string name="settings_lyrics_providers_error_blank">La URL de la API no puede estar vacía</string>
+    <string name="settings_lyrics_providers_url_must_start_with">La URL debe comenzar con https:\/\/</string>
+    <string name="settings_lyrics_providers_url_must_end_with">La URL debe terminar con \/api</string>
+    <string name="settings_lyrics_providers_selected_lrclib_api_label">API activa de Lrclib</string>
+    <string name="settings_lyrics_providers_selected_lrclib_api_description">Esta API del servidor se usará para todas las futuras solicitudes de letras.</string>
     <string name="settings_editor_label">Editor de letras</string>
     <string name="settings_editor_api_keys_list">Claves API</string>
     <string name="settings_editor_api_keys_disclaimer">Debes añadir tu propia clave API para habilitar la traducción. Esto mantiene la aplicación gratuita y evita límites de uso pagado. Tu clave se almacena solo en tu dispositivo — nunca se recopila ni comparte.</string>

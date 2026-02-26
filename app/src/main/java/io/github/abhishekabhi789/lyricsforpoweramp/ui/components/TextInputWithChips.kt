@@ -32,12 +32,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -58,26 +56,28 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TextInputWithChips(
+    modifier: Modifier = Modifier,
     fieldLabel: String,
-    leadingIcon: ImageVector,
-    initialValue: List<String>?,
-    onInputChange: (List<String>) -> Unit,
-    modifier: Modifier = Modifier
+    leadingIcon: ImageVector? = null,
+    chipItems: List<String>,
+    onChipListChange: (List<String>) -> Unit,
+    onValidateInput: (input: String) -> String? = { null }
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     var showClearWarningDialog: Boolean by rememberSaveable { mutableStateOf(false) }
     val inputState = rememberTextFieldState()
-    val chipList: SnapshotStateList<String> = remember(initialValue) {
-        mutableStateListOf(*initialValue?.toTypedArray() ?: emptyArray())
-    }
     var isFocused by rememberSaveable { mutableStateOf(false) }
     val sizeScale by animateFloatAsState(
         targetValue = if (isFocused) 1.025f else 1f,
         label = "searchButtonAnimation"
     )
     val color = MaterialTheme.colorScheme.let { if (isFocused) it.primary else it.outline }
-
+    val onListChange = { item: String, add: Boolean ->
+        val newList = if (add) chipItems + item else chipItems - item
+        onChipListChange(newList)
+    }
+    var inputErrorLabel: String? by rememberSaveable { mutableStateOf(null) }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -88,19 +88,21 @@ fun TextInputWithChips(
             .clickable { focusRequester.requestFocus() }
             .onFocusChanged { state -> isFocused = state.hasFocus }
     ) {
-        Icon(
-            imageVector = leadingIcon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.padding(start = 12.dp)
-        )
+        leadingIcon?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+        }
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 8.dp)
         ) {
-            chipList.toList().forEach { chipText ->
+            chipItems.toList().forEach { chipText ->
                 AssistChip(
                     label = {
                         Text(
@@ -111,15 +113,15 @@ fun TextInputWithChips(
                     onClick = { inputState.setTextAndPlaceCursorAtEnd(chipText) },
                     trailingIcon = {
                         IconButton(
-                            onClick = {
-                                chipList.remove(chipText)
-                                onInputChange(chipList)
-                            },
+                            onClick = { onListChange(chipText, false) },
                             modifier = Modifier.size(AssistChipDefaults.IconSize)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(R.string.clear_field, chipText)
+                                contentDescription = stringResource(
+                                    R.string.clear_field,
+                                    chipText
+                                )
                             )
                         }
                     },
@@ -136,13 +138,22 @@ fun TextInputWithChips(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 onKeyboardAction = {
                     if (inputState.text.isNotEmpty()) {
-                        chipList.add(inputState.text.toString())
-                        onInputChange(chipList)
-                        inputState.clearText()
+                        val input = inputState.text.toString()
+                        inputErrorLabel = onValidateInput(input)
+                        if (inputErrorLabel == null) {
+                            onListChange(inputState.text.toString(), true)
+                            inputState.clearText()
+                        }
                     } else {
                         keyboardController?.hide()
                         focusRequester.freeFocus()
                         isFocused = false
+                    }
+                },
+                isError = inputErrorLabel != null,
+                supportingText = {
+                    inputErrorLabel?.let {
+                        Text(it)
                     }
                 },
                 lineLimits = TextFieldLineLimits.SingleLine,
@@ -160,7 +171,7 @@ fun TextInputWithChips(
                     .semantics { stateDescription = "Input new $fieldLabel" }
             )
         }
-        if (chipList.isNotEmpty() || inputState.text.isNotEmpty()) {
+        if (chipItems.isNotEmpty() || inputState.text.isNotEmpty()) {
             IconButton(
                 onClick = {
                     if (inputState.text.isNotEmpty()) {
@@ -181,10 +192,7 @@ fun TextInputWithChips(
         ConfirmationDialog(
             title = stringResource(id = R.string.clear_field_title),
             description = stringResource(R.string.input_clear_confirmation_message, fieldLabel),
-            onConfirm = {
-                chipList.clear()
-                onInputChange(chipList)
-            },
+            onConfirm = { onChipListChange(emptyList()) },
             onDismiss = { showClearWarningDialog = false }
         )
     }
@@ -196,8 +204,8 @@ fun PreviewTextInputWithChips() {
     TextInputWithChips(
         fieldLabel = "Test Input",
         leadingIcon = Icons.Default.BugReport,
-        initialValue = emptyList(),// mutableListOf("Hello", "World"),
-        onInputChange = {},
+        chipItems = emptyList(),// mutableListOf("Hello", "World"),
+        onChipListChange = {},
         modifier = Modifier.padding(horizontal = 16.dp)
     )
 }

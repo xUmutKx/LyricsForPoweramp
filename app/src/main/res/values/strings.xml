@@ -151,6 +151,15 @@
     <string name="settings_add_folder_button_remove">Remove</string>
     <string name="settings_add_folder_empty_list">No folders selected</string>
     <string name="settings_add_folder_permission_explanation">"You need to grant permission to access %1$s to save lyrics.</string>
+    <string name="settings_lyrics_providers_label">Lyrics Providers</string>
+    <string name="settings_lyrics_providers_modify_lrclib_api_label">Lrclib API URLs</string>
+    <string name="settings_lyrics_providers_modify_lrclib_api_description">Add custom Lrclib server endpoints. Only Lrclib-compatible APIs are supported due to differences in response format.</string>
+    <string name="settings_lyrics_providers_add_new_lrclib_api_url_label">Add new API url</string>
+    <string name="settings_lyrics_providers_error_blank">API url cannot be empty</string>
+    <string name="settings_lyrics_providers_url_must_start_with">URL must start with https\:\/\/</string>
+    <string name="settings_lyrics_providers_url_must_end_with">URL must end with \/api</string>
+    <string name="settings_lyrics_providers_selected_lrclib_api_label">Active Lrclib API</string>
+    <string name="settings_lyrics_providers_selected_lrclib_api_description">This server API will be used for all future lyric requests.</string>
     <string name="settings_editor_label">Lyrics Editor</string>
     <string name="settings_editor_api_keys_list">API Keys</string>
     <string name="settings_editor_api_keys_disclaimer">You need to add your own API key to enable translation. This keeps the app free and avoids paid usage limits. Your key is stored only on your device — it’s never collected or shared.</string>
