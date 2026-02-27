@@ -53,7 +53,7 @@ class AppPreference @Inject constructor(
     val fallbackSearch = dataStore.data.map { it[FALLBACK_SEARCH] ?: false }
 
     val notifyOnRequestFailure =
-        dataStore.data.map { it[SHOW_LYRICS_REQUEST_NOTIFICATION] ?: false }
+        dataStore.data.map { it[SHOW_LYRICS_REQUEST_NOTIFICATION] ?: true }
 
     val overwriteNotification = dataStore.data.map { it[OVERWRITE_NOTIFICATION] ?: false }
 
@@ -63,7 +63,7 @@ class AppPreference @Inject constructor(
 
     val markInstrumental = dataStore.data.map { it[MARK_INSTRUMENTAL_LYRICS] ?: false }
 
-    val sendLyricsToPoweramp = dataStore.data.map { it[SEND_LYRICS_TO_POWERAMP] ?: false }
+    val sendLyricsToPoweramp = dataStore.data.map { it[SEND_LYRICS_TO_POWERAMP] ?: true }
 
     val saveLyricsAsFile = dataStore.data.map { it[SAVE_LYRICS_IN_FILE] ?: false }
 
