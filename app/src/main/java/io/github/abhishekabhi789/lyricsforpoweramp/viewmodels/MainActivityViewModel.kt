@@ -24,8 +24,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
@@ -135,30 +135,36 @@ class MainActivityViewModel @Inject constructor(
             viewModelScope.launch { _searchResultKey.emit(it) }
             return
         }
+
         emitSearchStatus(true)
-        val searchQuery: Any = when (inputState.searchMode) {
-            InputState.SearchMode.Coarse -> inputState.queryString
-            InputState.SearchMode.Fine -> inputState.queryTrack
-        }
         searchJob?.cancel()
         searchJob = null
+
         searchJob = viewModelScope.launch {
-            try {
-                searchJob?.ensureActive()
-                lrclibApiHelper.searchLyricsForTrack(
-                    query = searchQuery,
-                    dispatcher = Dispatchers.IO,
-                    onResult = { list -> emitSearchResult(list) },
-                    onError = { error ->
-                        if (searchJob?.isCancelled == false) {
-                            // don't send cancellation error from here
-                            emitSearchError(error)
+            withContext(Dispatchers.IO) {
+                try {
+                    searchJob?.ensureActive()
+                    val result = when (inputState.searchMode) {
+                        InputState.SearchMode.Coarse -> {
+                            lrclibApiHelper.searchLyricsForQuery(inputState.queryString)
+                        }
+
+                        InputState.SearchMode.Fine -> {
+                            lrclibApiHelper.searchLyricsForTrack(inputState.queryTrack)
                         }
                     }
-                )
-            } catch (e: Exception) {
-                if (e is CancellationException)
-                    Log.e(TAG, "performSearch: job cancelled", e)
+                    when (result) {
+                        is LrclibApiHelper.Result.Success -> emitSearchResult(result.data)
+                        is LrclibApiHelper.Result.Failure -> {
+                            if (searchJob?.isCancelled == false) {
+                                // don't send cancellation error from here
+                                emitSearchError(result.error)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "performSearch: exception occurred", e)
+                }
             }
         }
         searchJob?.invokeOnCompletion {

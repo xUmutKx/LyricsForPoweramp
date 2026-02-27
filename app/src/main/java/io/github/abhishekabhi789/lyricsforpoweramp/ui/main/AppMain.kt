@@ -23,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -72,10 +74,7 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             keyboardController?.hide()
             scope.launch {
                 when (snackbarHostState.showSnackbar(
-                    message = listOfNotNull(
-                        context.getString(errMsg.errMsgResId),
-                        errMsg.moreInfo
-                    ).joinToString(" "),
+                    message = resources.getString(errMsg.errMsgResId),
                     withDismissAction = true
                 )) {
                     SnackbarResult.Dismissed -> keyboardController?.show()

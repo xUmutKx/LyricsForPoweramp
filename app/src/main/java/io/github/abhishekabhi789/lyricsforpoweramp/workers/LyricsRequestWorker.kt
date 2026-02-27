@@ -25,10 +25,8 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
@@ -70,7 +68,7 @@ class LyricsRequestWorker @AssistedInject constructor(
         return Result.failure()
     }
 
-    private suspend fun handleLyricsRequest(dispatcher: CoroutineDispatcher = Dispatchers.IO): Result {
+    private suspend fun handleLyricsRequest(): Result {
         Log.i(TAG, "handleLyricsRequest: request for $mTrack")
         val sendToPoweramp = appPreference.sendLyricsToPoweramp.first()
         val saveToStorage = appPreference.saveLyricsAsFile.first()
@@ -84,37 +82,15 @@ class LyricsRequestWorker @AssistedInject constructor(
             return Result.failure()
         }
         val preferredLyricsType = appPreference.preferredLyricsType.first()
-        var result: Result = Result.failure()
 
         return withTimeoutOrNull(POWERAMP_LYRICS_REQUEST_WAIT_TIMEOUT) {
-            getLyrics(
-                track = mTrack,
-                lyricsType = preferredLyricsType,
-                dispatcher = dispatcher,
-                onSuccess = { lyrics ->
-                    result = Result.success()
-                    launch { sendLyrics(lyrics, preferredLyricsType) }
-                },
-                onError = { error ->
-                    when (error) {
-                        LrclibApiHelper.Error.TIMEOUT -> {
-                            notifyFailure("${getString(R.string.timeout_canceled)} - ${mTrack.trackName}")
-                        }
-
-                        LrclibApiHelper.Error.EMPTY_RESPONSE, LrclibApiHelper.Error.NO_RESULTS -> {
-                            notifyFailure("${getString(error.errMsgResId)} - ${mTrack.trackName}")
-                        }
-
-                        else -> {
-                            notifyFailure("${getString(error.errMsgResId)} - ${mTrack.trackName}")
-                        }
-                    }
-
-                    Log.e(TAG, "handleLyricsRequest: $error")
-                    result = Result.failure()
-                },
-            )
-            result
+            val lyrics = getLyrics(mTrack, preferredLyricsType)
+            if (lyrics == null) {
+                Result.failure()
+            } else {
+                saveLyrics(lyrics, preferredLyricsType)
+                Result.success()
+            }
         } ?: run {
             notifyFailure("${getString(R.string.timeout_canceled)} - ${mTrack.trackName}")
             Log.e(TAG, "handleLyricsRequest: timeout cancelled")
@@ -125,50 +101,47 @@ class LyricsRequestWorker @AssistedInject constructor(
     private suspend fun getLyrics(
         track: Track,
         lyricsType: LyricsType,
-        dispatcher: CoroutineDispatcher,
-        onSuccess: (Lyrics) -> Unit,
-        onError: (LrclibApiHelper.Error) -> Unit
-    ) = withContext(dispatcher) {
+    ): Lyrics? = withContext(Dispatchers.IO) {
         val useFallbackMethod = appPreference.fallbackSearch.first()
         Log.i(TAG, "getLyrics: fallback to search permitted- $useFallbackMethod")
-        lrclibApiHelper.getLyricsForTracks(
-            track = track,
-            dispatcher = dispatcher,
-            onResult = onSuccess,
-            onError = { error ->
-                Log.e(TAG, "getLyrics: get request failed $error")
-                if (useFallbackMethod && error == LrclibApiHelper.Error.NO_RESULTS) {
-                    Log.i(TAG, "getLyrics: trying with search method")
-                    launch {
-                        lrclibApiHelper.searchLyricsForTrack(
-                            query = track,
-                            dispatcher = dispatcher,
-                            onResult = { results: List<Lyrics> ->
+        return@withContext when (val getResult = lrclibApiHelper.getLyricsForTrack(track)) {
+            is LrclibApiHelper.Result.Success -> getResult.data.first()
+            is LrclibApiHelper.Result.Failure -> {
+                if (useFallbackMethod) {
+                    Log.d(TAG, "getLyrics: trying fallback method")
+                    when (val searchResult = lrclibApiHelper.searchLyricsForTrack(track)) {
+                        is LrclibApiHelper.Result.Failure -> {
+                            notifyError(searchResult.error)
+                            null
+                        }
+
+                        is LrclibApiHelper.Result.Success -> {
+                            searchResult.data.let { lyricsList ->
                                 val lyrics = if (lyricsType == LyricsType.SYNCED) {
-                                    results.firstOrNull { it.syncedLyrics != null }
-                                        ?: results.firstOrNull { it.plainLyrics != null }
+                                    lyricsList.firstOrNull { it.syncedLyrics != null }
+                                        ?: lyricsList.firstOrNull { it.plainLyrics != null }
                                 } else {
-                                    results.firstOrNull { it.plainLyrics != null }
-                                        ?: results.firstOrNull { it.syncedLyrics != null }
+                                    lyricsList.firstOrNull { it.plainLyrics != null }
+                                        ?: lyricsList.firstOrNull { it.syncedLyrics != null }
                                 }
-                                lyrics?.let { onSuccess(it) } ?: run {
+                                if (lyrics == null) {
                                     notifyFailure(
                                         getString(R.string.error_no_results, mTrack.trackName)
                                     )
-                                }
-                            },
-                            onError = onError
-                        )
+                                    null
+                                } else lyrics
+                            }
+                        }
                     }
                 } else {
-                    Log.e(TAG, "getLyrics: failed or no results, fallback not permitted")
-                    onError(error)
+                    notifyError(getResult.error)
+                    null
                 }
             }
-        )
+        }
     }
 
-    private suspend fun sendLyrics(lyrics: Lyrics, lyricsType: LyricsType) {
+    private suspend fun saveLyrics(lyrics: Lyrics, lyricsType: LyricsType) {
         val markInstrumental = appPreference.markInstrumental.first()
         lyricsSavingHelper.saveLyrics(
             filePath = mTrack.filePath,
@@ -202,7 +175,6 @@ class LyricsRequestWorker @AssistedInject constructor(
         }
     }
 
-
     private fun notifyFailure(title: String) {
         val subText = getString(R.string.notification_lyrics_request_failed)
         if (::mTrack.isInitialized) {
@@ -213,6 +185,21 @@ class LyricsRequestWorker @AssistedInject constructor(
         }
     }
 
+    private fun notifyError(error: LrclibApiHelper.Error) {
+        return when (error) {
+            LrclibApiHelper.Error.TIMEOUT -> {
+                notifyFailure("${getString(R.string.timeout_canceled)} - ${mTrack.trackName}")
+            }
+
+            LrclibApiHelper.Error.EMPTY_RESPONSE, LrclibApiHelper.Error.NO_RESULTS -> {
+                notifyFailure("${getString(error.errMsgResId)} - ${mTrack.trackName}")
+            }
+
+            else -> {
+                notifyFailure("${getString(error.errMsgResId)} - ${mTrack.trackName}")
+            }
+        }
+    }
     private fun createWorkerNotification(): Notification {
         val channelName = getString(R.string.lyrics_request_handling_notifications)
 
