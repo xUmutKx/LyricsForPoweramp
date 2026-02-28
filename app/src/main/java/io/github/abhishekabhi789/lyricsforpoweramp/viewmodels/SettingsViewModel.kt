@@ -180,8 +180,13 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
 
     fun setFilter(type: FilterType, value: List<String>) {
         val prefKey = stringPreferencesKey(type.key)
-        val prefValue = value.let { if (it.isEmpty()) "" else it.joinToString("\n") }
-        viewModelScope.launch { appPreference.setPreference(prefKey, prefValue) }
+        viewModelScope.launch {
+            if (value.isEmpty()) {
+                appPreference.removePreference(prefKey)
+            } else {
+                appPreference.setPreference(prefKey, value.joinToString("\n"))
+            }
+        }
     }
 
     private fun getStorageUriFromPath(path: String): Uri {

@@ -102,7 +102,7 @@ fun TextInputWithChips(
                 .weight(1f)
                 .padding(start = 8.dp)
         ) {
-            chipItems.toList().forEach { chipText ->
+            chipItems.forEach { chipText ->
                 AssistChip(
                     label = {
                         Text(

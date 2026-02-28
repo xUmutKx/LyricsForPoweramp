@@ -9,6 +9,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -131,6 +132,10 @@ class AppPreference @Inject constructor(
         dataStore.updateData { preferences ->
             preferences.toMutablePreferences().apply { this[key] = value }
         }
+    }
+
+    suspend fun <T> removePreference(key: Preferences.Key<T>) {
+        dataStore.edit { preferences -> preferences.remove(key) }
     }
 
     suspend fun <T> getPreference(key: Preferences.Key<T>): T? {
