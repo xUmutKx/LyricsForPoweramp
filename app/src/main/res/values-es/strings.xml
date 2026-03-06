@@ -54,6 +54,7 @@
     <string name="send_lyrics_button">Enviar</string>
     <string name="change_preferred_lyrics_type">Cambiar tipo de letras</string>
     <string name="edit_lyrics">Editar</string>
+    <string name="result_action_dialog_common_description">Elija un tipo de letra para continuar</string>
     <string name="lyrics_save_search_result">Guardando letras</string>
     <string name="lyrics_send_to_pa">Enviando letras a Poweramp</string>
     <string name="lyrics_sent_to_pa">Letras enviadas a Poweramp</string>

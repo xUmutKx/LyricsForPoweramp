@@ -4,7 +4,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BasicTooltipBox
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -27,15 +26,12 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberBasicTooltipState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Audiotrack
@@ -43,22 +39,17 @@ import androidx.compose.material.icons.outlined.InterpreterMode
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.InputChipDefaults
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -69,7 +60,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -248,7 +238,7 @@ fun LyricItem(
                 }
                 if (isLaunchedFromPowerAmp) {
                     FlowRow(
-                        horizontalArrangement = Arrangement.End,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier
                             .weight(0.5f)
@@ -259,27 +249,31 @@ fun LyricItem(
                             if (lyrics.plainLyrics != null) add(LyricsType.PLAIN)
                             if (lyrics.instrumental == true) add(LyricsType.INSTRUMENTAL)
                         }
-                        SelectableButton(
-                            actionIcon = Icons.Default.Edit,
-                            tooltipDescription = stringResource(R.string.edit_lyrics),
-                            preferred = preferredLyricsType,
-                            allItems = availableLyrics,
-                            onSend = onEditLyrics,
-                            getLabel = { stringResource(it.shortLabelResId) })
-                        SelectableButton(
-                            actionIcon = Icons.Default.Done,
-                            tooltipDescription = stringResource(R.string.save),
-                            preferred = preferredLyricsType,
-                            allItems = availableLyrics,
-                            onSend = onLyricChosen,
-                            getLabel = { stringResource(it.shortLabelResId) })
+                        val showLyricsAction by remember(lyrics) {
+                            derivedStateOf {
+                                lyrics.instrumental == false && (!lyrics.syncedLyrics.isNullOrEmpty() || !lyrics.plainLyrics.isNullOrEmpty())
+                            }
+                        }
+                        if (showLyricsAction) {
+                            LyricsAction(
+                                actionIcon = Icons.Default.Edit,
+                                actionLabel = stringResource(R.string.edit_lyrics),
+                                availableLyricsTypes = availableLyrics,
+                                preferredLyricsType = preferredLyricsType,
+                                onConfirm = onEditLyrics
+                            )
+                            LyricsAction(
+                                actionIcon = Icons.Default.Done,
+                                actionLabel = stringResource(R.string.save),
+                                availableLyricsTypes = availableLyrics,
+                                preferredLyricsType = preferredLyricsType,
+                                onConfirm = onLyricChosen
+                            )
+                        }
                         AssistChip(
                             onClick = onFixMetadata,
                             leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.EditNote,
-                                    contentDescription = null
-                                )
+                                Icon(imageVector = Icons.Default.Code, contentDescription = null)
                             },
                             label = {
                                 Text(
@@ -350,100 +344,67 @@ fun LyricItem(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun <T> SelectableButton(
-    modifier: Modifier = Modifier,
+fun LyricsAction(
     actionIcon: ImageVector,
-    tooltipDescription: String,
-    preferred: T,
-    allItems: List<T>,
-    onSend: (T) -> Unit,
-    getLabel: @Composable (T) -> String,
+    actionLabel: String,
+    availableLyricsTypes: List<LyricsType>,
+    preferredLyricsType: LyricsType,
+    onConfirm: (LyricsType) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    var chosenItem by remember {
-        mutableStateOf(if (preferred in allItems) preferred else allItems.first())
+    var showDialog by remember { mutableStateOf(false) }
+    val invokeAction = {
+        if (availableLyricsTypes.size > 1) {
+            showDialog = true
+        } else {
+            onConfirm(availableLyricsTypes.first())
+        }
     }
-    BasicTooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-            TooltipAnchorPosition.Above
-        ),
-        state = rememberBasicTooltipState(),
-        tooltip = {
-            ElevatedCard(
-                modifier = Modifier.border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = CardDefaults.shape
-                )
-            ) {
-                Text(
-                    text = tooltipDescription,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
-        }) {
-        Surface(
-            shape = InputChipDefaults.shape,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-            modifier = modifier
-                .clip(MaterialTheme.shapes.small)
-                .padding(vertical = 4.dp)
+    AssistChip(
+        onClick = invokeAction,
+        leadingIcon = { Icon(actionIcon, null) },
+        label = { Text(actionLabel, color = MaterialTheme.colorScheme.primary) }
+    )
+
+    if (showDialog) {
+        val dialogShape = MaterialTheme.shapes.large
+        BasicAlertDialog(
+            onDismissRequest = { showDialog = false }, modifier = Modifier.background(
+                MaterialTheme.colorScheme.background, shape = dialogShape
+            )
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .height(36.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(16.dp)
             ) {
                 Icon(
                     imageVector = actionIcon,
-                    contentDescription = stringResource(R.string.send_lyrics_button),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .clickable { onSend(chosenItem) }
-                        .size(34.dp)
-                        .padding(2.dp)
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
                 )
-                VerticalDivider()
-                ExposedDropdownMenuBox(
-                    modifier = Modifier,
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it }) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .padding(start = 4.dp)
-                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                    ) {
-                        Text(
-                            text = getLabel(chosenItem),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                        Icon(
-                            imageVector = Icons.Default.let { if (expanded) it.ArrowDropUp else it.ArrowDropDown },
-                            contentDescription = stringResource(R.string.change_preferred_lyrics_type),
-                            modifier = Modifier.size(32.dp)
+                Text(
+                    text = "$actionLabel lyrics",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(stringResource(R.string.result_action_dialog_common_description))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(
+                        8.dp, Alignment.CenterHorizontally
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    availableLyricsTypes.forEach { lyricsType ->
+                        InputChip(
+                            selected = lyricsType == preferredLyricsType,
+                            onClick = { onConfirm(lyricsType); showDialog = false },
+                            label = {
+                                Text(stringResource(lyricsType.longLabelResId))
+                            }
                         )
                     }
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.width(IntrinsicSize.Max)
-                    ) {
-                        allItems.forEach { value ->
-                            DropdownMenuItem(
-                                text = { Text(text = getLabel(value)) },
-                                colors = MenuDefaults.itemColors().copy(
-                                    textColor = if (value == chosenItem) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                                ),
-                                onClick = {
-                                    chosenItem = value
-                                    expanded = false
-                                },
-                            )
-                        }
+                    OutlinedButton(onClick = { showDialog = false }) {
+                        Text(stringResource(R.string.dismiss))
                     }
                 }
             }

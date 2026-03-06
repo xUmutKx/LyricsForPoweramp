@@ -52,8 +52,9 @@
     <string name="failed_to_prepare_search_result">Failed to prepare result</string>
     <string name="result_topbar_title">Results</string>
     <string name="send_lyrics_button">Send</string>
-    <string name="change_preferred_lyrics_type">Change lyrics type</string>
     <string name="edit_lyrics">Edit</string>
+    <string name="result_action_dialog_common_description">Choose a lyrics type to proceed</string>
+    <string name="change_preferred_lyrics_type">Change lyrics type</string>
     <string name="lyrics_save_search_result">Saving Lyrics</string>
     <string name="lyrics_send_to_pa">Sending lyrics to Poweramp</string>
     <string name="lyrics_sent_to_pa">Lyrics sent to Poweramp</string>
