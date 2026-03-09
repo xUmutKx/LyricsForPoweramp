@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import com.kyant.taglib.PropertyMap
 import com.kyant.taglib.TagLib
-import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.internal.closeQuietly
@@ -54,18 +53,6 @@ class TaglibHelper @Inject constructor(private val context: Context) {
             }
             val metadata = getMetadata() ?: PropertyMap()
             return metadata[KEY_LYRICS]?.firstOrNull()
-        }
-
-        fun fixMetadata(lyrics: Lyrics): Boolean {
-            if (closed.get()) {
-                Log.w(TAG, "fixMetadata: session closed")
-                return false
-            }
-            val metadata = getMetadata() ?: PropertyMap()
-            metadata[KEY_TITLE] = arrayOf(lyrics.trackName)
-            lyrics.artistName?.let { metadata[KEY_ARTIST] = arrayOf(it) }
-            lyrics.albumName?.let { metadata[KEY_ALBUM] = arrayOf(it) }
-            return setMetadata(metadata)
         }
 
         fun saveModifiedFile(): Boolean {

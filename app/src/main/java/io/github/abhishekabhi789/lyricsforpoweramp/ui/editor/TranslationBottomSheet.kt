@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -67,6 +68,7 @@ fun TranslationBottomSheet(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
+    val resources = LocalResources.current
     val tooltipPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(
         TooltipAnchorPosition.Above
     )
@@ -92,7 +94,7 @@ fun TranslationBottomSheet(
         if (translatorState is RequestState.Failure) {
             val failure = translatorState as RequestState.Failure
             failure.errorMessage.let { errMsg ->
-                val text = errMsg ?: context.getString(R.string.translation_failed)
+                val text = errMsg ?: resources.getString(R.string.translation_failed)
                 Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
             }
         }

@@ -51,10 +51,8 @@
     <!-- lyrics result -->
     <string name="failed_to_prepare_search_result">Failed to prepare result</string>
     <string name="result_topbar_title">Results</string>
-    <string name="send_lyrics_button">Send</string>
     <string name="edit_lyrics">Edit</string>
     <string name="result_action_dialog_common_description">Choose a lyrics type to proceed</string>
-    <string name="change_preferred_lyrics_type">Change lyrics type</string>
     <string name="lyrics_save_search_result">Saving Lyrics</string>
     <string name="lyrics_send_to_pa">Sending lyrics to Poweramp</string>
     <string name="lyrics_sent_to_pa">Lyrics sent to Poweramp</string>
@@ -143,8 +141,6 @@
     <string name="settings_save_id_tags_in_lrc_file_description">Add song metadata (like title and artist) as ID tags inside the LRC lyrics file.</string>
     <string name="settings_embed_into_song_file_label">Embed Lyrics into File</string>
     <string name="settings_embed_into_song_file_description">Embed the lyrics directly into the music file.</string>
-    <string name="settings_fix_metadata_with_lyrics_info_label">Fix Song Metadata</string>
-    <string name="settings_fix_metadata_with_lyrics_info_description">Update song details with information from the lyrics.</string>
     <string name="settings_add_folder">Select folders where your music files are stored.</string>
     <string name="settings_add_folder_list_title">Selected Folders</string>
     <string name="settings_add_folder_add_new">Choose Folder</string>
@@ -192,7 +188,6 @@
     <string name="error_network">Failed, network error</string>
     <string name="error_timeout">Timed out</string>
     <string name="error_exception">Failed, exception occurred</string>
-    <string name="error_no_track_name">Track name cannot be empty</string>
     <string name="error_preparing_url">Failed to prepare request URL</string>
     <string name="error_no_results">No results found</string>
     <string name="error_processing_error">Failed to process response</string>

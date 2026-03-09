@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">Lyrics for Poweramp</string>
-
     <!-- general -->
     <string name="plain_lyrics">Letras sin sincronizar</string>
     <string name="synced_lyrics">Letras sincronizadas</string>
@@ -51,8 +49,6 @@
     <!-- lyrics result -->
     <string name="failed_to_prepare_search_result">No se supo preparar el resultado</string>
     <string name="result_topbar_title">Resultados</string>
-    <string name="send_lyrics_button">Enviar</string>
-    <string name="change_preferred_lyrics_type">Cambiar tipo de letras</string>
     <string name="edit_lyrics">Editar</string>
     <string name="result_action_dialog_common_description">Elija un tipo de letra para continuar</string>
     <string name="lyrics_save_search_result">Guardando letras</string>
@@ -143,8 +139,6 @@
     <string name="settings_save_id_tags_in_lrc_file_description">Añadir metadatos de la canción (como título y artista) como etiquetas ID dentro del archivo LRC.</string>
     <string name="settings_embed_into_song_file_label">Incrustar letras en archivo</string>
     <string name="settings_embed_into_song_file_description">Incrusta las letras directamente en el archivo de audio.</string>
-    <string name="settings_fix_metadata_with_lyrics_info_label">Corregir metadatos de la canción</string>
-    <string name="settings_fix_metadata_with_lyrics_info_description">Actualizar los datos de la pista con la información extraída de las letras.</string>
     <string name="settings_add_folder">Selecciona las carpetas donde están tus archivos de música.</string>
     <string name="settings_add_folder_list_title">Carpetas seleccionadas</string>
     <string name="settings_add_folder_add_new">Elegir carpeta</string>
@@ -192,7 +186,6 @@
     <string name="error_network">Error de red</string>
     <string name="error_timeout">Tiempo de espera agotado</string>
     <string name="error_exception">Error: se produjo una excepción</string>
-    <string name="error_no_track_name">El nombre de la pista no puede estar vacío</string>
     <string name="error_preparing_url">Error al preparar la URL de la solicitud</string>
     <string name="error_no_results">No se encontraron resultados</string>
     <string name="error_processing_error">Error al procesar la respuesta</string>
