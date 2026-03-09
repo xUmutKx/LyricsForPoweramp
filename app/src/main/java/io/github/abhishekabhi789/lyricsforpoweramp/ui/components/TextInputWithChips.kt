@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,7 +62,8 @@ fun TextInputWithChips(
     leadingIcon: ImageVector? = null,
     chipItems: List<String>,
     onChipListChange: (List<String>) -> Unit,
-    onValidateInput: (input: String) -> String? = { null }
+    onValidateInput: (input: String) -> String? = { null },
+    isRemovable: (String) -> Boolean = { false }
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
@@ -103,6 +105,7 @@ fun TextInputWithChips(
                 .padding(start = 8.dp)
         ) {
             chipItems.forEach { chipText ->
+                val isRemovable by remember(chipText) { derivedStateOf { isRemovable(chipText) } }
                 AssistChip(
                     label = {
                         Text(
@@ -110,19 +113,21 @@ fun TextInputWithChips(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     },
-                    onClick = { inputState.setTextAndPlaceCursorAtEnd(chipText) },
+                    onClick = { if (isRemovable) inputState.setTextAndPlaceCursorAtEnd(chipText) },
                     trailingIcon = {
-                        IconButton(
-                            onClick = { onListChange(chipText, false) },
-                            modifier = Modifier.size(AssistChipDefaults.IconSize)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(
-                                    R.string.clear_field,
-                                    chipText
+                        if (isRemovable) {
+                            IconButton(
+                                onClick = { onListChange(chipText, false) },
+                                modifier = Modifier.size(AssistChipDefaults.IconSize)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = stringResource(
+                                        R.string.clear_field,
+                                        chipText
+                                    )
                                 )
-                            )
+                            }
                         }
                     },
                     colors = AssistChipDefaults.assistChipColors()

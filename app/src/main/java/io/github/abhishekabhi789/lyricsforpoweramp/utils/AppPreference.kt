@@ -94,8 +94,8 @@ class AppPreference @Inject constructor(
         dataStore.data.map { it[SAVED_LRCLIB_API_URL]?.toList() ?: DEFAULT_LRCLIB_API_URLS }
 
     val selectedLrcLibInstanceUrl =
-        dataStore.data.map { it[SELECTED_LRCLIB_API_URL] ?: DEFAULT_LRCLIB_API_URLS.first() }
-            .stateIn(scope, SharingStarted.Eagerly, DEFAULT_LRCLIB_API_URLS.first())
+        dataStore.data.map { it[SELECTED_LRCLIB_API_URL] ?: DEFAULT_API_URL }
+            .stateIn(scope, SharingStarted.Eagerly, DEFAULT_API_URL)
 
     suspend fun saveUri(uri: Uri) {
         val savedUris = runCatching { savedUris.first() }
@@ -178,7 +178,9 @@ class AppPreference @Inject constructor(
         val SAVED_LRCLIB_API_URL = stringSetPreferencesKey("lrclib_api_urls")
         val SELECTED_LRCLIB_API_URL = stringPreferencesKey("lrclib_api_url")
 
-        val DEFAULT_LRCLIB_API_URLS = listOf("https://lrclib.net/api")
+        const val LRCLIB_API_URL = "https://lrclib.net/api"
+        const val DEFAULT_API_URL = "https://l4pa-server.abhishekabhi789.workers.dev/api"
+        val DEFAULT_LRCLIB_API_URLS = listOf(DEFAULT_API_URL, LRCLIB_API_URL)
         val defaultTheme =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AppTheme.Auto else AppTheme.Light
 

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.CloudCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.TextInputWithChips
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @Composable
@@ -30,8 +32,15 @@ fun LyricsProviderSettings(modifier: Modifier = Modifier, viewmodel: SettingsVie
         icon = Icons.Default.CloudCircle
     ) {
         val resources = LocalResources.current
+        val defaultApiName = stringResource(R.string.settings_lyrics_providers_default_api_url)
         val lrclibInstances by viewmodel.lrclibApiInstances.collectAsStateWithLifecycle()
-
+        val formattedApiList by remember(lrclibInstances) {
+            derivedStateOf {
+                lrclibInstances.map {
+                    if (it == AppPreference.DEFAULT_API_URL) defaultApiName else it
+                }
+            }
+        }
         BasicSettings(
             label = stringResource(R.string.settings_lyrics_providers_modify_lrclib_api_label),
             control = {})
@@ -43,8 +52,12 @@ fun LyricsProviderSettings(modifier: Modifier = Modifier, viewmodel: SettingsVie
         Spacer(modifier = Modifier.height(8.dp))
         TextInputWithChips(
             fieldLabel = stringResource(R.string.settings_lyrics_providers_add_new_lrclib_api_url_label),
-            chipItems = lrclibInstances,
-            onChipListChange = { viewmodel.updateLrclibInstancesList(it) },
+            chipItems = formattedApiList,
+            onChipListChange = { newList ->
+                val list =
+                    newList.map { if (it == defaultApiName) AppPreference.DEFAULT_API_URL else it }
+                viewmodel.updateLrclibInstancesList(list)
+            },
             onValidateInput = { input ->
                 when {
                     input.isBlank() -> resources.getString(R.string.settings_lyrics_providers_error_blank)
@@ -53,6 +66,9 @@ fun LyricsProviderSettings(modifier: Modifier = Modifier, viewmodel: SettingsVie
                     else -> null
                 }
             },
+            isRemovable = { item ->
+                item != defaultApiName && item !in AppPreference.DEFAULT_LRCLIB_API_URLS
+            }
         )
         BasicSettings(
             label = stringResource(R.string.settings_lyrics_providers_selected_lrclib_api_label),
@@ -60,6 +76,8 @@ fun LyricsProviderSettings(modifier: Modifier = Modifier, viewmodel: SettingsVie
         ) { interactionSource ->
             var showListSelection by remember { mutableStateOf(false) }
             val currentValue by viewmodel.selectedLrcLibInstanceUrl.collectAsStateWithLifecycle()
+            val selectedValue =
+                if (currentValue == AppPreference.DEFAULT_API_URL) defaultApiName else currentValue
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
@@ -69,9 +87,13 @@ fun LyricsProviderSettings(modifier: Modifier = Modifier, viewmodel: SettingsVie
             }
             DropdownSettings(
                 expanded = showListSelection,
-                currentValue = currentValue,
-                values = lrclibInstances,
-                onSelection = { viewmodel.updateSelectedLrclibUrl(it) },
+                currentValue = selectedValue,
+                values = formattedApiList,
+                onSelection = { selected ->
+                    val url =
+                        if (selected == defaultApiName) AppPreference.DEFAULT_API_URL else selected
+                    viewmodel.updateSelectedLrclibUrl(url)
+                },
                 onExpandChanged = { if (showListSelection) showListSelection = false },
                 getLabel = { it },
             )

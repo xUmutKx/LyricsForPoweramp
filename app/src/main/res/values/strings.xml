@@ -155,6 +155,7 @@
     <string name="settings_lyrics_providers_label">Lyrics Providers</string>
     <string name="settings_lyrics_providers_modify_lrclib_api_label">Lrclib API URLs</string>
     <string name="settings_lyrics_providers_modify_lrclib_api_description">Add custom Lrclib server endpoints. Only Lrclib-compatible APIs are supported due to differences in response format.</string>
+    <string name="settings_lyrics_providers_default_api_url">Default API</string>
     <string name="settings_lyrics_providers_add_new_lrclib_api_url_label">Add new API url</string>
     <string name="settings_lyrics_providers_error_blank">API url cannot be empty</string>
     <string name="settings_lyrics_providers_url_must_start_with">URL must start with https\:\/\/</string>
