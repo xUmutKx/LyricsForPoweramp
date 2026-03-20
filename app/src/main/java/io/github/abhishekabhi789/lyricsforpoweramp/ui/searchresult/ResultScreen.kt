@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SearchResultActivity.Companion.TAG
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.constants.ResultSortOrder
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
@@ -123,6 +125,17 @@ fun ResultScreen(
                                 )
                             }
                         }
+                    }
+                    IconButton(onClick = {
+                        runCatching {
+                            context.startActivity(Intent(context, SettingsActivity::class.java))
+                        }
+                    }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.top_bar_settings),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 scrollBehavior = scrollBehavior
