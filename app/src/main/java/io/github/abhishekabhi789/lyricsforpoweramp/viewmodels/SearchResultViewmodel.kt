@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.lyricsforpoweramp.constants.ResultSortOrder
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingState
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
@@ -18,8 +19,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
 class SearchResultViewmodel @Inject constructor(
@@ -34,6 +37,7 @@ class SearchResultViewmodel @Inject constructor(
     val searchResultData = _searchResultData.asStateFlow()
 
     private var pendingSend: LyricsSendData? = null
+    private var originalSearchResult: List<Lyrics> = emptyList()
 
     private val _lyricsSavingState = MutableStateFlow(LyricsSavingState())
     val lyricsSavingState = _lyricsSavingState.asStateFlow()
@@ -48,10 +52,27 @@ class SearchResultViewmodel @Inject constructor(
             return false
         }
         _searchResultData.value = data
+        originalSearchResult = data.results
         return true
     }
 
-    private var _tagLibSession = MutableStateFlow<TaglibHelper.TagLibSession?>(null)
+    private val _sortOrder = MutableStateFlow(ResultSortOrder.RELEVANCE)
+    val sortOrder = _sortOrder.asStateFlow()
+
+    fun changeSortOrder(sortOrder: ResultSortOrder) {
+        _searchResultData.update { currentData ->
+            val sortedResults = when (sortOrder) {
+                ResultSortOrder.RELEVANCE -> originalSearchResult
+                ResultSortOrder.DURATION_DIFFERENCE -> originalSearchResult.sortedBy {
+                    abs(it.duration.minus(currentData?.trackDuration?.toDouble() ?: it.duration))
+                }
+            }
+            currentData?.copy(results = sortedResults)
+        }
+        _sortOrder.value = sortOrder
+    }
+
+    private val _tagLibSession = MutableStateFlow<TaglibHelper.TagLibSession?>(null)
     val tagLibSession = _tagLibSession.asStateFlow()
     fun prepareTaglibSession(
         path: String?,

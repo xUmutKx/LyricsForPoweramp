@@ -183,8 +183,8 @@ fun LyricItem(
                 )
                 trackDuration?.let { duration ->
                     Spacer(Modifier.width(8.dp))
-                    val difference by remember(duration) {
-                        derivedStateOf { (lyrics.duration - duration).toInt() }
+                    val difference by remember(duration, lyrics.duration) {
+                        derivedStateOf { (lyrics.duration.toInt() - duration) }
                     }
                     val bgColor = MaterialTheme.colorScheme.secondaryContainer
                     Surface(
@@ -200,7 +200,10 @@ fun LyricItem(
                                 .padding(horizontal = 4.dp)
                         ) {
                             if (difference == 0) {
-                                Icon(Icons.Default.Done, "Same Duration")
+                                Icon(
+                                    Icons.Default.Done,
+                                    stringResource(R.string.result_same_duration)
+                                )
                             } else {
                                 Text(text = if (difference > 0) "+" else "-")
                                 Text("${abs(difference)} s")

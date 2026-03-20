@@ -12,9 +12,13 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -38,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SearchResultActivity.Companion.TAG
+import io.github.abhishekabhi789.lyricsforpoweramp.constants.ResultSortOrder
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
@@ -66,6 +71,7 @@ fun ResultScreen(
     val permissionState = rememberFolderAccess(filePath.substringBeforeLast("/"))
     var lyricsForTagEdit: Lyrics? by remember { mutableStateOf(null) }
     val preferredLyricsType by viewmodel.preferredLyricsType.collectAsStateWithLifecycle()
+    val selectedSortOrder by viewmodel.sortOrder.collectAsStateWithLifecycle()
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -85,6 +91,38 @@ fun ResultScreen(
                             contentDescription = stringResource(R.string.navigate_back_action),
                             tint = MaterialTheme.colorScheme.primary
                         )
+                    }
+                },
+                actions = {
+                    if (showLyricsActions) {
+                        var showSortOption by remember { mutableStateOf(false) }
+
+                        IconButton(onClick = { showSortOption = !showSortOption }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = stringResource(R.string.sort),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showSortOption,
+                            onDismissRequest = { showSortOption = false }) {
+                            ResultSortOrder.entries.forEach { sortOrder ->
+                                val isSelected = sortOrder == selectedSortOrder
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = sortOrder.label,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                        )
+                                    },
+                                    onClick = {
+                                        viewmodel.changeSortOrder(sortOrder)
+                                        showSortOption = false
+                                    }
+                                )
+                            }
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior

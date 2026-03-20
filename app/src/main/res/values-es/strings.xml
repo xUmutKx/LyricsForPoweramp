@@ -30,6 +30,7 @@
     <string name="edit_metadata">Editar metadatos</string>
     <string name="saved">Guardado</string>
     <string name="failed">Fallido</string>
+    <string name="sort">Ordenar</string>
 
     <!-- top bar -->
     <string name="top_bar_menu_descriptions">Más opciones</string>
@@ -58,6 +59,9 @@
     <string name="lyrics_embedded_to_track">Letras incrustadas en el archivo</string>
     <string name="result_type_synced_description">Letras sincronizadas de esta pista</string>
     <string name="result_type_plain_description">Letras sin sincronizar de esta pista</string>
+    <string name="result_same_duration">Misma duración</string>
+    <string name="sort_by_relevance">Relevancia</string>
+    <string name="sort_by_duration_difference">Diferencia de duración</string>
 
     <!-- editor activity -->
     <string name="title_activity_editor">Editor</string>
