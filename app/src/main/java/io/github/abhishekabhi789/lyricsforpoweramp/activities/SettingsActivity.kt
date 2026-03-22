@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.AppSettings
@@ -25,7 +25,7 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val viewmodel: SettingsViewModel = viewModel()
-            val preferredTheme by viewmodel.appTheme.collectAsState()
+            val preferredTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
             val useDarkTheme = isDarkTheme(theme = preferredTheme)
             LaunchedEffect(Unit) {
                 when (intent?.action) {

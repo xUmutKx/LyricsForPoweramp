@@ -11,6 +11,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.SearchResultData
+import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.SearchRepository
 import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker.Companion.MANUAL_SEARCH_ACTION
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -84,27 +86,33 @@ class MainActivityViewModel @Inject constructor(
     private var searchJob: Job? = Job()
 
     fun updateLaunchIntent(intent: Intent) {
+        Log.d(TAG, "updateLaunchIntent: updating launch intent ${intent.action}")
         when (intent.action) {
             PowerampAPI.Lyrics.ACTION_LYRICS_LINK, MANUAL_SEARCH_ACTION -> {
                 viewModelScope.launch {
                     powerampApiHelper.makeTrack(intent)?.let { track ->
-                        updateInputState(
-                            InputState(
-                                queryString = track.trackName,
-                                queryTrack = track,
-                                searchMode = if (track.artistName.isNullOrEmpty() && track.albumName.isNullOrEmpty())
-                                    InputState.SearchMode.Coarse else InputState.SearchMode.Fine
-                            )
-                        )
+                        val searchMode =
+                            if (track.artistName.isNullOrEmpty() && track.albumName.isNullOrEmpty())
+                                InputState.SearchMode.Coarse else InputState.SearchMode.Fine
+                        updateSearchMode(searchMode)
+                        updateQueryTrack(track)
+                        updateQueryString(track.trackName)
                     }
                 }
             }
         }
     }
 
-    /** Updates [inputState]*/
-    fun updateInputState(newState: InputState) {
-        _inputState.value = newState
+    fun updateQueryString(queryString: String) {
+        _inputState.update { state -> state.copy(queryString = queryString) }
+    }
+
+    fun updateQueryTrack(track: Track) {
+        _inputState.update { state -> state.copy(queryTrack = track) }
+    }
+
+    fun updateSearchMode(searchMode: InputState.SearchMode) {
+        _inputState.update { state -> state.copy(searchMode = searchMode) }
     }
 
     /** Ensures user inputs are suffice to perform search */

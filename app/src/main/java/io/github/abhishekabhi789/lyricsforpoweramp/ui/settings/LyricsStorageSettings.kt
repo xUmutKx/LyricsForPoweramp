@@ -28,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -158,7 +157,7 @@ fun LyricsStorageSettings(
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
 
-        val accessRequestedPath by viewmodel.accessRequestedPath.collectAsState()
+        val accessRequestedPath by viewmodel.accessRequestedPath.collectAsStateWithLifecycle()
         val savedUris by viewmodel.savedUris.collectAsStateWithLifecycle()
         val pickFolderLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree()

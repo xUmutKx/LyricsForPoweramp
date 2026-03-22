@@ -34,11 +34,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -50,29 +52,43 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState.SearchMode
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.TextInput
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
-    val isSearching by viewModel.isSearching.collectAsState()
-    val inputState by viewModel.inputState.collectAsState()
-    val isInputValid by viewModel.isInputValid.collectAsState()
+    val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
+    val inputState by viewModel.inputState.collectAsStateWithLifecycle()
+    val isInputValid by viewModel.isInputValid.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val tabs = remember { SearchMode.entries }
+    val initialPageIndex by remember(inputState) {
+        derivedStateOf { tabs.indexOf(inputState.searchMode).coerceAtLeast(0) }
+    }
     val pagerState = rememberPagerState(
         pageCount = { tabs.size },
-        initialPage = tabs.indexOf(inputState.searchMode)
+        initialPage = initialPageIndex
     )
-    val pageScrollOffset by remember { derivedStateOf { pagerState.currentPageOffsetFraction } }
+
+    LaunchedEffect(initialPageIndex) {
+        //update UI when searchMode changed from background
+        if (pagerState.currentPage != initialPageIndex) {
+            pagerState.scrollToPage(initialPageIndex)
+        }
+    }
+    var pageScrollOffset by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(Unit) {
         //to prevent calling requestFocus() before initializing textboxes
         viewModel.isInputValid.collectLatest { isInputValid ->
@@ -82,10 +98,26 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             }
         }
     }
-    LaunchedEffect(pagerState.currentPage) {
-        focusManager.clearFocus()
-        viewModel.updateInputState(inputState.copy(searchMode = tabs[pagerState.currentPage]))
-        if (!isInputValid) viewModel.clearInvalidInputError()
+
+    LaunchedEffect(pagerState) {
+        launch {
+            snapshotFlow { pagerState.currentPageOffsetFraction }
+                .distinctUntilChanged()
+                .collect { pageScrollOffset = it }
+        }
+        launch {
+            snapshotFlow { pagerState.currentPage }
+                .distinctUntilChanged()
+                .drop(1)
+                .collectLatest { pageIndex ->
+                    val selectedMode = tabs.getOrNull(pageIndex)
+                    if (selectedMode != null && selectedMode != inputState.searchMode) {
+                        focusManager.clearFocus()
+                        viewModel.updateSearchMode(selectedMode)
+                        if (!isInputValid) viewModel.clearInvalidInputError()
+                    }
+                }
+        }
     }
     if (isSearching) {
         Dialog(
@@ -109,18 +141,12 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             modifier = Modifier.fillMaxWidth()
         ) {
             tabs.forEachIndexed { tabIndex, tab ->
-                val selected by remember { derivedStateOf { pagerState.currentPage == tabIndex } }
+                val selected = pagerState.currentPage == tabIndex
                 Tab(
                     text = { Text(stringResource(id = tab.labelResId)) },
                     selected = selected,
                     onClick = {
-                        viewModel.updateInputState(inputState.copy(searchMode = tab))
-                        scope.launch {
-                            pagerState.animateScrollToPage(tabIndex)
-                            if (!isInputValid && inputState.searchMode != tab) {
-                                viewModel.clearInvalidInputError()
-                            }
-                        }
+                        scope.launch { pagerState.animateScrollToPage(tabIndex) }
                     }
                 )
             }
@@ -147,7 +173,7 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
                             onDone = { focusManager.clearFocus() },
                             onValueChange = {
                                 if (!isInputValid) viewModel.clearInvalidInputError()
-                                viewModel.updateInputState(inputState.copy(queryString = it))
+                                viewModel.updateQueryString(it)
                             })
                         SearchButton(scrollOffset = pageScrollOffset) { viewModel.performSearch() }
                     }
@@ -169,11 +195,7 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
                             onDone = { focusManager.clearFocus() },
                             onValueChange = {
                                 if (!isInputValid) viewModel.clearInvalidInputError()
-                                viewModel.updateInputState(
-                                    inputState.copy(
-                                        queryTrack = inputState.queryTrack.copy(trackName = it)
-                                    )
-                                )
+                                viewModel.updateQueryTrack(inputState.queryTrack.copy(trackName = it))
                             })
                         TextInput(
                             label = stringResource(R.string.input_track_artists_label),
@@ -181,11 +203,7 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
                             text = inputState.queryTrack.artistName,
                             onDone = { focusManager.clearFocus() },
                             onValueChange = {
-                                viewModel.updateInputState(
-                                    inputState.copy(
-                                        queryTrack = inputState.queryTrack.copy(artistName = it)
-                                    )
-                                )
+                                viewModel.updateQueryTrack(inputState.queryTrack.copy(artistName = it))
                             })
                         TextInput(
                             label = stringResource(R.string.input_track_album_label),
@@ -193,11 +211,7 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
                             text = inputState.queryTrack.albumName,
                             onDone = { focusManager.clearFocus() },
                             onValueChange = {
-                                viewModel.updateInputState(
-                                    inputState.copy(
-                                        queryTrack = inputState.queryTrack.copy(albumName = it)
-                                    )
-                                )
+                                viewModel.updateQueryTrack(inputState.queryTrack.copy(albumName = it))
                             })
                         SearchButton(scrollOffset = pageScrollOffset) { viewModel.performSearch() }
                     }

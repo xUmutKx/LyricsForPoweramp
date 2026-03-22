@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -49,7 +48,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val viewModel: MainActivityViewModel by viewModels()
-            val appTheme by viewModel.appTheme.collectAsState()
+            val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
             val useDarkTheme = isDarkTheme(theme = appTheme)
             val firstTimeInfoShown by viewModel.firstTimeInfo.collectAsStateWithLifecycle()
             var readyToShowFirstTimeInfo by rememberSaveable { mutableStateOf(false) }

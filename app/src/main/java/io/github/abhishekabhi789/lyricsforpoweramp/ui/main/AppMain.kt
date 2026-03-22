@@ -15,7 +15,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -26,6 +25,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SearchResultActivity
@@ -49,7 +49,7 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
     ) {
         focusManager.clearFocus()
     }
-    val inputState by viewModel.inputState.collectAsState()
+    val inputState by viewModel.inputState.collectAsStateWithLifecycle()
     val hasRealId by remember { derivedStateOf { inputState.queryTrack.realId != null } }
     val launchedEditor = {
         val intent = Intent(context, EditorActivity::class.java).apply {

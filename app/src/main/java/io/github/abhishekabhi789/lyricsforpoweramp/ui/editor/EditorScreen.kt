@@ -32,7 +32,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -81,7 +80,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
     val inputState by viewmodel.inputState.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
-    val lyricsSavingState by viewmodel.lyricsSavingState.collectAsState()
+    val lyricsSavingState by viewmodel.lyricsSavingState.collectAsStateWithLifecycle()
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
     val isPlaying by viewmodel.isPlaying.collectAsStateWithLifecycle()
     var showTranslator by rememberSaveable { mutableStateOf(false) }
