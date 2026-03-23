@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberBasicTooltipState
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,12 +51,19 @@ fun CustomChip(
         ),
         state = rememberBasicTooltipState(),
         tooltip = {
-            Text(
-                text = tooltipDescription,
-                color = cs.onSurface,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                style = MaterialTheme.typography.bodySmall
-            )
+            Card(
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = CardDefaults.shape
+                )
+            ) {
+                Text(
+                    text = tooltipDescription,
+                    color = cs.onSurface,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
         },
         modifier = modifier.requiredHeight(AssistChipDefaults.Height)
     ) {
