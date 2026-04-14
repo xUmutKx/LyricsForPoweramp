@@ -225,7 +225,7 @@ fun LyricItem(
                     if (lyrics.plainLyrics != null) {
                         CustomChip(
                             label = stringResource(R.string.plain_lyrics_short),
-                            selected = lyricPages[pagerState.currentPage] == lyrics.plainLyrics,
+                            selected = lyricPages.getOrNull(pagerState.currentPage) == lyrics.plainLyrics,
                             tooltipDescription = stringResource(R.string.result_type_plain_description),
                             icon = R.drawable.ic_plain_lyrics
                         ) { scope.launch { pagerState.animateScrollToPage(0) } }
@@ -233,7 +233,7 @@ fun LyricItem(
                     if (lyrics.syncedLyrics != null) {
                         CustomChip(
                             label = stringResource(R.string.synced_lyrics_short),
-                            selected = lyricPages[pagerState.currentPage] == lyrics.syncedLyrics,
+                            selected = lyricPages.getOrNull(pagerState.currentPage) == lyrics.syncedLyrics,
                             tooltipDescription = stringResource(R.string.result_type_synced_description),
                             icon = R.drawable.ic_synced_lyrics
                         ) { scope.launch { pagerState.animateScrollToPage(lyricPages.lastIndex) } }
@@ -297,7 +297,13 @@ fun LyricItem(
                     verticalAlignment = Alignment.Top,
                     modifier = Modifier.animateContentSize()
                 ) { pageIndex ->
-                    val lyricsInView by remember(pageIndex) { derivedStateOf { lyricPages[pageIndex] } }
+                    val lyricsInView by remember(pageIndex) {
+                        derivedStateOf {
+                            lyricPages.getOrNull(
+                                pageIndex
+                            ) ?: ""
+                        }
+                    }
                     SelectionContainer {
                         Text(
                             text = if (expanded) lyricsInView
