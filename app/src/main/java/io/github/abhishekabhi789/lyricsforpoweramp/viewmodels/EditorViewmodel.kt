@@ -6,6 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maxmpz.poweramp.player.PowerampAPI
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProvider
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiRewriteHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.RequestState
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingState
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PlaybackHelper
@@ -13,9 +16,6 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
-import io.github.abhishekabhi789.lyricsforpoweramp.translation.RequestState
-import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,10 +29,9 @@ import javax.inject.Inject
 class EditorViewmodel @Inject constructor(
     private val appPreference: AppPreference,
     private val playbackHelper: PlaybackHelper,
-    private val translationHelper: TranslationHelper,
+    private val aiRewriteHelper: AiRewriteHelper,
     private val lyricsSavingHelper: LyricsSavingHelper
 ) : ViewModel() {
-    private val timestampRegex = Regex("\\[\\d{2,3}:\\d{2}\\.\\d{2}]")
 
     private var isInitialized = false
     private val undoStack = ArrayDeque<EditorInputState>(50)
@@ -51,23 +50,13 @@ class EditorViewmodel @Inject constructor(
     private val _filepath = MutableStateFlow("")
     val filePath = _filepath.asStateFlow()
 
-    private val _targetLanguage: MutableStateFlow<String?> = MutableStateFlow(null)
-    val targetLanguage = _targetLanguage.asStateFlow()
+    private val _chosenAiProvider: MutableStateFlow<AiProvider> =
+        MutableStateFlow(AiProvider.getDefault())
+    val chosenAiProvider = _chosenAiProvider.asStateFlow()
 
-    private val _chosenTranslator: MutableStateFlow<Translator> =
-        MutableStateFlow(Translator.getDefault())
-    val chosenTranslator = _chosenTranslator.asStateFlow()
-
-    private val _supportedLanguageState: MutableStateFlow<RequestState> =
+    private val _aiRewriteState: MutableStateFlow<RequestState> =
         MutableStateFlow(RequestState.Idle)
-    val supportedLanguageState = _supportedLanguageState.asStateFlow()
-
-    private val _replaceOriginalWithTranslation = MutableStateFlow(false)
-    val replaceOriginalWithTranslation = _replaceOriginalWithTranslation.asStateFlow()
-
-    private val _translatorState: MutableStateFlow<RequestState> =
-        MutableStateFlow(RequestState.Idle)
-    val translatorState = _translatorState.asStateFlow()
+    val aiRewriteState = _aiRewriteState.asStateFlow()
 
     private val _lyricsSavingState = MutableStateFlow(LyricsSavingState())
     val lyricsSavingState = _lyricsSavingState.asStateFlow()
@@ -96,7 +85,7 @@ class EditorViewmodel @Inject constructor(
         }
     }
 
-    val translators = appPreference.translators
+    val aiProviders = appPreference.aiProviders
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
     val editorFontSize = appPreference.editorFontSize
@@ -175,113 +164,29 @@ class EditorViewmodel @Inject constructor(
         canRedo.value = redoStack.isNotEmpty()
     }
 
-    fun setChosenTranslator(translator: Translator) {
-        _chosenTranslator.value = translator
-        fetchSupportedLanguages()
+    fun setChosenAiProvider(provider: AiProvider) {
+        _chosenAiProvider.value = provider
     }
 
-    fun fetchSupportedLanguages() {
-        _supportedLanguageState.value = RequestState.Processing
-        val lyrics = getOriginalLyrics(_inputState.value.lyrics)
-        viewModelScope.launch {
-            val result = translationHelper.getSupportedLanguages(
-                translator = _chosenTranslator.value,
-                lyrics = lyrics
-            )
-            Log.d(TAG, "fetchSupportedLanguages: result- $result")
-            _supportedLanguageState.value = result
-        }
-    }
-
-    fun setTargetLanguage(lang: String) {
-        viewModelScope.launch {
-            _targetLanguage.value = lang
-            _translatorState.value = RequestState.Idle
-        }
-    }
-
-    fun setReplaceLyrics(replaceLyrics: Boolean) {
-        _replaceOriginalWithTranslation.value = replaceLyrics
-    }
-
-    fun translate() {
-        _translatorState.value = RequestState.Processing
+    fun rewriteWithAi(prompt: String) {
+        _aiRewriteState.value = RequestState.Processing
         val lyricsContent = _inputState.value.lyrics
-        val originalLyrics = getOriginalLyrics(_inputState.value.lyrics)
-        val targetLang = _targetLanguage.value
-        val selectedTranslator = _chosenTranslator.value
-        if (originalLyrics.isBlank() || targetLang.isNullOrBlank()) {
-            "lyrics blank ${originalLyrics.isBlank()} || targetLang blank ${targetLang.isNullOrBlank()}".let {
-                Log.w(TAG, "translate: $it")
-            }
-            return
-        }
+        val chosenAiProvider = _chosenAiProvider.value
+
         viewModelScope.launch {
-            val result = translationHelper.translate(
-                lyrics = originalLyrics,
-                targetLanguage = targetLang,
-                translator = selectedTranslator
+            val result = aiRewriteHelper.transform(
+                prompt = prompt,
+                lyrics = lyricsContent,
+                aiProvider = chosenAiProvider
             )
-            Log.d(TAG, "translate: result- $result")
-            _translatorState.value = result
+            Log.d(TAG, "rewriteWithAi: result- $result")
+            _aiRewriteState.value = result
             if (result is RequestState.Success<*>) {
-                val translatedLyrics = (result.response) as String
-                val newLyrics = if (_replaceOriginalWithTranslation.value) translatedLyrics else {
-                    mergeLyricsWithTranslation(lyricsContent, translatedLyrics, targetLang)
-                }
+                val newLyrics = result.response as String
                 val newState = _inputState.value.copy(lyrics = newLyrics)
                 updateInputState(newState)
             }
         }
-    }
-
-    private fun mergeLyricsWithTranslation(
-        lyricsContent: String,
-        translatedLyrics: String,
-        language: String
-    ): String {
-        val hasOriginalTag = lyricsContent.contains(
-            Regex("^\\[#?.*Original.*]", RegexOption.IGNORE_CASE)
-        )
-        return if (hasOriginalTag) {
-            buildString {
-                appendLine(lyricsContent.trimEnd())
-                appendLine()
-                appendLine("[# Translated $language]")
-                appendLine(translatedLyrics.trim())
-            }
-        } else {
-            val firstTimestampIndex = Regex("\\[\\d{2}:\\d{2}\\.\\d{2}]")
-                .find(lyricsContent)?.range?.first ?: 0
-            val prefix = lyricsContent.take(firstTimestampIndex)
-            val lyricsWithoutPrefix = lyricsContent.substring(firstTimestampIndex)
-
-            buildString {
-                if (prefix.isNotBlank()) appendLine(prefix.trimEnd())
-                appendLine("[# Original Lyrics]")
-                appendLine(lyricsWithoutPrefix.trim())
-                appendLine()
-                appendLine("[# Translated $language]")
-                appendLine(translatedLyrics.trim())
-            }
-        }
-    }
-
-    private fun getOriginalLyrics(lyrics: String): String {
-        //if the lyrics file contains more than one translation
-        val matchOriginalLyricsTag =
-            Regex("^\\[#?.*Original.*]", RegexOption.IGNORE_CASE).find(lyrics)
-        if (matchOriginalLyricsTag != null) {
-            return lyrics.substringAfter(matchOriginalLyricsTag.value)
-                .substringBefore("[# Translated")
-        }
-        //if the lyrics file contains extra metadata tags
-        val matchFirstTimestamp = timestampRegex.find(lyrics)
-        if (matchFirstTimestamp != null) {
-            return lyrics.substring(matchFirstTimestamp.range.first)
-        }
-
-        return lyrics
     }
 
     val playerInitialized = playbackHelper.playerInitialized
@@ -306,9 +211,9 @@ class EditorViewmodel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _chosenTranslator.value = Translator.getDefault()
+            _chosenAiProvider.value = AiProvider.getDefault()
         }
-        viewModelScope.launch { translationHelper.refreshProviders() }
+        viewModelScope.launch { aiRewriteHelper.refreshProviders() }
     }
 
     override fun onCleared() {

@@ -39,7 +39,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
-import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProvider
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
@@ -74,16 +74,16 @@ fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
                     icon = Icons.Default.Info,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
-                Translator.entries.forEach { translator ->
-                    val apiKey: String by produceState(initialValue = "", key1 = translator) {
+                AiProvider.entries.forEach { provider ->
+                    val apiKey: String by produceState(initialValue = "", key1 = provider) {
                         value = withContext(Dispatchers.IO) {
-                            viewmodel.getTranslatorApiKey(translator) ?: ""
+                            viewmodel.getAiProviderApiKey(provider) ?: ""
                         }
                     }
-                    TranslatorApiKey(
-                        translator = translator,
+                    AiProviderApiKey(
+                        aiProvider = provider,
                         apiKey = apiKey,
-                        onKeyChange = { viewmodel.setTranslationApiKey(translator, it) },
+                        onKeyChange = { viewmodel.setAiProviderApiKey(provider, it) },
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
                 }
@@ -110,9 +110,9 @@ fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
 }
 
 @Composable
-fun TranslatorApiKey(
+fun AiProviderApiKey(
     modifier: Modifier = Modifier,
-    translator: Translator,
+    aiProvider: AiProvider,
     apiKey: String,
     onKeyChange: (String) -> Unit
 ) {
@@ -141,7 +141,7 @@ fun TranslatorApiKey(
                 }
             },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-            label = { Text(stringResource(translator.nameRes)) },
+            label = { Text(stringResource(aiProvider.nameRes)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged { showPassword = it.isFocused })

@@ -15,9 +15,9 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProvider
 import io.github.abhishekabhi789.lyricsforpoweramp.di.ApplicationScope
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
-import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -86,8 +86,8 @@ class AppPreference @Inject constructor(
         }
     }
 
-    val translators = dataStore.data.map { preferences ->
-        Translator.entries.associateWith { preferences[stringPreferencesKey(it.key)] }
+    val aiProviders = dataStore.data.map { preferences ->
+        AiProvider.entries.associateWith { preferences[stringPreferencesKey(it.key)] }
     }
 
     val lrclibApiInstances =
@@ -120,12 +120,12 @@ class AppPreference @Inject constructor(
         }
     }
 
-    suspend fun setTranslatorApiKey(translator: Translator, apiKey: String) {
-        setPreference(stringPreferencesKey(translator.key), apiKey)
+    suspend fun setAiProviderApiKey(aiProvider: AiProvider, apiKey: String) {
+        setPreference(stringPreferencesKey(aiProvider.key), apiKey)
     }
 
-    suspend fun getTranslatorApiKey(translator: Translator): String? {
-        return getPreference(stringPreferencesKey(translator.key))
+    suspend fun getAiProviderApiKey(aiProvider: AiProvider): String? {
+        return getPreference(stringPreferencesKey(aiProvider.key))
     }
 
     suspend fun <T> setPreference(key: Preferences.Key<T>, value: T) {

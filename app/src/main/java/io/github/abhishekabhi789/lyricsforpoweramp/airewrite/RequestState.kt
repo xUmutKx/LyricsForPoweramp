@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.lyricsforpoweramp.translation
+package io.github.abhishekabhi789.lyricsforpoweramp.airewrite
 
 sealed interface RequestState {
     object Idle : RequestState

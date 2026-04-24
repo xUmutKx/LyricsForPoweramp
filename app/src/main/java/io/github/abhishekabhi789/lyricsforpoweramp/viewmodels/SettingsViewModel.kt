@@ -6,8 +6,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProvider
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
-import io.github.abhishekabhi789.lyricsforpoweramp.translation.Translator
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.FilterType
@@ -166,12 +166,12 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
         }
     }
 
-    fun setTranslationApiKey(translator: Translator, apiKey: String) {
-        viewModelScope.launch { appPreference.setTranslatorApiKey(translator, apiKey) }
+    fun setAiProviderApiKey(provider: AiProvider, apiKey: String) {
+        viewModelScope.launch { appPreference.setAiProviderApiKey(provider, apiKey) }
     }
 
-    suspend fun getTranslatorApiKey(translator: Translator): String? {
-        return appPreference.getTranslatorApiKey(translator)
+    suspend fun getAiProviderApiKey(provider: AiProvider): String? {
+        return appPreference.getAiProviderApiKey(provider)
     }
 
 

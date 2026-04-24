@@ -7,9 +7,9 @@ import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,8 +44,8 @@ fun EditorBottomBar(
     onUndo: () -> Unit,
     canRedo: Boolean,
     onRedo: () -> Unit,
-    canTranslate: Boolean,
-    onTranslate: () -> Unit,
+    canRewrite: Boolean,
+    onRewrite: () -> Unit,
     timestampDelta: Int,
     onTimestampChange: (increase: Boolean) -> Unit,
     showTimestampAdjustButtons: Boolean,
@@ -107,10 +107,10 @@ fun EditorBottomBar(
                 }
                 item {
                     BottomBarToolButton(
-                        icon = Icons.Default.Translate,
-                        label = stringResource(R.string.translation_button_description),
-                        onClick = onTranslate,
-                        enabled = canTranslate
+                        icon = Icons.Default.AutoAwesome,
+                        label = stringResource(R.string.ai_rewrite_label),
+                        onClick = onRewrite,
+                        enabled = canRewrite
                     )
                 }
                 item {
@@ -174,8 +174,8 @@ fun PreviewEditorBottomBar() {
         onUndo = {},
         canRedo = true,
         onRedo = {},
-        canTranslate = true,
-        onTranslate = {},
+        canRewrite = true,
+        onRewrite = {},
         timestampDelta = 10,
         onTimestampChange = {},
         showTimestampAdjustButtons = true,

@@ -7,13 +7,13 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiRewriteHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LyricsSavingHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.NotificationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PlaybackHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
-import io.github.abhishekabhi789.lyricsforpoweramp.translation.TranslationHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
@@ -56,11 +56,11 @@ object AppModules {
     fun providePlaybackHelper(@ApplicationContext context: Context) = PlaybackHelper(context)
 
     @Provides
-    fun provideTranslationHelper(
+    fun provideAiRewriteHelper(
         appPreference: AppPreference,
         okHttpClientProvider: Provider<OkHttpClient>,
         gson: Gson
-    ) = TranslationHelper(appPreference, okHttpClientProvider, gson)
+    ) = AiRewriteHelper(appPreference, okHttpClientProvider, gson)
 
     @Provides
     fun provideNotificationHelper(

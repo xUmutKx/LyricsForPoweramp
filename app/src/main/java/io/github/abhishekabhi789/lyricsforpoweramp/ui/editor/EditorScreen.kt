@@ -82,7 +82,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
     val lyricsSavingState by viewmodel.lyricsSavingState.collectAsStateWithLifecycle()
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
     val isPlaying by viewmodel.isPlaying.collectAsStateWithLifecycle()
-    var showTranslator by rememberSaveable { mutableStateOf(false) }
+    var showPromptDialog by rememberSaveable { mutableStateOf(false) }
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(inputState.lyrics, inputState.selection))
     }
@@ -190,8 +190,8 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                 onUndo = viewmodel::undo,
                 canRedo = canRedo,
                 onRedo = viewmodel::redo,
-                canTranslate = textFieldValue.text.isNotBlank(),
-                onTranslate = { showTranslator = true },
+                canRewrite = textFieldValue.text.isNotBlank(),
+                onRewrite = { showPromptDialog = true },
                 timestampDelta = timestampDeltaCenti,
                 showTimestampAdjustButtons = timestampOnSelection != null,
                 onTimestampChange = offsetTimestamp,
@@ -449,10 +449,10 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                 onFinish = onFinish
             )
         }
-        if (showTranslator) {
-            TranslationBottomSheet(
+        if (showPromptDialog) {
+            RewritePromptBottomsheet(
                 viewmodel = viewmodel,
-                onDismiss = { showTranslator = false })
+                onDismiss = { showPromptDialog = false })
         }
     }
 }
