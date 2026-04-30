@@ -94,10 +94,7 @@ fun PromptBox(
                 visualTransformation = VisualTransformation.None,
                 interactionSource = interactionSource,
                 label = {
-                    Text(
-                        if (isError) stringResource(R.string.ai_rewrite_field_label)
-                        else stringResource(R.string.ai_rewrite_label)
-                    )
+                    Text(stringResource(R.string.ai_rewrite_field_label))
                 },
                 placeholder = { Text(stringResource(R.string.ai_rewrite_field_placeholder)) },
                 supportingText = {
