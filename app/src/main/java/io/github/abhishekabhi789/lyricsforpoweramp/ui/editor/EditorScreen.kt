@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -17,6 +18,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -55,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity.Companion.TAG
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
@@ -131,6 +134,19 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                     }
                 },
                 title = { Text(stringResource(R.string.title_activity_editor)) },
+                actions = {
+                    IconButton(onClick = {
+                        runCatching {
+                            context.startActivity(Intent(context, SettingsActivity::class.java))
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.top_bar_settings),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             )
         }, bottomBar = {
             val offsetTimestamp = { increase: Boolean ->
