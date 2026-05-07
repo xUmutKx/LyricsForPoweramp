@@ -51,7 +51,7 @@ class GeminiAiProvider(
                 Translated Line 2
             
             STRICT FORMATTING RULES:
-            - If the user prefers to keep original lyrics along with translation, use the PowerAmp dual-LRC format               
+            - If user asks to keep original lyrics, use the PowerAmp dual-LRC format, else replace original lyrics.
             - When writing with dual-LRC format, replace '{LanguageName}' in the header with the actual target language (e.g., [# Translated Romaji] or [# Translated Spanish]).
             - If the input is synchronized (LRC), you MUST preserve every [mm:ss.xx] timestamp exactly. Never merge lines or skip timestamps.
             - NO CONVERSATION. No intros, no markdown, no code blocks, and no explanations. Output raw text only.
@@ -61,7 +61,7 @@ class GeminiAiProvider(
             - If user asks to convert plain lyrics to synchronized lyrics, replay exactly: FAILED
              """
 
-    override suspend fun rewriteLyrics(userPrompt: String, lyrics: String): Result {
+    override suspend fun rewriteLyrics(userPrompt: String, lyrics: String, model: String): Result {
         val prompt = """
             User instruction:
             $userPrompt
@@ -70,12 +70,12 @@ class GeminiAiProvider(
             $lyrics
 
         """.trimIndent()
-        return generateResponse(prompt)
+        return generateResponse(prompt, model)
     }
 
-    override suspend fun generateResponse(prompt: String): Result {
+    override suspend fun generateResponse(prompt: String, model: String): Result {
         return try {
-            val url = APIURL.toHttpUrl().newBuilder()
+            val url = getGeminiUrl(model).toHttpUrl().newBuilder()
                 .addQueryParameter("key", apiKey)
                 .build()
             val request = Request.Builder().run {
@@ -108,6 +108,34 @@ class GeminiAiProvider(
                                     HttpURLConnection.HTTP_OK -> {
                                         val output = parseResponse(response.body.string())
                                         continuation.resume(output)
+                                    }
+                                    //https://ai.google.dev/gemini-api/docs/troubleshooting#error-codes
+                                    400 -> {
+                                        continuation.resume(Result.Failure("Unable to make request"))
+                                    }
+
+                                    403 -> {
+                                        continuation.resume(Result.Failure("Permission denied for API key"))
+                                    }
+
+                                    404 -> {
+                                        continuation.resume(Result.Failure("Resource not found"))
+                                    }
+
+                                    429 -> {
+                                        continuation.resume(Result.Failure("Limit reached. Try changing the model or provider."))
+                                    }
+
+                                    500 -> {
+                                        continuation.resume(Result.Failure("Service error"))
+                                    }
+
+                                    503 -> {
+                                        continuation.resume(Result.Failure("Service Unavailable"))
+                                    }
+
+                                    504 -> {
+                                        continuation.resume(Result.Failure("Timeout error"))
                                     }
 
                                     else -> {
@@ -147,6 +175,11 @@ class GeminiAiProvider(
                     Result.Failure("Content blocked by safety filters")
                 }
 
+                "PROHIBITED_CONTENT" -> {
+                    Log.e(TAG, "parseResponse: prohibited content is not permitted")
+                    Result.Failure("Prohibited Content not permitted")
+                }
+
                 "RECITATION" -> {
                     Log.e(TAG, "parseResponse: Copyright protection triggered")
                     Result.Failure("Copyright protection triggered")
@@ -169,7 +202,12 @@ class GeminiAiProvider(
 
     companion object {
         private const val TAG = "GeminiAiProvider"
-        private const val APIURL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+        private const val GEMINI_BASE_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models"
+
+        fun getGeminiUrl(model: String): String {
+            // Construct: base/model:method
+            return "$GEMINI_BASE_URL/$model:generateContent"
+        }
     }
 }

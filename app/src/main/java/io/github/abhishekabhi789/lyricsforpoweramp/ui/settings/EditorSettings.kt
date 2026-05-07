@@ -7,18 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,16 +20,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -53,18 +41,18 @@ fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
         icon = Icons.Default.EditNote,
         modifier = modifier
     ) {
-        var showApiKeySection by remember { mutableStateOf(false) }
+        var showAiProvidersSettings by remember { mutableStateOf(false) }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { showApiKeySection = !showApiKeySection }) {
+            TextButton(onClick = { showAiProvidersSettings = !showAiProvidersSettings }) {
                 Text(
-                    stringResource(R.string.settings_editor_api_keys_list),
+                    text = stringResource(R.string.settings_editor_ai_provider_settings_label),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.weight(1f))
-                ExposedDropdownMenuDefaults.TrailingIcon(showApiKeySection)
+                ExposedDropdownMenuDefaults.TrailingIcon(showAiProvidersSettings)
             }
         }
-        AnimatedVisibility(showApiKeySection) {
+        AnimatedVisibility(showAiProvidersSettings) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -80,9 +68,14 @@ fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
                             viewmodel.getAiProviderApiKey(provider) ?: ""
                         }
                     }
-                    AiProviderApiKey(
-                        aiProvider = provider,
+                    val chosenProvider by viewmodel.getAiProviderModelFlow(provider)
+                        .collectAsStateWithLifecycle()
+
+                    AiProviderConfiguration(
+                        provider = provider,
                         apiKey = apiKey,
+                        chosenModel = chosenProvider,
+                        onModelChange = { viewmodel.setAiProviderModel(provider, it) },
                         onKeyChange = { viewmodel.setAiProviderApiKey(provider, it) },
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
@@ -106,44 +99,5 @@ fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
                 modifier = Modifier.padding(start = 4.dp)
             )
         }
-    }
-}
-
-@Composable
-fun AiProviderApiKey(
-    modifier: Modifier = Modifier,
-    aiProvider: AiProvider,
-    apiKey: String,
-    onKeyChange: (String) -> Unit
-) {
-    val focusManager = LocalFocusManager.current
-    var inputValue by rememberSaveable(apiKey) { mutableStateOf(apiKey) }
-    var showPassword by rememberSaveable { mutableStateOf(false) }
-    val saveInput = {
-        focusManager.clearFocus()
-        onKeyChange(inputValue)
-    }
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp)
-    ) {
-        OutlinedTextField(
-            value = inputValue,
-            onValueChange = { inputValue = it },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions { saveInput() },
-            trailingIcon = {
-                if (inputValue != apiKey) {
-                    IconButton(onClick = saveInput) {
-                        Icon(Icons.Default.Done, stringResource(R.string.save))
-                    }
-                }
-            },
-            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-            label = { Text(stringResource(aiProvider.nameRes)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged { showPassword = it.isFocused })
     }
 }

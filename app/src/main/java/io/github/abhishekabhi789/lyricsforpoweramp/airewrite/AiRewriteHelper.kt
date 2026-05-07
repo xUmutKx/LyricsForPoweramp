@@ -33,13 +33,15 @@ class AiRewriteHelper @Inject constructor(
     suspend fun transform(
         prompt: String,
         lyrics: String,
-        aiProvider: AiProvider
+        aiProvider: AiProvider,
     ): RequestState {
         if (!aiProvider.isConfigured()) {
             return RequestState.Failure("No API key provided")
         }
+        val chosenModel = appPreference.getPreference(AppPreference.getKeyForModel(aiProvider))
+        val model = chosenModel ?: aiProvider.defaultModel
         val result = when (aiProvider) {
-            AiProvider.GEMINI -> gemini!!.rewriteLyrics(prompt, lyrics)
+            AiProvider.GEMINI -> gemini!!.rewriteLyrics(prompt, lyrics, model)
         }
         return when (result) {
             Result.Cancelled -> RequestState.Idle

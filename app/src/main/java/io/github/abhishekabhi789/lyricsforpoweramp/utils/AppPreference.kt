@@ -128,6 +128,10 @@ class AppPreference @Inject constructor(
         return getPreference(stringPreferencesKey(aiProvider.key))
     }
 
+    suspend fun setAiProviderModel(provider: AiProvider, model: String) {
+        setPreference(getKeyForModel(provider), model)
+    }
+
     suspend fun <T> setPreference(key: Preferences.Key<T>, value: T) {
         dataStore.updateData { preferences ->
             preferences.toMutablePreferences().apply { this[key] = value }
@@ -140,6 +144,10 @@ class AppPreference @Inject constructor(
 
     suspend fun <T> getPreference(key: Preferences.Key<T>): T? {
         return runCatching { dataStore.data.map { it[key] }.firstOrNull() }.getOrNull()
+    }
+
+    fun <T> getPreferenceFlow(key: Preferences.Key<T>): Flow<T?> {
+        return dataStore.data.map { preferences -> preferences[key] }
     }
 
     suspend fun <T> getPreference(key: Preferences.Key<T>, default: T): T {
@@ -187,6 +195,10 @@ class AppPreference @Inject constructor(
         fun getThemes(): List<AppTheme> {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AppTheme.entries.toList()
             else listOf(AppTheme.Light, AppTheme.Dark)
+        }
+        fun getKeyForModel(provider: AiProvider): Preferences.Key<String> {
+            //key is already used for storing api key
+            return stringPreferencesKey(provider.key + "_model")
         }
     }
 }

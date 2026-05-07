@@ -13,7 +13,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.FilterType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -174,6 +177,27 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
         return appPreference.getAiProviderApiKey(provider)
     }
 
+    fun setAiProviderModel(provider: AiProvider, model: String) {
+        viewModelScope.launch {
+            appPreference.setAiProviderModel(provider, model)
+        }
+    }
+
+    private val providerModelFlows = mutableMapOf<AiProvider, StateFlow<String>>()
+
+    fun getAiProviderModelFlow(provider: AiProvider): StateFlow<String> {
+        return providerModelFlows.getOrPut(provider) {
+            val modelKey = AppPreference.getKeyForModel(provider)
+            appPreference.getPreferenceFlow(modelKey)
+                .map { it ?: provider.defaultModel }
+                .distinctUntilChanged()
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5000),
+                    initialValue = provider.defaultModel
+                )
+        }
+    }
 
     val filters = appPreference.filters
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())

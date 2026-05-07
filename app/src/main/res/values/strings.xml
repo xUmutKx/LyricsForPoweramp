@@ -163,7 +163,10 @@
     <string name="settings_lyrics_providers_selected_lrclib_api_description">This server API will be used for all future lyric requests.</string>
     <string name="settings_editor_label">Lyrics Editor</string>
     <string name="settings_editor_api_keys_list">API Keys</string>
-    <string name="settings_editor_api_keys_disclaimer">You need to add your own API key to enable translation. This keeps the app free and avoids paid usage limits. Your key is stored only on your device — it’s never collected or shared.</string>
+    <string name="settings_editor_api_keys_disclaimer">You need to add your own API key to use this feature. This keeps the app free and avoids paid usage limits. Your key is stored only on your device — it’s never collected or shared.</string>
+    <string name="settings_editor_ai_provider_settings_label">AI Providers Settings</string>
+    <string name="settings_editor_api_key_input_label">API Key</string>
+    <string name="settings_editor_ai_model_label">Model</string>
     <string name="settings_timestamp_step_title">Timestamp Adjustment Step</string>
     <string name="settings_timestamp_step_summary">Amount of time to shift timestamps with each + or − button press.</string>
     <string name="settings_timestamp_step_dropdown_item">%1$d centiseconds</string>

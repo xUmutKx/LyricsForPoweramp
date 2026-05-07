@@ -162,7 +162,10 @@
     <string name="settings_lyrics_providers_selected_lrclib_api_description">Esta API del servidor se usará para todas las futuras solicitudes de letras.</string>
     <string name="settings_editor_label">Editor de letras</string>
     <string name="settings_editor_api_keys_list">Claves API</string>
-    <string name="settings_editor_api_keys_disclaimer">Debes añadir tu propia clave API para habilitar la traducción. Esto mantiene la aplicación gratuita y evita límites de uso pagado. Tu clave se almacena solo en tu dispositivo — nunca se recopila ni comparte.</string>
+    <string name="settings_editor_api_keys_disclaimer">Necesita agregar su propia clave API para usar esta función. Esto mantiene la aplicación gratuita y evita límites de uso pagado. Su clave se almacena únicamente en su dispositivo; nunca se recopila ni se comparte.</string>
+    <string name="settings_editor_ai_provider_settings_label">Configuración de proveedores de IA</string>
+    <string name="settings_editor_api_key_input_label">Clave API</string>
+    <string name="settings_editor_ai_model_label">Modelo</string>
     <string name="settings_timestamp_step_title">Paso de ajuste de tiempo</string>
     <string name="settings_timestamp_step_summary">Cantidad de tiempo para desplazar las marcas temporales con cada pulsación de + o −.</string>
     <string name="settings_timestamp_step_dropdown_item">%1$d centisegundos</string>
