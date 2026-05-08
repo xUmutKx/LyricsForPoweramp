@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.material.icons.Icons
@@ -33,6 +34,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 @Composable
 fun AppSettings(
     modifier: Modifier = Modifier,
+    listState: LazyStaggeredGridState,
     viewmodel: SettingsViewModel = viewModel(),
     onClose: () -> Unit
 ) {
@@ -71,6 +73,7 @@ fun AppSettings(
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { contentPadding ->
         LazyVerticalStaggeredGrid(
+            state = listState,
             verticalItemSpacing = 8.dp,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             columns = StaggeredGridCells.Adaptive(350.dp),
@@ -81,12 +84,18 @@ fun AppSettings(
                 .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
         ) {
-            item { AppThemeSettings(viewmodel = viewmodel) }
-            item { LyricsRequestSettings(viewmodel = viewmodel) }
-            item { LyricsStorageSettings(viewmodel = viewmodel) }
-            item { LyricsProviderSettings(viewmodel = viewmodel) }
-            item { EditorSettings(viewmodel = viewmodel) }
-            item { FilterSettings(viewmodel = viewmodel) }
+            SettingsSection.entries.forEach { section ->
+                item(key = section.name) {
+                    when (section) {
+                        SettingsSection.THEME -> AppThemeSettings(viewmodel = viewmodel)
+                        SettingsSection.REQUEST -> LyricsRequestSettings(viewmodel = viewmodel)
+                        SettingsSection.STORAGE -> LyricsStorageSettings(viewmodel = viewmodel)
+                        SettingsSection.PROVIDER -> LyricsProviderSettings(viewmodel = viewmodel)
+                        SettingsSection.EDITOR -> EditorSettings(viewmodel = viewmodel)
+                        SettingsSection.FILTER -> FilterSettings(viewmodel = viewmodel)
+                    }
+                }
+            }
         }
     }
 }

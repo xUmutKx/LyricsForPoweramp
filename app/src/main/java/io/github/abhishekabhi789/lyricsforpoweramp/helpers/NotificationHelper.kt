@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.maxmpz.poweramp.player.PowerampAPI
@@ -129,11 +130,16 @@ class NotificationHelper @Inject constructor(
             .hashCode()
     }
 
-    fun launchSettings(title: String, text: String, extras: Map<String, String>? = null) {
+    fun postSettingsChangeRequest(
+        title: String,
+        text: String,
+        intentAction: String,
+        extras: Bundle? = null
+    ) {
         val pendingIntent = Intent(context, SettingsActivity::class.java).apply {
-            action = SettingsActivity.OPEN_SETTINGS_ACTION
+            action = intentAction
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            extras?.let { extras.forEach { extra -> putExtra(extra.key, extra.value) } }
+            extras?.let { putExtras(it) }
         }.run {
             PendingIntent.getActivity(
                 context, permissionNotificationId, this,

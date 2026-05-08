@@ -2,6 +2,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -62,6 +63,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsSection
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
@@ -137,7 +139,17 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                 actions = {
                     IconButton(onClick = {
                         runCatching {
-                            context.startActivity(Intent(context, SettingsActivity::class.java))
+                            val extras = Bundle().apply {
+                                putInt(
+                                    SettingsActivity.EXTRA_SETTINGS_SECTION,
+                                    SettingsSection.EDITOR.ordinal
+                                )
+                            }
+                            val intent = Intent(context, SettingsActivity::class.java).apply {
+                                action = SettingsActivity.ACTION_OPEN_SETTINGS
+                                putExtras(extras)
+                            }
+                            context.startActivity(intent)
                         }
                     }) {
                         Icon(

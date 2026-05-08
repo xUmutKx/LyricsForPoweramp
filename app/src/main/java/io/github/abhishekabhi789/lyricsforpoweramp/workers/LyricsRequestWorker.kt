@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
@@ -24,6 +25,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsSection
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -74,10 +76,15 @@ class LyricsRequestWorker @AssistedInject constructor(
         val saveToStorage = appPreference.saveLyricsAsFile.first()
         val embedIntoFile = appPreference.embedLyricsIntoFile.first()
         if (!sendToPoweramp && !saveToStorage && !embedIntoFile) {
-            Log.e(TAG, "sendLyrics: both saving options are disabled")
-            notificationHelper.launchSettings(
+            Log.e(TAG, "handleLyricsRequest: all saving options are disabled")
+            val extras = Bundle().apply {
+                putInt(SettingsActivity.EXTRA_SETTINGS_SECTION, SettingsSection.STORAGE.ordinal)
+            }
+            notificationHelper.postSettingsChangeRequest(
                 title = getString(R.string.notification_no_saving_method_title),
-                text = getString(R.string.notification_no_saving_method_description)
+                text = getString(R.string.notification_no_saving_method_description),
+                intentAction = SettingsActivity.ACTION_OPEN_SETTINGS,
+                extras = extras
             )
             return Result.failure()
         }
@@ -159,10 +166,15 @@ class LyricsRequestWorker @AssistedInject constructor(
                 else -> null
             }
             notificationText?.let {
-                notificationHelper.launchSettings(
+                val extras = Bundle().apply {
+                    putInt(SettingsActivity.EXTRA_SETTINGS_SECTION, SettingsSection.STORAGE.ordinal)
+                    putString(SettingsActivity.EXTRA_REQUIRED_PATH, path)
+                }
+                notificationHelper.postSettingsChangeRequest(
                     title = mContext.getString(R.string.notification_storage_access_needed_title),
                     text = it,
-                    extras = mapOf(SettingsActivity.EXTRA_REQUIRED_PATH to path)
+                    intentAction = SettingsActivity.ACTION_FOLDER_ACCESS_REQUEST,
+                    extras = extras
                 )
             }
             val completed: Boolean? =
@@ -200,6 +212,7 @@ class LyricsRequestWorker @AssistedInject constructor(
             }
         }
     }
+
     private fun createWorkerNotification(): Notification {
         val channelName = getString(R.string.lyrics_request_handling_notifications)
 
