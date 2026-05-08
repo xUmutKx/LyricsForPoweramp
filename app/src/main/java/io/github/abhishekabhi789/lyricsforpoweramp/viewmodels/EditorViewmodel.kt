@@ -58,6 +58,10 @@ class EditorViewmodel @Inject constructor(
         MutableStateFlow(RequestState.Idle)
     val aiRewriteState = _aiRewriteState.asStateFlow()
 
+    fun resetAiWriteState() {
+        _aiRewriteState.value = RequestState.Idle
+    }
+
     private val _lyricsSavingState = MutableStateFlow(LyricsSavingState())
     val lyricsSavingState = _lyricsSavingState.asStateFlow()
 

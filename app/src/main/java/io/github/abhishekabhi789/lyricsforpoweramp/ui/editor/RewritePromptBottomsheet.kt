@@ -1,6 +1,5 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,7 +20,7 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,8 +39,8 @@ fun RewritePromptBottomsheet(
     viewmodel: EditorViewmodel,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
-    val resources = LocalResources.current
+    LocalContext.current
+    LocalResources.current
     val tooltipPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(
         TooltipAnchorPosition.Above
     )
@@ -49,14 +48,9 @@ fun RewritePromptBottomsheet(
     val chosenAiProvider by viewmodel.chosenAiProvider.collectAsStateWithLifecycle()
     val promptRequestState by viewmodel.aiRewriteState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(promptRequestState) {
-        if (promptRequestState is RequestState.Failure) {
-            val failure = promptRequestState as RequestState.Failure
-            failure.errorMessage.let { errMsg ->
-                val text = errMsg ?: resources.getString(R.string.ai_rewrite_failed)
-                Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-            }
-        }
+    DisposableEffect(Unit) {
+        //clearing promptRequestState from viewmodel, when exiting composition
+        onDispose { viewmodel.resetAiWriteState() }
     }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -112,6 +106,11 @@ fun RewritePromptBottomsheet(
             }
             PromptBox(
                 requestState = promptRequestState,
+                onPromptChange = {
+                    if (promptRequestState is RequestState.Failure) {
+                        viewmodel.resetAiWriteState()
+                    }
+                },
                 onPrompt = { prompt -> viewmodel.rewriteWithAi(prompt) }
             )
         }

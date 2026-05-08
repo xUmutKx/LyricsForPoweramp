@@ -8,13 +8,10 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
@@ -29,9 +26,11 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +38,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.RequestState
 
@@ -47,9 +45,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.RequestState
 fun PromptBox(
     modifier: Modifier = Modifier,
     requestState: RequestState,
+    onPromptChange: () -> Unit,//to clear any previous error
     onPrompt: (String) -> Unit
 ) {
-    var prompt by remember { mutableStateOf("") }
+    var prompt by rememberSaveable { mutableStateOf("") }
     val isProcessing = requestState is RequestState.Processing
     val isError = requestState is RequestState.Failure
     val interactionSource = remember { MutableInteractionSource() }
@@ -72,6 +71,8 @@ fun PromptBox(
         animationSpec = infiniteRepeatable(animation = tween(800), repeatMode = RepeatMode.Reverse),
         label = "pulse animation"
     )
+
+    LaunchedEffect(prompt) { onPromptChange() }
 
     BasicTextField(
         value = prompt,
@@ -106,45 +107,38 @@ fun PromptBox(
                     }
                 },
                 trailingIcon = {
-                    Box(
-                        contentAlignment = Alignment.BottomEnd,
-                        modifier = Modifier.fillMaxHeight()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.padding(8.dp)
-                        ) {
-                            if (prompt.isNotEmpty() && !isProcessing) {
-                                IconButton(onClick = { prompt = "" }) {
-                                    Icon(
-                                        Icons.Default.Clear,
-                                        contentDescription = stringResource(
-                                            R.string.clear_field,
-                                            stringResource(R.string.ai_rewrite_field_label)
-                                        )
+                        if (prompt.isNotEmpty() && !isProcessing) {
+                            IconButton(onClick = { prompt = "" }) {
+                                Icon(
+                                    Icons.Default.Clear,
+                                    contentDescription = stringResource(
+                                        R.string.clear_field,
+                                        stringResource(R.string.ai_rewrite_field_label)
                                     )
-                                }
+                                )
                             }
+                        }
 
-                            FilledTonalIconButton(
-                                enabled = !isProcessing,
-                                onClick = { onPrompt(prompt) }
-                            ) {
-                                if (isProcessing) {
-                                    Icon(
-                                        imageVector = Icons.Default.HourglassEmpty,
-                                        contentDescription = stringResource(R.string.ai_rewrite_processing_state_label),
-                                        modifier = Modifier.graphicsLayer {
-                                            rotationZ = rotation
-                                        }
-                                    )
-                                } else {
-                                    Icon(
-                                        Icons.Default.AutoFixHigh,
-                                        contentDescription = stringResource(R.string.ai_rewrite_send_prompt_button_label)
-                                    )
-                                }
+                        FilledTonalIconButton(
+                            enabled = !isProcessing,
+                            onClick = { onPrompt(prompt) }) {
+                            if (isProcessing) {
+                                Icon(
+                                    imageVector = Icons.Default.HourglassEmpty,
+                                    contentDescription = stringResource(R.string.ai_rewrite_processing_state_label),
+                                    modifier = Modifier.graphicsLayer {
+                                        rotationZ = rotation
+                                    }
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Default.AutoFixHigh,
+                                    contentDescription = stringResource(R.string.ai_rewrite_send_prompt_button_label)
+                                )
                             }
                         }
                     }
