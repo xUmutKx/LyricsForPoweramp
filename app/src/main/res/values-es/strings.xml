@@ -165,7 +165,11 @@
     <string name="settings_editor_api_keys_disclaimer">Necesita agregar su propia clave API para usar esta función. Esto mantiene la aplicación gratuita y evita límites de uso pagado. Su clave se almacena únicamente en su dispositivo; nunca se recopila ni se comparte.</string>
     <string name="settings_editor_ai_provider_settings_label">Configuración de proveedores de IA</string>
     <string name="settings_editor_api_key_input_label">Clave API</string>
-    <string name="settings_editor_ai_model_label">Modelo</string>
+    <string name="settings_editor_ai_model_label">AI Modelo</string>
+    <string name="settings_editor_selected_ai_model_label">Modelo seleccionado</string>
+    <string name="settings_editor_selected_model_custom_label">Personalizado</string>
+    <string name="settings_editor_custom_model_field_label">Modelo personalizado</string>
+    <string name="settings_editor_custom_model_field_empty_warning">Proporcione un nombre de modelo personalizado o seleccione uno del modelo disponible</string>
     <string name="settings_timestamp_step_title">Paso de ajuste de tiempo</string>
     <string name="settings_timestamp_step_summary">Cantidad de tiempo para desplazar las marcas temporales con cada pulsación de + o −.</string>
     <string name="settings_timestamp_step_dropdown_item">%1$d centisegundos</string>

@@ -1,11 +1,16 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -19,13 +24,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProvider
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 
 @Composable
 fun AiProviderConfiguration(
@@ -36,6 +46,7 @@ fun AiProviderConfiguration(
     onModelChange: (String) -> Unit,
     onKeyChange: (String) -> Unit
 ) {
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     var inputValue by rememberSaveable(apiKey) { mutableStateOf(apiKey) }
     var showPassword by rememberSaveable { mutableStateOf(false) }
@@ -43,6 +54,11 @@ fun AiProviderConfiguration(
         focusManager.clearFocus()
         onKeyChange(inputValue)
     }
+    var useCustomModel by remember(chosenModel) { mutableStateOf(chosenModel !in provider.availableModels) }
+    val customModelLabel = stringResource(R.string.settings_editor_selected_model_custom_label)
+    val availableModels = provider.availableModels + customModelLabel
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -64,18 +80,64 @@ fun AiProviderConfiguration(
             },
             visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             label = { Text(stringResource(R.string.settings_editor_api_key_input_label)) },
+            leadingIcon = { Icon(Icons.Default.Key, null) },
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged { showPassword = it.isFocused })
+
         var showModelSelectionList by remember { mutableStateOf(false) }
-        BasicSettings(label = stringResource(R.string.settings_editor_ai_model_label)) {
+        Text(
+            text = stringResource(R.string.settings_editor_ai_model_label),
+            style = MaterialTheme.typography.titleMedium
+        )
+        BasicSettings(label = stringResource(R.string.settings_editor_custom_model_field_label)) {
+            val currentModel = if (useCustomModel) customModelLabel else chosenModel
             DropdownSettings(
                 expanded = showModelSelectionList,
-                values = provider.availableModels,
-                currentValue = chosenModel,
-                onSelection = onModelChange,
+                values = availableModels,
+                currentValue = currentModel,
+                onSelection = {
+                    if (it == customModelLabel) useCustomModel = true else onModelChange(it)
+                },
                 onExpandChanged = { showModelSelectionList = it },
-                getLabel = { it }
+                getLabel = { it })
+        }
+        AnimatedVisibility(useCustomModel) {
+            val currentModel = if (chosenModel in provider.availableModels) "" else chosenModel
+            val inputState = rememberTextFieldState(currentModel)
+            if (inputState.text.isEmpty()) {
+                BackHandler {
+                    context.makeToast(R.string.settings_editor_custom_model_field_empty_warning)
+                }
+            }
+            OutlinedTextField(
+                state = inputState,
+                label = { Text(stringResource(R.string.settings_editor_custom_model_field_label)) },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done, capitalization = KeyboardCapitalization.None
+                ),
+                onKeyboardAction = {
+                    if (inputState.text.isNotBlank()) {
+                        onModelChange(inputState.text.toString())
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    } else {
+                        context.makeToast(R.string.settings_editor_custom_model_field_empty_warning)
+                    }
+                },
+                inputTransformation = InputTransformation {
+                    val filtered = asCharSequence().filter { char ->
+                        char.isLowerCase() || char.isDigit() || char == '-'
+                    }
+
+                    if (filtered.length != length) {
+                        replace(0, length, filtered)
+                    }
+                },
+                leadingIcon = {
+                    Icon(painterResource(R.drawable.ic_network_intelligence), null)
+                },
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
