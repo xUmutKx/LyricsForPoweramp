@@ -8,6 +8,6 @@ interface AiProviderRepository {
     val instructions: String
     suspend fun rewriteLyrics(userPrompt: String, lyrics: String, model: String): Result
     suspend fun generateResponse(prompt: String, model: String): Result
-    fun buildRequestBody(prompt: String): RequestBody
+    fun buildRequestBody(prompt: String, model: String?): RequestBody
     fun parseResponse(response: String): Result
 }

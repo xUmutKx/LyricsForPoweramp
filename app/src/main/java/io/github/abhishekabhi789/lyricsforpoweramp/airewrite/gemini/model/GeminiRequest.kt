@@ -1,4 +1,4 @@
-package io.github.abhishekabhi789.lyricsforpoweramp.airewrite.model
+package io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini.model
 
 import com.google.gson.annotations.SerializedName
 

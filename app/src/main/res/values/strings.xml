@@ -83,6 +83,7 @@
     <string name="decrease_timestamp_by">Decrease timestamp by %1$d centiseconds</string>
     <string name="editor_placeholder">Enter lyrics</string>
     <string name="ai_gemini_name">Google Gemini</string>
+    <string name="ai_open_router_name">Open Router</string>
     <string name="ai_rewrite_label">Rewrite with AI</string>
     <string name="ai_rewrite_field_label">Prompt for AI</string>
     <string name="ai_rewrite_field_placeholder">How would you like to transform the lyrics?</string>

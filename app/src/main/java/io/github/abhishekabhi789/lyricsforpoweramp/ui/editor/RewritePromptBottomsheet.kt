@@ -1,15 +1,16 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.editor
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -22,15 +23,15 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.RequestState
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,8 +40,7 @@ fun RewritePromptBottomsheet(
     viewmodel: EditorViewmodel,
     onDismiss: () -> Unit
 ) {
-    LocalContext.current
-    LocalResources.current
+    val scope = rememberCoroutineScope()
     val tooltipPositionProvider = TooltipDefaults.rememberTooltipPositionProvider(
         TooltipAnchorPosition.Above
     )
@@ -56,38 +56,44 @@ fun RewritePromptBottomsheet(
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(modifier = modifier.padding(16.dp)) {
             Text(stringResource(R.string.ai_rewrite_label))
-            LazyRow(modifier = Modifier.fillMaxWidth()) {
-                aiProviders.forEach { (translator, apiKey) ->
-                    item(key = translator.key) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                aiProviders.forEach { (aiProvider, apiKey) ->
+                    item(key = aiProvider.key) {
                         val tooltipState = rememberTooltipState()
                         val isConfigured = !apiKey.isNullOrBlank()
+                        val isSelected = chosenAiProvider == aiProvider
                         TooltipBox(
                             state = tooltipState,
                             positionProvider = tooltipPositionProvider,
                             focusable = false,
                             tooltip = {
-                                if (isConfigured) {
+                                if (!isConfigured) {
                                     PlainTooltip {
                                         Text(
                                             stringResource(
                                                 R.string.ai_provider_not_configured,
-                                                stringResource(translator.nameRes)
+                                                stringResource(aiProvider.nameRes)
                                             )
                                         )
                                     }
                                 }
                             }
                         ) {
-                            AssistChip(
-                                enabled = isConfigured,
-                                onClick = { viewmodel.setChosenAiProvider(translator) },
-                                leadingIcon = {
-                                    if (chosenAiProvider == translator) Icon(
-                                        Icons.Default.Check,
-                                        null
-                                    )
+                            InputChip(
+                                onClick = {
+                                    if (isConfigured) viewmodel.setChosenAiProvider(aiProvider)
+                                    else scope.launch { tooltipState.show() }
                                 },
-                                label = { Text(stringResource(translator.nameRes)) },
+                                label = { Text(stringResource(aiProvider.nameRes)) },
+                                selected = isSelected,
+                                leadingIcon = {
+                                    if (isSelected) {
+                                        Icon(Icons.Default.Done, null)
+                                    }
+                                },
                                 trailingIcon = {
                                     if (!isConfigured) {
                                         Icon(
@@ -96,7 +102,8 @@ fun RewritePromptBottomsheet(
                                             tint = MaterialTheme.colorScheme.error
                                         )
                                     }
-                                })
+                                }
+                            )
                         }
                     }
                 }

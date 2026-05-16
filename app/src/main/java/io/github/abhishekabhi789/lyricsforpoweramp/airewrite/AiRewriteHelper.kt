@@ -2,6 +2,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.airewrite
 
 import android.util.Log
 import com.google.gson.Gson
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini.GeminiAiProvider
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.flow.firstOrNull
@@ -16,13 +17,19 @@ class AiRewriteHelper @Inject constructor(
 ) {
     private val client by lazy { okHttpClientProvider.get() }
     private var gemini: GeminiAiProvider? = null
+    private var openRouter: OpenRouterAiProvider? = null
 
     suspend fun refreshProviders() {
         appPreference.aiProviders.firstOrNull()?.let { providers ->
             providers.forEach { (provider, key) ->
                 if (!key.isNullOrBlank()) {
                     when (provider) {
-                        AiProvider.GEMINI -> gemini = GeminiAiProvider(client, gson, key)
+                        AiProvider.GEMINI -> gemini =
+                            GeminiAiProvider(client = client, gson = gson, apiKey = key)
+
+                        AiProvider.OPENROUTER -> openRouter =
+                            OpenRouterAiProvider(client = client, gson = gson, apiKey = key)
+
                     }
                 }
             }
@@ -42,6 +49,7 @@ class AiRewriteHelper @Inject constructor(
         val model = chosenModel ?: aiProvider.defaultModel
         val result = when (aiProvider) {
             AiProvider.GEMINI -> gemini!!.rewriteLyrics(prompt, lyrics, model)
+            AiProvider.OPENROUTER -> openRouter!!.rewriteLyrics(prompt, lyrics, model)
         }
         return when (result) {
             Result.Cancelled -> RequestState.Idle
@@ -60,6 +68,7 @@ class AiRewriteHelper @Inject constructor(
     private fun AiProvider.isConfigured(): Boolean {
         return when (this) {
             AiProvider.GEMINI -> gemini != null
+            AiProvider.OPENROUTER -> openRouter != null
         }
     }
 

@@ -90,6 +90,14 @@ class AppPreference @Inject constructor(
         AiProvider.entries.associateWith { preferences[stringPreferencesKey(it.key)] }
     }
 
+    val chosenAiProvider = dataStore.data.map { preferences ->
+        preferences[CHOSEN_AI_PROVIDER]?.let { selectedProviderName ->
+            if (AiProvider.entries.map { it.name }.contains(selectedProviderName)) {
+                AiProvider.valueOf(selectedProviderName)
+            } else AiProvider.getDefault()
+        } ?: AiProvider.getDefault()
+    }
+
     val lrclibApiInstances =
         dataStore.data.map { it[SAVED_LRCLIB_API_URL]?.toList() ?: DEFAULT_LRCLIB_API_URLS }
 
@@ -182,6 +190,7 @@ class AppPreference @Inject constructor(
         val FOLDER_URIS = stringSetPreferencesKey("folder_uri_list")
         val MARK_INSTRUMENTAL_LYRICS = booleanPreferencesKey("mark_instrumental_lyrics")
         val TIMESTAMP_DELTA = intPreferencesKey("timestamp_delta_in_centi_seconds")
+        val CHOSEN_AI_PROVIDER = stringPreferencesKey("chosen_ai_provider_for_rewrite")
         val EDITOR_FONT_SIZE_SP = floatPreferencesKey("editor_font_size_sp")
         val SAVED_LRCLIB_API_URL = stringSetPreferencesKey("lrclib_api_urls")
         val SELECTED_LRCLIB_API_URL = stringPreferencesKey("lrclib_api_url")
@@ -196,6 +205,7 @@ class AppPreference @Inject constructor(
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AppTheme.entries.toList()
             else listOf(AppTheme.Light, AppTheme.Dark)
         }
+
         fun getKeyForModel(provider: AiProvider): Preferences.Key<String> {
             //key is already used for storing api key
             return stringPreferencesKey(provider.key + "_model")

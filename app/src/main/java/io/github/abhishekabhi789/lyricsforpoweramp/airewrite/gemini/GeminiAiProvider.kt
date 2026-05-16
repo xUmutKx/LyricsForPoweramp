@@ -1,11 +1,12 @@
-package io.github.abhishekabhi789.lyricsforpoweramp.airewrite
+package io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini
 
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.github.abhishekabhi789.lyricsforpoweramp.R
-import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.model.GeminiRequest
-import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.model.GeminiResponse
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProviderRepository
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini.model.GeminiRequest
+import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini.model.GeminiResponse
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -38,10 +39,12 @@ class GeminiAiProvider(
             
             For synced lyrics(LRC), Poweramp supports dual-LRC format translation like below.
                 [# Original Lyrics]
-                [TIMESTAMP] Original Text
+                [TIMESTAMP 1] Original Line 1
+                [TIMESTAMP 2] Original Line 2
             
                 [# Translated {LanguageName}]
-                [TIMESTAMP] Translated Text
+                [TIMESTAMP 1] Translated Line 1
+                [TIMESTAMP 2] Translated Line 2
                 
             For plain lyrics follow below format:
                 Original Line 1
@@ -81,7 +84,7 @@ class GeminiAiProvider(
             val request = Request.Builder().run {
                 url(url)
                 addHeader("Content-Type", "application/json")
-                post(buildRequestBody(prompt))
+                post(buildRequestBody(prompt, model))
                 build()
             }
             withContext(Dispatchers.IO) {
@@ -156,7 +159,7 @@ class GeminiAiProvider(
         }
     }
 
-    override fun buildRequestBody(prompt: String): RequestBody {
+    override fun buildRequestBody(prompt: String, model: String?): RequestBody {
         val promptObj = GeminiRequest.getInstance(prompt = prompt, systemInstruction = instructions)
         return gson.toJson(promptObj).toRequestBody("application/json".toMediaType())
     }
@@ -165,7 +168,7 @@ class GeminiAiProvider(
         return try {
             val geminiResponse = gson.fromJson(response, GeminiResponse::class.java)
             val candidate = geminiResponse.candidates.firstOrNull()
-            when (candidate?.finishReason) {
+            when (candidate?.finishReason?.uppercase()) {
                 "STOP" -> {
                     candidate.content.parts.first().text.let { Result.Success(it) }
                 }
@@ -206,7 +209,6 @@ class GeminiAiProvider(
             "https://generativelanguage.googleapis.com/v1beta/models"
 
         fun getGeminiUrl(model: String): String {
-            // Construct: base/model:method
             return "$GEMINI_BASE_URL/$model:generateContent"
         }
     }

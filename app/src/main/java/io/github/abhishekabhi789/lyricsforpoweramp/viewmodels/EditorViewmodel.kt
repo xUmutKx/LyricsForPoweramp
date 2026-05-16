@@ -50,10 +50,6 @@ class EditorViewmodel @Inject constructor(
     private val _filepath = MutableStateFlow("")
     val filePath = _filepath.asStateFlow()
 
-    private val _chosenAiProvider: MutableStateFlow<AiProvider> =
-        MutableStateFlow(AiProvider.getDefault())
-    val chosenAiProvider = _chosenAiProvider.asStateFlow()
-
     private val _aiRewriteState: MutableStateFlow<RequestState> =
         MutableStateFlow(RequestState.Idle)
     val aiRewriteState = _aiRewriteState.asStateFlow()
@@ -91,6 +87,9 @@ class EditorViewmodel @Inject constructor(
 
     val aiProviders = appPreference.aiProviders
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+
+    val chosenAiProvider = appPreference.chosenAiProvider
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AiProvider.getDefault())
 
     val editorFontSize = appPreference.editorFontSize
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
@@ -169,13 +168,15 @@ class EditorViewmodel @Inject constructor(
     }
 
     fun setChosenAiProvider(provider: AiProvider) {
-        _chosenAiProvider.value = provider
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.CHOSEN_AI_PROVIDER, provider.name)
+        }
     }
 
     fun rewriteWithAi(prompt: String) {
         _aiRewriteState.value = RequestState.Processing
         val lyricsContent = _inputState.value.lyrics
-        val chosenAiProvider = _chosenAiProvider.value
+        val chosenAiProvider = chosenAiProvider.value
 
         viewModelScope.launch {
             val result = aiRewriteHelper.transform(
@@ -214,9 +215,6 @@ class EditorViewmodel @Inject constructor(
     fun getCurrentTimestamp(): Timestamp = playbackHelper.getCurrentTimestamp()
 
     init {
-        viewModelScope.launch {
-            _chosenAiProvider.value = AiProvider.getDefault()
-        }
         viewModelScope.launch { aiRewriteHelper.refreshProviders() }
     }
 

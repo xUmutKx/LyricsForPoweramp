@@ -82,6 +82,7 @@
     <string name="decrease_timestamp_by">Reducir tiempo en %1$d centisegundos</string>
     <string name="editor_placeholder">Introduce las letras</string>
     <string name="ai_gemini_name">Google Gemini</string>
+    <string name="ai_open_router_name">Open Router</string>
     <string name="ai_rewrite_label">Reescribir con AI</string>
     <string name="ai_rewrite_field_label">Solicitar AI</string>
     <string name="ai_rewrite_field_placeholder">¿Cómo te gustaría transformar la letra?</string>
