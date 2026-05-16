@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -46,7 +47,7 @@ fun LyricsProviderSettings(modifier: Modifier = Modifier, viewmodel: SettingsVie
             control = {})
 
         Disclaimer(
-            textContent = stringResource(R.string.settings_lyrics_providers_modify_lrclib_api_description),
+            textContent = AnnotatedString(stringResource(R.string.settings_lyrics_providers_modify_lrclib_api_description)),
             icon = Icons.Default.Info
         )
         Spacer(modifier = Modifier.height(8.dp))

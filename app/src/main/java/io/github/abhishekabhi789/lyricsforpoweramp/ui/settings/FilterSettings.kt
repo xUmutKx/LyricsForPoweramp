@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -26,7 +27,7 @@ fun FilterSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
         icon = Icons.Default.FilterAlt
     ) {
         Disclaimer(
-            textContent = stringResource(R.string.settings_filter_description),
+            textContent = AnnotatedString(stringResource(R.string.settings_filter_description)),
             icon = Icons.Default.Info,
             modifier = Modifier.padding(8.dp)
         )

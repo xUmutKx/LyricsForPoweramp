@@ -24,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
@@ -58,11 +60,27 @@ fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Disclaimer(
-                    textContent = stringResource(R.string.settings_editor_api_keys_disclaimer),
+                    textContent = AnnotatedString(stringResource(R.string.settings_editor_api_keys_disclaimer)),
                     icon = Icons.Default.Info,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
                 AiProvider.entries.forEach { provider ->
+                    val (configUrl, modelsUrl) = when (provider) {
+                        AiProvider.GEMINI -> "https://ai.google.dev/gemini-api/docs" to "https://ai.google.dev/gemini-api/docs/models"
+                        AiProvider.OPENROUTER -> "https://openrouter.ai/" to "https://openrouter.ai/models?output_modalities=text"
+                    }
+                    val providerName = stringResource(provider.nameRes)
+                    Disclaimer(
+                        textContent = AnnotatedString.fromHtml(
+                            stringResource(
+                                R.string.settings_editor_api_setup_instructions_html,
+                                configUrl, providerName, modelsUrl
+                            )
+                        ),
+                        icon = Icons.Default.Info,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+
                     val apiKey: String by produceState(initialValue = "", key1 = provider) {
                         value = withContext(Dispatchers.IO) {
                             viewmodel.getAiProviderApiKey(provider) ?: ""
