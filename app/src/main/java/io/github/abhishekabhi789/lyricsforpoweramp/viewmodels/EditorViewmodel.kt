@@ -17,6 +17,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +35,7 @@ class EditorViewmodel @Inject constructor(
 ) : ViewModel() {
 
     private var isInitialized = false
+    private var rewriteJob: Job? = null
     private val undoStack = ArrayDeque<EditorInputState>(50)
     private val redoStack = ArrayDeque<EditorInputState>(50)
 
@@ -55,6 +57,7 @@ class EditorViewmodel @Inject constructor(
     val aiRewriteState = _aiRewriteState.asStateFlow()
 
     fun resetAiWriteState() {
+        stopRewriting()
         _aiRewriteState.value = RequestState.Idle
     }
 
@@ -174,11 +177,12 @@ class EditorViewmodel @Inject constructor(
     }
 
     fun rewriteWithAi(prompt: String) {
+        stopRewriting()
         _aiRewriteState.value = RequestState.Processing
         val lyricsContent = _inputState.value.lyrics
         val chosenAiProvider = chosenAiProvider.value
 
-        viewModelScope.launch {
+        rewriteJob = viewModelScope.launch {
             val result = aiRewriteHelper.transform(
                 prompt = prompt,
                 lyrics = lyricsContent,
@@ -192,6 +196,14 @@ class EditorViewmodel @Inject constructor(
                 updateInputState(newState)
             }
         }
+        rewriteJob?.invokeOnCompletion {
+            rewriteJob = null
+        }
+    }
+
+    fun stopRewriting() {
+        rewriteJob?.cancel()
+        rewriteJob = null
     }
 
     val playerInitialized = playbackHelper.playerInitialized
