@@ -42,6 +42,7 @@ fun FilterSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) 
                     leadingIcon = filterType.icon,
                     chipItems = value,
                     onChipListChange = { viewmodel.setFilter(filterType, it) },
+                    isRemovable = { true }
                 )
             }
         }
