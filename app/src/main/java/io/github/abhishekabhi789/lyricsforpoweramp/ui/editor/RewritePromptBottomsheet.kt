@@ -49,8 +49,9 @@ fun RewritePromptBottomsheet(
     val promptRequestState by viewmodel.aiRewriteState.collectAsStateWithLifecycle()
 
     DisposableEffect(Unit) {
+        viewmodel.refreshAiWriter()
         //clearing promptRequestState from viewmodel, when exiting composition
-        onDispose { viewmodel.resetAiWriteState() }
+        onDispose { viewmodel.resetAiWriter() }
     }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -115,7 +116,7 @@ fun RewritePromptBottomsheet(
                 requestState = promptRequestState,
                 onPromptChange = {
                     if (promptRequestState is RequestState.Failure) {
-                        viewmodel.resetAiWriteState()
+                        viewmodel.resetAiWriter()
                     }
                 },
                 onPrompt = { prompt -> viewmodel.rewriteWithAi(prompt) }

@@ -17,6 +17,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -56,7 +57,7 @@ class EditorViewmodel @Inject constructor(
         MutableStateFlow(RequestState.Idle)
     val aiRewriteState = _aiRewriteState.asStateFlow()
 
-    fun resetAiWriteState() {
+    fun resetAiWriter() {
         stopRewriting()
         _aiRewriteState.value = RequestState.Idle
     }
@@ -74,7 +75,7 @@ class EditorViewmodel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
     fun setSaveAsFile(enabled: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             appPreference.setPreference(AppPreference.SAVE_LYRICS_IN_FILE, enabled)
         }
     }
@@ -83,7 +84,7 @@ class EditorViewmodel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
     fun setEmbedLyrics(enabled: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             appPreference.setPreference(AppPreference.EMBED_LYRICS_AS_TAG, enabled)
         }
     }
@@ -98,7 +99,7 @@ class EditorViewmodel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     fun setEditorFontSize(size: Float) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             appPreference.setPreference(AppPreference.EDITOR_FONT_SIZE_SP, size)
         }
     }
@@ -148,7 +149,7 @@ class EditorViewmodel @Inject constructor(
 
     fun saveLyrics() {
         _inputState.value.lyrics.takeIf { it.isNotBlank() }?.let { lyricsContent ->
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO) {
                 resetLyricsSavingState()
                 lyricsSavingHelper.saveLyrics(
                     filePath = _filepath.value,
@@ -171,7 +172,7 @@ class EditorViewmodel @Inject constructor(
     }
 
     fun setChosenAiProvider(provider: AiProvider) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             appPreference.setPreference(AppPreference.CHOSEN_AI_PROVIDER, provider.name)
         }
     }
@@ -182,7 +183,7 @@ class EditorViewmodel @Inject constructor(
         val lyricsContent = _inputState.value.lyrics
         val chosenAiProvider = chosenAiProvider.value
 
-        rewriteJob = viewModelScope.launch {
+        rewriteJob = viewModelScope.launch(Dispatchers.IO) {
             val result = aiRewriteHelper.transform(
                 prompt = prompt,
                 lyrics = lyricsContent,
@@ -226,8 +227,13 @@ class EditorViewmodel @Inject constructor(
 
     fun getCurrentTimestamp(): Timestamp = playbackHelper.getCurrentTimestamp()
 
+    fun refreshAiWriter() {
+        resetAiWriter()
+        viewModelScope.launch(Dispatchers.IO) { aiRewriteHelper.refreshProviders() }
+    }
+
     init {
-        viewModelScope.launch { aiRewriteHelper.refreshProviders() }
+        refreshAiWriter()
     }
 
     override fun onCleared() {
