@@ -25,8 +25,10 @@ A lyrics plugin for <a href="https://powerampapp.com/">Poweramp</a><br>
 
 | GitHub                                                                                                                                                                            | Play Store                                                                                                                                                                                                                                                            |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Minimal Features                                                                                                                                                                  | Full Version                                                                                                                                                                                                                                                          |
+| Fully Free                                                                                                                                                                        | Contains Premium Features                                                                                                                                                                                                                                             |
 | ![Latest Version](https://img.shields.io/github/v/release/abhishekabhi789/LyricsForPoweramp?style=for-the-badge&logo=github&color=black&label=Version)                            | ![Latest Version](https://img.shields.io/endpoint?url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dio.github.abhishekabhi789.lyricsforpoweramp%26gl%3DUS%26hl%3Den%26l%3DLatest%26m%3D%24version&style=for-the-badge&logo=google-play&label=Release&color=yellow) |
-| ![Release Date](https://img.shields.io/github/release-date/abhishekabhi789/LyricsForPoweramp?display_date=published_at&style=for-the-badge&logo=github&color=black&label=Updated) | ![Release Date](https://img.shields.io/endpoint?url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dio.github.abhishekabhi789.lyricsforpoweramp%26gl%3DUS%26hl%3Den%26l%3DUpdated%26m%3D%24updated&style=for-the-badge&logo=google-play&color=yellow)              |
+| ![Release Date](https://img.shields.io/github/release-date/abhishekabhi789/LyricsForPoweramp?display_date=published_at&style=for-the-badge&logo=github&color=black&label=Updated) | ![Release Date](https://img.shields.io/endpoint?url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dio.github.abhishekabhi789.lyricsforpoweramp%26gl%3DUS%26hl%3Den%26l%3DUpdated%26m%3D%24updated&style=for-the-badge&logo=google-play&color=yellow)                |
 | [Goto Latest Release](https://github.com/abhishekabhi789/LyricsForPowerAmp/releases)                                                                                              | [View on Play Store](https://play.google.com/store/apps/details?id=io.github.abhishekabhi789.lyricsforpoweramp&referrer=utm_source%3Dgithub%26utm_medium%3Dreadme%26utm_campaign%3Ddownload_table)                                                                    |
 
 > [!NOTE]  
@@ -55,10 +57,12 @@ See [Usage Instructions](docs/guide.md)
 
 Read the Privacy Policy [Here](docs/privacy-policy.md)
 
-### :books: References
+### :books: References & Credits
 
-1. [Poweramp API](https://github.com/maxmpz/powerampapi)
-2. [LRCLib](https://lrclib.net/) - Lyrics Source
+1. [Poweramp API](https://github.com/maxmpz/powerampapi) - API integration
+2. [LRCLib](https://lrclib.net/) - Lyrics source
+3. [TagLib by Kyant0](https://github.com/Kyant0/taglib) - Audio tag editing library
+4. [SVG Repo](https://www.svgrepo.com/svg/490368/song) - App Icon (Public Domain)
 
 ### :running: Check Out Other Projects
 
