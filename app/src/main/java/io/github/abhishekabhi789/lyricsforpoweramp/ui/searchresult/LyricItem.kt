@@ -183,8 +183,8 @@ fun LyricItem(
                 )
                 trackDuration?.let { duration ->
                     Spacer(Modifier.width(8.dp))
-                    val difference by remember(duration, lyrics.duration) {
-                        derivedStateOf { (lyrics.duration.toInt() - duration) }
+                    val difference = remember(duration, lyrics.duration) {
+                        lyrics.duration.toInt() - duration
                     }
                     val bgColor = MaterialTheme.colorScheme.secondaryContainer
                     Surface(
@@ -247,10 +247,12 @@ fun LyricItem(
                             .weight(0.5f)
                             .height(IntrinsicSize.Min)
                     ) {
-                        val availableLyrics = buildList {
-                            if (lyrics.syncedLyrics != null) add(LyricsType.SYNCED)
-                            if (lyrics.plainLyrics != null) add(LyricsType.PLAIN)
-                            if (lyrics.instrumental == true) add(LyricsType.INSTRUMENTAL)
+                        val availableLyrics = remember(lyrics) {
+                            buildList {
+                                if (lyrics.syncedLyrics != null) add(LyricsType.SYNCED)
+                                if (lyrics.plainLyrics != null) add(LyricsType.PLAIN)
+                                if (lyrics.instrumental == true) add(LyricsType.INSTRUMENTAL)
+                            }
                         }
                         val showLyricsAction by remember(lyrics) {
                             derivedStateOf {
@@ -298,19 +300,12 @@ fun LyricItem(
                     modifier = Modifier.animateContentSize()
                 ) { pageIndex ->
                     val lyricsInView by remember(pageIndex) {
-                        derivedStateOf {
-                            lyricPages.getOrNull(
-                                pageIndex
-                            ) ?: ""
-                        }
+                        derivedStateOf { lyricPages.getOrNull(pageIndex) ?: "" }
                     }
                     SelectionContainer {
                         Text(
-                            text = if (expanded) lyricsInView
-                            else lyricsInView.lines().run {
-                                subList(0, size.coerceAtMost(6))
-                                    .joinToString(separator = "\n", postfix = "\n...")
-                            },
+                            text = lyricsInView,
+                            maxLines = if (expanded) Int.MAX_VALUE else 6,
                             style = TextStyle(
                                 fontStyle = FontStyle.Italic,
                                 color = MaterialTheme.colorScheme.onSurface
