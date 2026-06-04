@@ -142,11 +142,15 @@ fun AiProviderConfiguration(
                 ),
                 onKeyboardAction = { onSaveModel() },
                 inputTransformation = InputTransformation {
-                    val filtered = asCharSequence().filter { char ->
-                        char.isLowerCase() || char.isDigit() || char == '-'
-                    }
+                    val specialCharacters = setOf('.', '/', '-', ':')
+                    val filtered = asCharSequence()
+                        .map { char -> char.lowercaseChar() }
+                        .filter { char ->
+                            char.isLowerCase() || char.isDigit() || specialCharacters.contains(char)
+                        }
+                        .joinToString(separator = "")
 
-                    if (filtered.length != length) {
+                    if (filtered != asCharSequence().toString()) {
                         replace(0, length, filtered)
                     }
                 },
