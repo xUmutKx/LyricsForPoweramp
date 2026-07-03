@@ -1,13 +1,13 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.helpers
 
 import android.util.Log
-import com.google.gson.Gson
 import io.github.abhishekabhi789.lyricsforpoweramp.BuildConfig
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.Headers
 import okhttp3.HttpUrl
@@ -25,7 +25,7 @@ import kotlin.coroutines.resume
 
 /**Helper to interacts with LRCLIB*/
 class LrclibApiHelper @Inject constructor(
-    private val gson: Gson,
+    private val json: Json,
     private val okHttpClientProvider: Provider<OkHttpClient>,
     private val appPreference: AppPreference
 ) {
@@ -120,8 +120,7 @@ class LrclibApiHelper @Inject constructor(
 
             is ApiResponse.Success -> {
                 runCatching {
-                    val lyrics = gson.fromJson(response.data, Lyrics::class.java)
-                        ?: return Result.Failure(Error.EMPTY_RESPONSE)
+                    val lyrics = json.decodeFromString<Lyrics>(response.data)
                     //get method returns a single lyrics result, so putting it in a list to fit in success
                     Result.Success(listOf(lyrics))
                 }.getOrElse { Result.Failure(Error.PROCESSING_ERROR) }
@@ -155,23 +154,21 @@ class LrclibApiHelper @Inject constructor(
         return when (val response = makeApiRequest(requestUrl)) {
             is ApiResponse.Success -> {
                 val lyricsList = runCatching {
-                    gson.fromJson(response.data, Array<Lyrics>::class.java)
+                    json.decodeFromString<List<Lyrics>>(response.data)
                 }.getOrElse {
                     Log.e(TAG, "parseSearchResponse: failed to parse response", it)
                     return Result.Failure(Error.PROCESSING_ERROR)
                 }
 
-                if (!lyricsList.isNullOrEmpty()) {
+                if (lyricsList.isNotEmpty()) {
                     val validLyrics = lyricsList.filter {
                         it.plainLyrics != null || it.syncedLyrics != null || it.instrumental == true
                     }
-                    Log.d(TAG, "searchLyricsForTrack: found ${validLyrics.size} results")
+                    Log.d(TAG, "searchLyrics: found ${validLyrics.size} results")
                     Result.Success(validLyrics)
                 } else {
-                    Log.e(TAG, "searchLyricsForTrack: no result found")
-                    val error =
-                        if (lyricsList == null) Error.PROCESSING_ERROR else Error.NO_RESULTS
-                    Result.Failure(error)
+                    Log.e(TAG, "searchLyrics: no result found")
+                    Result.Failure(Error.NO_RESULTS)
                 }
             }
 
@@ -185,9 +182,7 @@ class LrclibApiHelper @Inject constructor(
             ?: throw MalformedURLException("Invalid URL: $selectedApiUrl")
         return apiUrl.newBuilder().apply {
             addPathSegment(method.path)
-            params.forEach { (key, value) ->
-                addQueryParameter(key, value)
-            }
+            params.forEach { (key, value) -> addQueryParameter(key, value) }
         }.build()
     }
 

@@ -1,11 +1,11 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.airewrite
 
 import android.util.Log
-import com.google.gson.Gson
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini.GeminiAiProvider
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import javax.inject.Inject
 import javax.inject.Provider
@@ -13,7 +13,7 @@ import javax.inject.Provider
 class AiRewriteHelper @Inject constructor(
     private val appPreference: AppPreference,
     okHttpClientProvider: Provider<OkHttpClient>,
-    private val gson: Gson,
+    private val json: Json,
 ) {
     private val client by lazy { okHttpClientProvider.get() }
     private var gemini: GeminiAiProvider? = null
@@ -25,10 +25,10 @@ class AiRewriteHelper @Inject constructor(
                 if (!key.isNullOrBlank()) {
                     when (provider) {
                         AiProvider.GEMINI -> gemini =
-                            GeminiAiProvider(client = client, gson = gson, apiKey = key)
+                            GeminiAiProvider(client = client, json = json, apiKey = key)
 
                         AiProvider.OPENROUTER -> openRouter =
-                            OpenRouterAiProvider(client = client, gson = gson, apiKey = key)
+                            OpenRouterAiProvider(client = client, json = json, apiKey = key)
 
                     }
                 }

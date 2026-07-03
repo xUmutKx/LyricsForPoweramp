@@ -1,8 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.airewrite
 
 import android.util.Log
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.openrouter.model.OpenRouterRequest
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.openrouter.model.OpenRouterResponse
@@ -10,6 +8,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -25,7 +24,7 @@ import kotlin.coroutines.resume
 
 class OpenRouterAiProvider(
     private val client: OkHttpClient,
-    private val gson: Gson,
+    private val json: Json,
     private val apiKey: String,
 ) : AiProviderRepository {
 
@@ -170,12 +169,13 @@ class OpenRouterAiProvider(
             prompt = prompt,
             systemInstruction = instructions
         )
-        return gson.toJson(promptObj).toRequestBody("application/json".toMediaType())
+        val jsonString = json.encodeToString(promptObj)
+        return jsonString.toRequestBody("application/json".toMediaType())
     }
 
     override fun parseResponse(response: String): Result {
         return try {
-            val openRouterResponse = gson.fromJson(response, OpenRouterResponse::class.java)
+            val openRouterResponse = json.decodeFromString<OpenRouterResponse>(response)
             val choice = openRouterResponse.choices.first()
             when (choice.finishReason.lowercase()) {
                 "stop" -> {
@@ -207,13 +207,9 @@ class OpenRouterAiProvider(
                     Result.Failure("Failed to generate response")
                 }
             }
-        } catch (e: JsonSyntaxException) {
-            Log.e(TAG, "parseResponse: JsonSyntaxException", e)
-            Result.Failure("Failed to process response")
-
         } catch (e: Exception) {
             Log.e(TAG, "parseResponse: exception", e)
-            Result.Failure("unknown error")
+            Result.Failure("Failed to process response")
         }
     }
 

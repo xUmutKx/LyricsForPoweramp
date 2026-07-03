@@ -1,17 +1,20 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.airewrite.openrouter.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class OpenRouterRequest(
-    @SerializedName("model")
+    @SerialName("model")
     val model: String,
-    @SerializedName("messages")
+    @SerialName("messages")
     val messages: List<Message>
 ) {
+    @Serializable
     data class Message(
-        @SerializedName("role")
+        @SerialName("role")
         val role: String,
-        @SerializedName("content")
+        @SerialName("content")
         val content: String
     )
 

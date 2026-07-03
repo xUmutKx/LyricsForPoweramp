@@ -1,7 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.di
 
 import android.content.Context
-import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,6 +15,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.inject.Provider
@@ -38,7 +38,10 @@ object AppModules {
 
     @Provides
     @Singleton
-    fun provideGson(): Gson = Gson()
+    fun provideJson(): Json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
 
     @Provides
     fun provideTaglibHelper(@ApplicationContext context: Context) = TaglibHelper(context)
@@ -59,8 +62,8 @@ object AppModules {
     fun provideAiRewriteHelper(
         appPreference: AppPreference,
         okHttpClientProvider: Provider<OkHttpClient>,
-        gson: Gson
-    ) = AiRewriteHelper(appPreference, okHttpClientProvider, gson)
+        json: Json
+    ) = AiRewriteHelper(appPreference, okHttpClientProvider, json)
 
     @Provides
     fun provideNotificationHelper(

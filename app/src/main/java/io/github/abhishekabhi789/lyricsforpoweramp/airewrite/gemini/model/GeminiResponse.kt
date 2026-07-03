@@ -1,25 +1,30 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class GeminiResponse(
-    @SerializedName("candidates")
+    @SerialName("candidates")
     val candidates: List<Candidate>
 ) {
+    @Serializable
     data class Candidate(
-        @SerializedName("content")
+        @SerialName("content")
         val content: Content,
-        @SerializedName("finishReason")
+        @SerialName("finishReason")
         val finishReason: String
     ) {
+        @Serializable
         data class Content(
-            @SerializedName("parts")
+            @SerialName("parts")
             val parts: List<Part>,
-            @SerializedName("role")
+            @SerialName("role")
             val role: String
         ) {
+            @Serializable
             data class Part(
-                @SerializedName("text")
+                @SerialName("text")
                 val text: String
             )
         }

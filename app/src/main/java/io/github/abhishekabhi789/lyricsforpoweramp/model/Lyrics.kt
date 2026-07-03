@@ -1,21 +1,23 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.model
 
 import android.os.Parcelable
-import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.util.Locale
 
 /**This data class represents each item from the API response.
  * @see <a href="https://lrclib.net/docs#:~:text=Soundtrack)%26duration%3D233-,Example%20response,-200%20OK%3A">LRCLIB#Example response</a>*/
 @Parcelize
+@Serializable
 data class Lyrics(
-    @SerializedName("trackName") val trackName: String,
-    @SerializedName("artistName") val artistName: String?,
-    @SerializedName("albumName") val albumName: String?,
-    @SerializedName("plainLyrics") val plainLyrics: String?,
-    @SerializedName("syncedLyrics") val syncedLyrics: String?,
-    @SerializedName("duration") val duration: Double,
-    @SerializedName("instrumental") val instrumental: Boolean?,
+    @SerialName("trackName") val trackName: String,
+    @SerialName("artistName") val artistName: String?,
+    @SerialName("albumName") val albumName: String?,
+    @SerialName("plainLyrics") val plainLyrics: String?,
+    @SerialName("syncedLyrics") val syncedLyrics: String?,
+    @SerialName("duration") val duration: Double,
+    @SerialName("instrumental") val instrumental: Boolean?,
 ) : Parcelable {
     /** [duration] in readable format. */
     fun getFormattedDuration(): String {

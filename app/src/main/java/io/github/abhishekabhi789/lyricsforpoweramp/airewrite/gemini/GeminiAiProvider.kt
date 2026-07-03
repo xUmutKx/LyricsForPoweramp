@@ -1,8 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini
 
 import android.util.Log
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProviderRepository
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini.model.GeminiRequest
@@ -11,6 +9,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -26,7 +25,7 @@ import kotlin.coroutines.resume
 
 class GeminiAiProvider(
     private val client: OkHttpClient,
-    private val gson: Gson,
+    private val json: Json,
     private val apiKey: String
 ) : AiProviderRepository {
 
@@ -161,12 +160,13 @@ class GeminiAiProvider(
 
     override fun buildRequestBody(prompt: String, model: String?): RequestBody {
         val promptObj = GeminiRequest.getInstance(prompt = prompt, systemInstruction = instructions)
-        return gson.toJson(promptObj).toRequestBody("application/json".toMediaType())
+        val jsonString = json.encodeToString(promptObj)
+        return jsonString.toRequestBody("application/json".toMediaType())
     }
 
     override fun parseResponse(response: String): Result {
         return try {
-            val geminiResponse = gson.fromJson(response, GeminiResponse::class.java)
+            val geminiResponse = json.decodeFromString<GeminiResponse>(response)
             val candidate = geminiResponse.candidates.firstOrNull()
             when (candidate?.finishReason?.uppercase()) {
                 "STOP" -> {
@@ -193,13 +193,9 @@ class GeminiAiProvider(
                     Result.Failure("Failed to generate response")
                 }
             }
-        } catch (e: JsonSyntaxException) {
-            Log.e(TAG, "parseResponse: JsonSyntaxException", e)
-            Result.Failure("Failed to process response")
-
         } catch (e: Exception) {
             Log.e(TAG, "parseResponse: exception", e)
-            Result.Failure("unknown error")
+            Result.Failure("Failed to process response")
         }
     }
 

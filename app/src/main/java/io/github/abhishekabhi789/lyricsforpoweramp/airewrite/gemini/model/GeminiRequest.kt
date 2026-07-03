@@ -1,30 +1,36 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.airewrite.gemini.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class GeminiRequest(
-    @SerializedName("system_instruction")
+    @SerialName("system_instruction")
     val systemInstruction: SystemInstruction? = null,
-    @SerializedName("contents")
+    @SerialName("contents")
     val userInstruction: UserInstruction
 
 ) {
+    @Serializable
     data class SystemInstruction(
-        @SerializedName("parts")
+        @SerialName("parts")
         val parts: Content.Part
     )
 
+    @Serializable
     data class UserInstruction(
-        @SerializedName("parts")
+        @SerialName("parts")
         val parts: List<Content.Part>
     )
 
+    @Serializable
     data class Content(
-        @SerializedName("parts")
+        @SerialName("parts")
         val parts: List<Part>
     ) {
+        @Serializable
         data class Part(
-            @SerializedName("text")
+            @SerialName("text")
             val text: String
         )
     }
