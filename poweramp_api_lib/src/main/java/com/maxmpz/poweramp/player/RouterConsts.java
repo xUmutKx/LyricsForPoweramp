@@ -28,26 +28,32 @@ import org.eclipse.jdt.annotation.Nullable;
 
 
 public interface RouterConsts {
+	int DEVICE_FIRST      = 0;
 	// Sync with plugininterface-output.h
-    int DEVICE_HEADSET = 0;
-    int DEVICE_SPEAKER = 1;
-    int DEVICE_BT = 2;
-    int DEVICE_USB = 3;
-    int DEVICE_OTHER = 4;
-    int DEVICE_CHROMECAST = 5;
+    int DEVICE_HEADSET    = 0;
+	int DEVICE_SPEAKER    = 1;
+	int DEVICE_BT         = 2;
+	int DEVICE_USB        = 3;
+	int DEVICE_OTHER      = 4;
+	int DEVICE_CHROMECAST = 5;
 	// 6
+    int DEVICE_LAST       = 5;
 
-    int DEVICE_UNKNOWN = 0xFF;
+	int DEVICE_UNKNOWN    = 0xFF; // REVISIT: use -1 here?
 
-    int DEVICE_COUNT = 6;
-    int DEVICE_SAFE_DEFAULT = DEVICE_HEADSET;
+	int DEVICE_COUNT   = 6;
+	int DEVICE_SAFE_DEFAULT = DEVICE_HEADSET;
 
-    @NonNull String DEVICE_NAME_HEADSET = "headset";
-    @NonNull String DEVICE_NAME_SPEAKER = "speaker";
-    @NonNull String DEVICE_NAME_BT = "bt";
-    @NonNull String DEVICE_NAME_USB = "usb";
-    @NonNull String DEVICE_NAME_OTHER = "other";
-    @NonNull String DEVICE_NAME_CHROMECAST = "chromecast";
+	@NonNull String DEVICE_NAME_HEADSET = "headset";
+	@NonNull String DEVICE_NAME_SPEAKER = "speaker";
+	@NonNull String DEVICE_NAME_BT = "bt";
+	@NonNull String DEVICE_NAME_USB = "usb";
+	@NonNull String DEVICE_NAME_OTHER = "other";
+	@NonNull String DEVICE_NAME_CHROMECAST = "chromecast";
+
+	static boolean isValidDeviceId(int deviceId) {
+		return deviceId >= DEVICE_FIRST && deviceId <= DEVICE_LAST;
+	}
 
 	@TargetApi(23)
     static int toAndroidDeviceType(int device) {
@@ -67,11 +73,12 @@ public interface RouterConsts {
 	}
 
 	/** @return true if the device is a valid known device (excluding {@link #DEVICE_UNKNOWN}) */
-    static boolean isValidKnownDevice(int device) {
+	static boolean isValidKnownDevice(int device) {
 		return device >= 0 && device < DEVICE_COUNT;
 	}
 
-    static int getDeviceId(@Nullable String device) {
+	/** @return matching device, or -1 if not matched */
+	static int getDeviceId(@Nullable String device) {
 		if(device == null) {
 			return -1;
 		}
@@ -95,7 +102,7 @@ public interface RouterConsts {
 
 	// NOTE: used as pref part
 	// REVISIT: refactor this and following statics into a helper?
-    static @NonNull String getDeviceName(int device) {
+	static @NonNull String getDeviceName(int device) {
 		switch(device) {
 			case DEVICE_HEADSET:
 				return DEVICE_NAME_HEADSET;

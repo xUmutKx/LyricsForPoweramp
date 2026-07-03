@@ -1,6 +1,5 @@
 plugins {
     id("com.android.library")
-    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
@@ -24,6 +23,8 @@ android {
 }
 
 dependencies {
+    //noinspection UseTomlInstead,NewerVersionAvailable
     api("org.eclipse.jdt:org.eclipse.jdt.annotation:2.3.100")
+    //noinspection UseTomlInstead
     api('androidx.appcompat:appcompat:1.7.1')
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2011-2025 Maksim Petrov
+Copyright (C) 2011-2026 Maksim Petrov
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted for widgets, plugins, applications and other software
@@ -268,8 +268,7 @@ object TableDefs {
          * Full path. Works only if the query is joined with the folders, otherwise this may fail
          * TEXT
          */
-        const val FULL_PATH: String =
-            "COALESCE(" + FILE_PATH + "," + Folders.PATH + "||" + NAME + "," + NAME + ")"
+        const val FULL_PATH: String = "COALESCE(" + FILE_PATH + "," + Folders.PATH + "||" + NAME + "," + NAME + ")"
 
         /**
          * Alternative track number. Currently applied only in Folders/Folders Hierarchy files for track number sorting.
@@ -344,11 +343,10 @@ object TableDefs {
          * Calculated field
          * INTEGER (boolean)
          */
-        const val HAS_LYRICS: String =
-            // NOTE: avoid matching cached_lyrics_id for stream as stream constantly changes metadata
+        const val HAS_LYRICS: String =  // NOTE: avoid matching cached_lyrics_id for stream as stream constantly changes metadata
             "(has_lyrics_tag OR lrc_files_id IS NOT NULL" +
-                    " OR cached_lyrics_id IS NOT NULL AND cached_lyrics_loading_started_at IS NULL AND file_type!=" + FileType.TYPE_STREAM +
-                    ") AS _has_lyrics"
+            " OR cached_lyrics_id IS NOT NULL AND cached_lyrics_loading_started_at IS NULL AND file_type!=" + FileType.TYPE_STREAM +
+            ") AS _has_lyrics"
     }
 
 
@@ -520,16 +518,14 @@ object TableDefs {
          * INTEGER (boolean)
          * @since 821
          */
-        const val KEEP_LIST_POS: String =
-            "$TABLE.keep_list_pos" // Sync with RestLibraryListMemorizable
+        const val KEEP_LIST_POS: String = "$TABLE.keep_list_pos" // Sync with RestLibraryListMemorizable
 
         /**
          * If 1 (true), this folder restores last played track position
          * INTEGER (boolean)
          * @since 821
          */
-        const val KEEP_TRACK_POS: String =
-            "$TABLE.keep_track_pos" // Sync with RestLibraryListMemorizable
+        const val KEEP_TRACK_POS: String = "$TABLE.keep_track_pos" // Sync with RestLibraryListMemorizable
 
         const val KEEP_LIST_AND_TRACK_POS_COMBINED: String = "($KEEP_TRACK_POS<<1)+$KEEP_LIST_POS"
 
@@ -1444,17 +1440,14 @@ object TableDefs {
         /**
          * INTEGER (boolean)
          */
-        const val KEEP_LIST_POS: String =
-            TABLE + ".keep_list_pos" // Sync with RestLibraryListMemorizable
+        const val KEEP_LIST_POS: String = TABLE + ".keep_list_pos" // Sync with RestLibraryListMemorizable
 
         /**
          * INTEGER (boolean)
          */
-        const val KEEP_TRACK_POS: String =
-            TABLE + ".keep_track_pos" // Sync with RestLibraryListMemorizable
+        const val KEEP_TRACK_POS: String = TABLE + ".keep_track_pos" // Sync with RestLibraryListMemorizable
 
-        const val KEEP_LIST_AND_TRACK_POS_COMBINED: String =
-            "(" + KEEP_TRACK_POS + "<<1)+" + KEEP_LIST_POS
+        const val KEEP_LIST_AND_TRACK_POS_COMBINED: String = "(" + KEEP_TRACK_POS + "<<1)+" + KEEP_LIST_POS
 
         /**
          * Duration in milliseconds
@@ -1899,7 +1892,7 @@ object TableDefs {
         const val DEVICE_NAME: String = "device_name"
 
         /**
-         * Device address
+         * Device address (actually, endDeviceName)
          * TEXT
          */
         const val DEVICE_ADDRESS: String = "device_address"

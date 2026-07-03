@@ -7,12 +7,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.RemoteViews;
-
 import com.maxmpz.poweramp.player.PowerampAPI;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-
 import java.util.Arrays;
 
 /**

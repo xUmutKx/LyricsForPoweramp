@@ -1,23 +1,25 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.compose)
     alias(libs.plugins.google.devtool.ksp)
     alias(libs.plugins.hilt.android)
     id("kotlin-parcelize")
     id("com.google.android.gms.oss-licenses-plugin")
 }
-
+val appVersionCode = 24
+val appVersionName = "3.0"
 android {
     namespace = "io.github.abhishekabhi789.lyricsforpoweramp"
-    compileSdk = 36
+    compileSdk {
+        version = release(37)
+    }
 
     defaultConfig {
         applicationId = "io.github.abhishekabhi789.lyricsforpoweramp"
-        minSdk = 23
-        targetSdk = 36
-        versionCode = 23
-        versionName = "2.3"
+        minSdk = 24
+        targetSdk = 37
+        versionCode = appVersionCode
+        versionName = appVersionName
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -42,13 +44,10 @@ android {
             value = "\"https://abhishekabhi789.github.io/\""
         )
     }
-    base {
-        archivesName.set("Lyrics4Poweramp-v${defaultConfig.versionName}")
-    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
-            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -80,7 +79,9 @@ android {
         }
     }
 }
-
+base {
+    archivesName = "Lyrics4Poweramp-v${appVersionName}"
+}
 dependencies {
     implementation(project(":poweramp_api_lib"))
     implementation(libs.okhttp)

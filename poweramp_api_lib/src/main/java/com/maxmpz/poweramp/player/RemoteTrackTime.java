@@ -28,7 +28,6 @@ import android.os.Handler;
 import android.util.Log;
 
 import androidx.core.content.ContextCompat;
-
 import org.eclipse.jdt.annotation.NonNull;
 
 
@@ -56,9 +55,8 @@ public class RemoteTrackTime {
 
 
 	public interface TrackTimeListener {
-        void onTrackDurationChanged(int duration);
-
-        void onTrackPositionChanged(int position);
+		void onTrackDurationChanged(int duration);
+		void onTrackPositionChanged(int position);
 	}
 
 	TrackTimeListener mTrackTimeListener;

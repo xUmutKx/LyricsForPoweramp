@@ -22,12 +22,11 @@ package com.maxmpz.poweramp.widgetpackcommon;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 public interface IWidgetUpdater {
-    @Nullable WidgetUpdateData pushUpdate(Context context, @NonNull SharedPreferences prefs, int @Nullable [] ids,
+	@Nullable WidgetUpdateData pushUpdate(Context context, @NonNull SharedPreferences prefs, int @Nullable [] ids,
                                           boolean mediaRemoved, @NonNull WidgetUpdateData data
     );
 }
