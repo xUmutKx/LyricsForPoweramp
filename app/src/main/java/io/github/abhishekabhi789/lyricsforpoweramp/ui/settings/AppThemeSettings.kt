@@ -1,8 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,11 +16,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @Composable
 fun AppThemeSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) {
-    SettingsGroup(
-        modifier = modifier,
-        title = stringResource(id = R.string.settings_app_theme_label),
-        icon = Icons.Default.ColorLens
-    ) {
+    SettingsPage(modifier = modifier) {
         var expanded by remember { mutableStateOf(false) }
         val currentTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
         val allThemes = remember { AppPreference.getThemes() }

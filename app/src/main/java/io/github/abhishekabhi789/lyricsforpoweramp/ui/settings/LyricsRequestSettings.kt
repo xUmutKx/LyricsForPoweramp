@@ -14,8 +14,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lyrics
 import androidx.compose.material3.Button
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -47,12 +45,11 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 @SuppressLint("InlinedApi", "PermissionLaunchedDuringComposition")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun LyricsRequestSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) {
-    SettingsGroup(
-        modifier = modifier,
-        title = stringResource(R.string.settings_lyrics_request_label),
-        icon = Icons.Default.Lyrics
-    ) {
+fun LyricsRequestSettings(
+    modifier: Modifier = Modifier,
+    viewmodel: SettingsViewModel
+) {
+    SettingsPage(modifier = modifier) {
         val context = LocalContext.current
         var hasNotificationPermission by rememberSaveable { mutableStateOf(false) }
         var askPermission by rememberSaveable { mutableStateOf(false) }

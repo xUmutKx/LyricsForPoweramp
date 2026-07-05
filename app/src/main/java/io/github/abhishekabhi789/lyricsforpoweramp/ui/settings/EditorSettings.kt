@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -37,12 +36,11 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) {
-    SettingsGroup(
-        title = stringResource(R.string.settings_editor_label),
-        icon = Icons.Default.EditNote,
-        modifier = modifier
-    ) {
+fun EditorSettings(
+    modifier: Modifier = Modifier,
+    viewmodel: SettingsViewModel
+) {
+    SettingsPage(modifier = modifier) {
         var showAiProvidersSettings by remember { mutableStateOf(false) }
         Row(verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = { showAiProvidersSettings = !showAiProvidersSettings }) {

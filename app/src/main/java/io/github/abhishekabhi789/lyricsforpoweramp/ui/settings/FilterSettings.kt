@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,12 +19,11 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.TextInputWithCh
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @Composable
-fun FilterSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) {
-    SettingsGroup(
-        modifier = modifier,
-        title = stringResource(R.string.settings_filter_label),
-        icon = Icons.Default.FilterAlt
-    ) {
+fun FilterSettings(
+    modifier: Modifier = Modifier,
+    viewmodel: SettingsViewModel
+) {
+    SettingsPage(modifier = modifier) {
         Disclaimer(
             textContent = AnnotatedString(stringResource(R.string.settings_filter_description)),
             icon = Icons.Default.Info,

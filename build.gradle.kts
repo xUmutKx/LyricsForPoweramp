@@ -9,6 +9,7 @@ plugins {
 buildscript {
     dependencies {
         classpath(libs.oss.licenses.plugin)
+        classpath(libs.navigation.safeargs)
     }
 }
 subprojects {

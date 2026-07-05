@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,16 +38,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity.Companion.TAG
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
-import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.getTreeDocumentId
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
@@ -57,13 +53,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 @Composable
 fun LyricsStorageSettings(
     modifier: Modifier = Modifier,
-    viewmodel: SettingsViewModel = viewModel()
+    viewmodel: SettingsViewModel
 ) {
     val context = LocalContext.current
-    SettingsGroup(
-        title = stringResource(R.string.settings_lyrics_storage_label),
-        icon = Icons.Default.Storage
-    ) {
+    SettingsPage(modifier = modifier) {
         BasicSettings(
             label = stringResource(R.string.settings_send_to_poweramp_label),
             description = stringResource(R.string.settings_send_to_poweramp_description)
@@ -171,7 +164,7 @@ fun LyricsStorageSettings(
                 viewmodel.saveNewUri(uri)
             }
         }
-        Column(modifier = modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             Text(
                 text = stringResource(R.string.settings_add_folder),
@@ -248,6 +241,7 @@ fun LyricsStorageSettings(
                 )
             }
         }
+
         accessRequestedPath?.let { pathUri ->
             PermissionDialog(
                 explanation = stringResource(
@@ -262,13 +256,5 @@ fun LyricsStorageSettings(
                 }
             )
         }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun PreviewStorageAccess() {
-    LyricsForPowerAmpTheme {
-        LyricsStorageSettings()
     }
 }

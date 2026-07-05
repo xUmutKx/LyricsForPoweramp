@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     id("kotlin-parcelize")
     id("com.google.android.gms.oss-licenses-plugin")
+    id("androidx.navigation.safeargs.kotlin")
 }
 val appVersionCode = 24
 val appVersionName = "3.0"
@@ -91,6 +92,8 @@ dependencies {
     implementation(libs.hilt.work)
     ksp(libs.hilt.android.compiler)
     ksp(libs.hilt.compiler)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.navigation.compose)
     implementation(libs.accompanist.permissions)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.viewmodel.compose)

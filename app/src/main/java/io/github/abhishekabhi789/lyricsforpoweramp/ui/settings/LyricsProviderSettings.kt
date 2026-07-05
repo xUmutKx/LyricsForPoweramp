@@ -4,7 +4,6 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CloudCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,12 +25,11 @@ import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @Composable
-fun LyricsProviderSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) {
-    SettingsGroup(
-        modifier = modifier,
-        title = stringResource(R.string.settings_lyrics_providers_label),
-        icon = Icons.Default.CloudCircle
-    ) {
+fun LyricsProviderSettings(
+    modifier: Modifier = Modifier,
+    viewmodel: SettingsViewModel
+) {
+    SettingsPage(modifier = modifier) {
         val resources = LocalResources.current
         val defaultApiName = stringResource(R.string.settings_lyrics_providers_default_api_url)
         val lrclibInstances by viewmodel.lrclibApiInstances.collectAsStateWithLifecycle()

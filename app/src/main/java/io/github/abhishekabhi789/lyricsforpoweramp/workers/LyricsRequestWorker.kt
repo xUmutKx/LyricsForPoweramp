@@ -25,13 +25,15 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
-import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsSection
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsCategory
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.json.Json
 import java.io.File
+import kotlin.time.Duration.Companion.seconds
 
 @HiltWorker
 class LyricsRequestWorker @AssistedInject constructor(
@@ -78,12 +80,13 @@ class LyricsRequestWorker @AssistedInject constructor(
         if (!sendToPoweramp && !saveToStorage && !embedIntoFile) {
             Log.e(TAG, "handleLyricsRequest: all saving options are disabled")
             val extras = Bundle().apply {
-                putInt(SettingsActivity.EXTRA_SETTINGS_SECTION, SettingsSection.STORAGE.ordinal)
+                val navData = Json.encodeToString<SettingsCategory>(SettingsCategory.Storage())
+                putString(SettingsActivity.EXTRA_NAV_DATA, navData)
             }
             notificationHelper.postSettingsChangeRequest(
                 title = getString(R.string.notification_no_saving_method_title),
                 text = getString(R.string.notification_no_saving_method_description),
-                intentAction = SettingsActivity.ACTION_OPEN_SETTINGS,
+                intentAction = SettingsActivity.ACTION_OPEN_SETTING,
                 extras = extras
             )
             return Result.failure()
@@ -166,14 +169,16 @@ class LyricsRequestWorker @AssistedInject constructor(
                 else -> null
             }
             notificationText?.let {
+                val storagePathData = SettingsCategory.Storage(accessRequestedPath = path)
                 val extras = Bundle().apply {
-                    putInt(SettingsActivity.EXTRA_SETTINGS_SECTION, SettingsSection.STORAGE.ordinal)
-                    putString(SettingsActivity.EXTRA_REQUIRED_PATH, path)
+                    val navData =
+                        runCatching { Json.encodeToString<SettingsCategory>(storagePathData) }.getOrNull()
+                    putString(SettingsActivity.EXTRA_NAV_DATA, navData)
                 }
                 notificationHelper.postSettingsChangeRequest(
                     title = mContext.getString(R.string.notification_storage_access_needed_title),
                     text = it,
-                    intentAction = SettingsActivity.ACTION_FOLDER_ACCESS_REQUEST,
+                    intentAction = SettingsActivity.ACTION_OPEN_SETTING,
                     extras = extras
                 )
             }
@@ -240,7 +245,7 @@ class LyricsRequestWorker @AssistedInject constructor(
         private const val TAG = "LyricsRequestWorker"
         const val MANUAL_SEARCH_ACTION =
             "io.github.abhishekabhi789.lyricsforpoweramp.MANUAL_SEARCH_ACTION"
-        const val POWERAMP_LYRICS_REQUEST_WAIT_TIMEOUT = 10_000L
+        val POWERAMP_LYRICS_REQUEST_WAIT_TIMEOUT = 10.seconds
         private const val NOTIFICATION_ID = 1
         private const val WORKER_NOTIFICATION_CHANNEL_ID = "lyrics_request_channel"
     }

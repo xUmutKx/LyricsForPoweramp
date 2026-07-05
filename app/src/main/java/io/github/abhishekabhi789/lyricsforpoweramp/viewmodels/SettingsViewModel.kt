@@ -1,6 +1,7 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
@@ -38,6 +39,7 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
     }
 
     fun setAccessRequestedPath(path: String?) {
+        Log.d(TAG, "setAccessRequestedPath: path- $path")
         _accessRequestedPath.update {
             if (path.isNullOrBlank()) null else getStorageUriFromPath(path)
         }
@@ -227,5 +229,8 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
                 (baseUri + Uri.encode("$storageId:$subPath")).toUri()
             }
         }
+    }
+    companion object{
+        private const val TAG = "SettingsViewModel"
     }
 }
