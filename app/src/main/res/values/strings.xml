@@ -136,7 +136,7 @@
     <string name="settings_preferred_lyrics_type_description">Set a default preference for synced or plain lyrics.</string>
     <string name="settings_mark_instrumental_tracks">Mark Instrumental Songs</string>
     <string name="settings_mark_instrumental_tracks_description">Tag non-vocal tracks as instrumental. Poweramp will not ask again lyrics for these tracks.</string>
-    <string name="settings_lyrics_storage_label">Lyrics Storage Settings</string>
+    <string name="settings_lyrics_storage_label">Lyrics Storage</string>
     <string name="settings_send_to_poweramp_label">Send Lyrics to Poweramp</string>
     <string name="settings_send_to_poweramp_description">Lyrics will be stored in Poweramp’s cache, allowing updates directly from the Poweramp UI.</string>
     <string name="settings_save_as_file_label">Save Lyrics as File</string>

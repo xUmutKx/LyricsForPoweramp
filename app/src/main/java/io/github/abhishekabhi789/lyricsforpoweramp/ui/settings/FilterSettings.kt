@@ -21,9 +21,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 @Composable
 fun FilterSettings(
     modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
     viewmodel: SettingsViewModel
 ) {
-    SettingsPage(modifier = modifier) {
+    SettingsPage(topbar = topbar, modifier = modifier) {
         Disclaimer(
             textContent = AnnotatedString(stringResource(R.string.settings_filter_description)),
             icon = Icons.Default.Info,

@@ -135,7 +135,7 @@
     <string name="settings_preferred_lyrics_type_description">Establece una preferencia predeterminada para letras sincronizadas o sin sincronizar.</string>
     <string name="settings_mark_instrumental_tracks">Marcar canciones instrumentales</string>
     <string name="settings_mark_instrumental_tracks_description">Marcar pistas sin voz como instrumentales. Poweramp no volverá a solicitar letras para estas pistas.</string>
-    <string name="settings_lyrics_storage_label">Ajustes de almacenamiento de letras</string>
+    <string name="settings_lyrics_storage_label">Almacenamiento de letras</string>
     <string name="settings_send_to_poweramp_label">Enviar letras a Poweramp</string>
     <string name="settings_send_to_poweramp_description">Las letras se almacenarán en la caché de Poweramp, permitiendo actualizaciones desde la interfaz de Poweramp.</string>
     <string name="settings_save_as_file_label">Guardar letras como archivo</string>

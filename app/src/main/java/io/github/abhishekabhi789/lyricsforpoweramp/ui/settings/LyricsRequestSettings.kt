@@ -47,9 +47,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 @Composable
 fun LyricsRequestSettings(
     modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
     viewmodel: SettingsViewModel
 ) {
-    SettingsPage(modifier = modifier) {
+    SettingsPage(topbar = topbar, modifier = modifier) {
         val context = LocalContext.current
         var hasNotificationPermission by rememberSaveable { mutableStateOf(false) }
         var askPermission by rememberSaveable { mutableStateOf(false) }

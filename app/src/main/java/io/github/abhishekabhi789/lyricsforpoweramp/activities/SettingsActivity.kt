@@ -54,7 +54,7 @@ class SettingsActivity : ComponentActivity() {
             LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     AppSettings(
                         navController = navController,

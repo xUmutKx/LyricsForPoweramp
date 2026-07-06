@@ -15,8 +15,12 @@ import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @Composable
-fun AppThemeSettings(modifier: Modifier = Modifier, viewmodel: SettingsViewModel) {
-    SettingsPage(modifier = modifier) {
+fun AppThemeSettings(
+    modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
+    viewmodel: SettingsViewModel
+) {
+    SettingsPage(topbar = topbar, modifier = modifier) {
         var expanded by remember { mutableStateOf(false) }
         val currentTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
         val allThemes = remember { AppPreference.getThemes() }

@@ -38,9 +38,10 @@ import kotlinx.coroutines.withContext
 @Composable
 fun EditorSettings(
     modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
     viewmodel: SettingsViewModel
 ) {
-    SettingsPage(modifier = modifier) {
+    SettingsPage(topbar = topbar, modifier = modifier) {
         var showAiProvidersSettings by remember { mutableStateOf(false) }
         Row(verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = { showAiProvidersSettings = !showAiProvidersSettings }) {

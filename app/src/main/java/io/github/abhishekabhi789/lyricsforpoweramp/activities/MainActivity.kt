@@ -95,7 +95,7 @@ class MainActivity : ComponentActivity() {
                     FirstTimeInfoDialog(onDismiss = { viewModel.setFirstTimeInfoShown(true) })
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     LaunchedEffect(Unit) {
                         viewModel.updateLaunchIntent(intent)

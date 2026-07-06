@@ -1,8 +1,12 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ElevatedCard
@@ -15,12 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun MainListItem(
+fun SharedTransitionScope.MainListItem(
     modifier: Modifier = Modifier,
     label: String,
     description: String,
     icon: ImageVector,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onClick: () -> Unit
 ) {
     ElevatedCard(onClick = onClick, modifier = modifier) {
@@ -31,7 +37,13 @@ fun MainListItem(
                 Text(
                     text = label,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .fillMaxWidth()//to ensure the visibility of full label in sh.el.anim
+                        .sharedElement(
+                            sharedContentState = rememberSharedContentState(key = "text_$label"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
                 )
                 Text(
                     text = description, style = MaterialTheme.typography.bodySmall,

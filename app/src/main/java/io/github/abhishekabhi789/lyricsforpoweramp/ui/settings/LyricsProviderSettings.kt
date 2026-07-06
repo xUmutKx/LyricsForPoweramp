@@ -27,9 +27,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 @Composable
 fun LyricsProviderSettings(
     modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
     viewmodel: SettingsViewModel
 ) {
-    SettingsPage(modifier = modifier) {
+    SettingsPage(topbar = topbar, modifier = modifier) {
         val resources = LocalResources.current
         val defaultApiName = stringResource(R.string.settings_lyrics_providers_default_api_url)
         val lrclibInstances by viewmodel.lrclibApiInstances.collectAsStateWithLifecycle()

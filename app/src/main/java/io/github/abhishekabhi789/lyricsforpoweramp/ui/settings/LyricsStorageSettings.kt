@@ -53,10 +53,11 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 @Composable
 fun LyricsStorageSettings(
     modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
     viewmodel: SettingsViewModel
 ) {
     val context = LocalContext.current
-    SettingsPage(modifier = modifier) {
+    SettingsPage(topbar = topbar, modifier = modifier) {
         BasicSettings(
             label = stringResource(R.string.settings_send_to_poweramp_label),
             description = stringResource(R.string.settings_send_to_poweramp_description)
