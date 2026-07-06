@@ -149,11 +149,14 @@
     <string name="settings_embed_into_song_file_description">Incrusta las letras directamente en el archivo de audio.</string>
     <string name="settings_add_folder">Selecciona las carpetas donde están tus archivos de música.</string>
     <string name="settings_add_folder_list_title">Carpetas seleccionadas</string>
+    <string name="settings_add_custom_folder_title">Carpetas seleccionadas personalizadas</string>
     <string name="settings_add_folder_add_new">Elegir carpeta</string>
     <string name="settings_add_folder_button_grant_access">Conceder acceso</string>
     <string name="settings_add_folder_button_remove">Quitar</string>
     <string name="settings_add_folder_empty_list">No hay carpetas seleccionadas</string>
     <string name="settings_add_folder_permission_explanation">Necesitas conceder permiso para acceder a %1$s para guardar letras.</string>
+    <string name="settings_poweramp_folders">Carpetas de música de Poweramp</string>
+    <string name="settings_folder_access_granted">Acceso concedido</string>
     <string name="settings_lyrics_providers_label">Proveedores de letras</string>
     <string name="settings_lyrics_providers_description">Configura dónde se obtendrán las letras.</string>
     <string name="settings_lyrics_providers_modify_lrclib_api_label">URLs de la API de Lrclib</string>

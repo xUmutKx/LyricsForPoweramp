@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -193,7 +194,9 @@ fun AppSettings(
                 }
                 composable<SettingsCategory.Storage> { backStackEntry ->
                     val navData = backStackEntry.toRoute<SettingsCategory.Storage>()
-                    viewmodel.setAccessRequestedPath(navData.accessRequestedPath)
+                    LaunchedEffect(navData.accessRequestedPath) {
+                        viewmodel.setAccessRequestedPath(navData.accessRequestedPath)
+                    }
                     LyricsStorageSettings(
                         viewmodel = viewmodel,
                         topbar = {

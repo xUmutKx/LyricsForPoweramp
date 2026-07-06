@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.viewmodels
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
@@ -8,7 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProvider
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
+import io.github.abhishekabhi789.lyricsforpoweramp.model.PowerampFolder
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.FilterType
@@ -25,7 +28,10 @@ import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val appPreference: AppPreference) :
+class SettingsViewModel @Inject constructor(
+    private val appPreference: AppPreference,
+    private val powerampApiHelper: PowerampApiHelper
+) :
     ViewModel() {
     val appTheme = appPreference.appTheme
 
@@ -123,6 +129,15 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
     fun setEmbedLyricsIntoFile(enabled: Boolean) {
         viewModelScope.launch {
             appPreference.setPreference(AppPreference.EMBED_LYRICS_AS_TAG, enabled)
+        }
+    }
+
+    private val _powerampFolders = MutableStateFlow<List<PowerampFolder>>(emptyList())
+    val powerampFolders = _powerampFolders.asStateFlow()
+
+    fun loadPowerampFolders(context: Context) {
+        viewModelScope.launch {
+            _powerampFolders.value = powerampApiHelper.getPowerampFolders(context)
         }
     }
 
@@ -230,7 +245,8 @@ class SettingsViewModel @Inject constructor(private val appPreference: AppPrefer
             }
         }
     }
-    companion object{
+
+    companion object {
         private const val TAG = "SettingsViewModel"
     }
 }

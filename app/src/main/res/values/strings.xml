@@ -150,11 +150,14 @@
     <string name="settings_embed_into_song_file_description">Embed the lyrics directly into the music file.</string>
     <string name="settings_add_folder">Select folders where your music files are stored.</string>
     <string name="settings_add_folder_list_title">Selected Folders</string>
+    <string name="settings_add_custom_folder_title">Custom Selected Folders</string>
     <string name="settings_add_folder_add_new">Choose Folder</string>
     <string name="settings_add_folder_button_grant_access">Grant Access</string>
     <string name="settings_add_folder_button_remove">Remove</string>
     <string name="settings_add_folder_empty_list">No folders selected</string>
-    <string name="settings_add_folder_permission_explanation">"You need to grant permission to access %1$s to save lyrics.</string>
+    <string name="settings_add_folder_permission_explanation">You need to grant permission to access %1$s to save lyrics.</string>
+    <string name="settings_poweramp_folders">Music folders from Poweramp</string>
+    <string name="settings_folder_access_granted">Access Granted</string>
     <string name="settings_lyrics_providers_label">Lyrics Providers</string>
     <string name="settings_lyrics_providers_description">Configure where lyrics are fetched from.</string>
     <string name="settings_lyrics_providers_modify_lrclib_api_label">Lrclib API URLs</string>

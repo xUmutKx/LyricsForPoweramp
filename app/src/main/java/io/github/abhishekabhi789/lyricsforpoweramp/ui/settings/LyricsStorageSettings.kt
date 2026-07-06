@@ -10,14 +10,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,13 +33,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity.Companion.TAG
-import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.getTreeDocumentId
@@ -52,9 +47,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LyricsStorageSettings(
-    modifier: Modifier = Modifier,
-    topbar: @Composable (() -> Unit),
-    viewmodel: SettingsViewModel
+    modifier: Modifier = Modifier, topbar: @Composable (() -> Unit), viewmodel: SettingsViewModel
 ) {
     val context = LocalContext.current
     SettingsPage(topbar = topbar, modifier = modifier) {
@@ -154,6 +147,12 @@ fun LyricsStorageSettings(
 
         val accessRequestedPath by viewmodel.accessRequestedPath.collectAsStateWithLifecycle()
         val savedUris by viewmodel.savedUris.collectAsStateWithLifecycle()
+        val powerampFolders by viewmodel.powerampFolders.collectAsStateWithLifecycle()
+
+        LaunchedEffect(Unit) {
+            viewmodel.loadPowerampFolders(context)
+        }
+
         val pickFolderLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree()
         ) { uri ->
@@ -165,82 +164,128 @@ fun LyricsStorageSettings(
                 viewmodel.saveNewUri(uri)
             }
         }
-        Column(modifier = Modifier.fillMaxWidth()) {
+        if (powerampFolders.isNotEmpty()) {
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             Text(
-                text = stringResource(R.string.settings_add_folder),
-                style = MaterialTheme.typography.bodySmall,
+                text = stringResource(R.string.settings_poweramp_folders),
+                style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
                     .padding(bottom = 8.dp)
             )
-            val onPermissionRequest = {
-                runCatching { pickFolderLauncher.launch(null) }.exceptionOrNull()?.let {
-                    Log.e(TAG, "LyricsStorageSettings: request failed", it)
-                    Toast(context).run {
-                        setText(R.string.failed_to_open_folder_picker)
-                        duration = Toast.LENGTH_SHORT
-                        show()
-                    }
-                }
-                Unit
-            }
-            BasicSettings(label = stringResource(R.string.settings_add_folder_list_title)) { interactionSource ->
-                LaunchedEffect(interactionSource) {
-                    interactionSource.interactions.collect { interaction ->
-                        if (interaction is PressInteraction.Release) {
-                            onPermissionRequest()
-                        }
-                    }
-                }
-                TextButton(onClick = { onPermissionRequest() }) {
-                    Icon(Icons.Default.AddCircle, null)
-                    Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.settings_add_folder_add_new))
-                }
-            }
-            if (savedUris.isNotEmpty()) {
-                for ((i, uri) in savedUris.withIndex()) {
-                    val path by remember(uri) { derivedStateOf { uri.getTreeDocumentId() } }
-                    val folderAccessState = rememberFolderAccess(path)
-                    val onPermissionRequest = { folderAccessState.requestAccess() }
+            powerampFolders.forEach { folder ->
+                val normalizedPath = StorageHelper.normalizeToDocumentId(folder.path)
+                if (normalizedPath != null) {
+                    val folderAccessState = rememberFolderAccess(normalizedPath)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp)
                     ) {
-                        Text("${i + 1}.", modifier = Modifier.padding(end = 8.dp))
-                        Text(
-                            path,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        if (!folderAccessState.hasPermission) {
-                            TextButton(onClick = onPermissionRequest) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Text(folder.name, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                folder.path,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                        if (folderAccessState.hasPermission) {
+                            IconButton(
+                                enabled = folderAccessState.isRemovable,
+                                onClick = folderAccessState::revokeAccess
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = stringResource(R.string.settings_add_folder_button_remove),
+                                    tint = Color.Red.copy(alpha = if (folderAccessState.isRemovable) 0.7f else 0.4f)
+                                )
+                            }
+                        } else {
+                            TextButton(onClick = folderAccessState::requestAccess) {
                                 Text(stringResource(R.string.settings_add_folder_button_grant_access))
                             }
                         }
-                        IconButton(onClick = {
-                            folderAccessState.revokeAccess()
-                            viewmodel.removeUri(uri)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = stringResource(R.string.settings_add_folder_button_remove),
-                                tint = Color.Red.copy(alpha = 0.7f)
-                            )
-                        }
                     }
                 }
-            } else {
-                Disclaimer(
-                    textContent = AnnotatedString(stringResource(R.string.settings_add_folder_empty_list)),
-                    icon = Icons.Default.Error,
-                    foregroundColor = MaterialTheme.colorScheme.onErrorContainer,
-                    backgroundColor = MaterialTheme.colorScheme.errorContainer
-                )
             }
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        Text(
+            text = stringResource(R.string.settings_add_folder),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .padding(bottom = 8.dp)
+        )
+        val onPermissionRequest = {
+            runCatching { pickFolderLauncher.launch(null) }.exceptionOrNull()?.let {
+                Log.e(TAG, "LyricsStorageSettings: request failed", it)
+                Toast(context).run {
+                    setText(R.string.failed_to_open_folder_picker)
+                    duration = Toast.LENGTH_SHORT
+                    show()
+                }
+            }
+            Unit
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = stringResource(R.string.settings_add_custom_folder_title),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.weight(1f)
+            )
+            TextButton(onClick = onPermissionRequest) {
+                Text(stringResource(R.string.settings_add_folder_add_new))
+            }
+        }
+        if (savedUris.isNotEmpty()) {
+            val addedUris by remember(savedUris, powerampFolders) {
+                derivedStateOf {
+                    savedUris.filter { uri ->
+                        powerampFolders.none { it.path.removeSuffix("/") == uri.getTreeDocumentId() }
+                    }
+                }
+            }
+            for ((i, uri) in addedUris.withIndex()) {
+                val path by remember(uri) { derivedStateOf { uri.getTreeDocumentId() } }
+                val folderAccessState = rememberFolderAccess(path)
+                val onPermissionRequest = { folderAccessState.requestAccess() }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    Text("${i + 1}.", modifier = Modifier.padding(end = 8.dp))
+                    Text(
+                        path,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (!folderAccessState.hasPermission) {
+                        TextButton(onClick = onPermissionRequest) {
+                            Text(stringResource(R.string.settings_add_folder_button_grant_access))
+                        }
+                    }
+                    IconButton(onClick = folderAccessState::revokeAccess) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.settings_add_folder_button_remove),
+                            tint = Color.Red.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
+        } else {
+            Text(
+                text = stringResource(R.string.settings_add_folder_empty_list),
+            )
         }
 
         accessRequestedPath?.let { pathUri ->

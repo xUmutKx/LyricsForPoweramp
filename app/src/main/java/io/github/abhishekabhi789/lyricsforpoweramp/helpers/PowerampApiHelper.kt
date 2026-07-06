@@ -3,15 +3,21 @@ package io.github.abhishekabhi789.lyricsforpoweramp.helpers
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.core.database.getLongOrNull
+import androidx.core.database.getStringOrNull
 import com.maxmpz.poweramp.player.PowerampAPI
+import com.maxmpz.poweramp.player.TableDefs
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.di.ApplicationScope
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
+import io.github.abhishekabhi789.lyricsforpoweramp.model.PowerampFolder
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.FilterType
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -126,8 +132,41 @@ class PowerampApiHelper @Inject constructor(
         }
     }
 
+    suspend fun getPowerampFolders(context: Context): List<PowerampFolder> =
+        withContext(Dispatchers.IO) {
+            val folders = mutableListOf<PowerampFolder>()
+            val uri = PowerampAPI.ROOT_URI.buildUpon().appendPath("folders").build()
+            try {
+                context.contentResolver.query(uri, FOLDER_TABLE_PROJECTION, null, null, null)
+                    ?.use { cursor ->
+                        val idIndex = cursor.getColumnIndex(FOLDER_TABLE_COL_ID)
+                        val nameIndex = cursor.getColumnIndex(FOLDER_TABLE_COL_NAME)
+                        val pathIndex = cursor.getColumnIndex(FOLDER_TABLE_COL_PATH)
+                        while (cursor.moveToNext()) {
+                            val id = cursor.getLongOrNull(idIndex) ?: PowerampAPI.ID_NO_ID
+                            val name = cursor.getStringOrNull(nameIndex)
+                            val path = cursor.getStringOrNull(pathIndex)?.replaceFirst("/", ":")
+                            if (name != null && path != null) {
+                                folders.add(PowerampFolder(id, name, path))
+                            }
+                        }
+                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "getPowerampFolders: failed to query folders", e)
+            }
+            return@withContext folders
+        }
+
     companion object {
         private const val TAG = "PowerampApiHelper"
+        private const val FOLDER_TABLE_COL_ID = "_id"
+        private const val FOLDER_TABLE_COL_NAME = "name"
+        private const val FOLDER_TABLE_COL_PATH = "path"
+        private val FOLDER_TABLE_PROJECTION = arrayOf(
+            "${TableDefs.Folders._ID} AS $FOLDER_TABLE_COL_ID",
+            "${TableDefs.Folders.NAME} AS $FOLDER_TABLE_COL_NAME",
+            "${TableDefs.Folders.PATH} AS $FOLDER_TABLE_COL_PATH"
+        )
         const val INSTRUMENTAL_MARKING = "Instrumental Track" +
                 """
                   .♫♫♫.
