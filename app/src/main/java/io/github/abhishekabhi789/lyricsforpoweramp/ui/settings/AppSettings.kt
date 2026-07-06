@@ -120,48 +120,48 @@ fun AppSettings(
                         ) {
                             item(key = 1) {
                                 MainListItem(
-                                    label = res.getString(R.string.settings_app_theme_label),
-                                    description = "Customize the App UI",
+                                    label = stringResource(R.string.settings_app_ui_label),
+                                    description = stringResource(R.string.settings_app_ui_description),
                                     icon = Icons.Default.ColorLens,
                                     animatedVisibilityScope = this@composable,
                                     onClick = { navController.navigate(SettingsCategory.Theme) })
                             }
                             item(key = 2) {
                                 MainListItem(
-                                    label = res.getString(R.string.settings_lyrics_request_label),
-                                    description = "Configure how lyrics are requested from Poweramp",
+                                    label = stringResource(R.string.settings_lyrics_request_label),
+                                    description = stringResource(R.string.settings_lyrics_request_description),
                                     icon = Icons.Default.Lyrics,
                                     animatedVisibilityScope = this@composable,
                                     onClick = { navController.navigate(SettingsCategory.Request) })
                             }
                             item(key = 3) {
                                 MainListItem(
-                                    label = res.getString(R.string.settings_lyrics_storage_label),
-                                    description = "Manage where and how lyrics files are saved",
+                                    label = stringResource(R.string.settings_lyrics_storage_label),
+                                    description = stringResource(R.string.settings_lyrics_storage_description),
                                     icon = Icons.Default.Storage,
                                     animatedVisibilityScope = this@composable,
                                     onClick = { navController.navigate(SettingsCategory.Storage()) })
                             }
                             item(key = 4) {
                                 MainListItem(
-                                    label = res.getString(R.string.settings_lyrics_providers_label),
-                                    description = "Change lyrics providers",
+                                    label = stringResource(R.string.settings_lyrics_providers_label),
+                                    description = stringResource(R.string.settings_lyrics_providers_description),
                                     icon = Icons.Default.CloudCircle,
                                     animatedVisibilityScope = this@composable,
                                     onClick = { navController.navigate(SettingsCategory.LyricsProvider) })
                             }
                             item(key = 5) {
                                 MainListItem(
-                                    label = res.getString(R.string.settings_editor_label),
-                                    description = "Personalize the lyrics editing experience",
+                                    label = stringResource(R.string.settings_editor_label),
+                                    description = stringResource(R.string.settings_editor_description),
                                     icon = Icons.Default.EditNote,
                                     animatedVisibilityScope = this@composable,
                                     onClick = { navController.navigate(SettingsCategory.Editor) })
                             }
                             item(key = 6) {
                                 MainListItem(
-                                    label = res.getString(R.string.settings_filter_label),
-                                    description = "Automatically filter search parameters",
+                                    label = stringResource(R.string.settings_filter_label),
+                                    description = stringResource(R.string.settings_filter_description),
                                     icon = Icons.Default.FilterAlt,
                                     animatedVisibilityScope = this@composable,
                                     onClick = { navController.navigate(SettingsCategory.Filter) })
@@ -175,7 +175,7 @@ fun AppSettings(
                         topbar = {
                             SettingsTopbar(
                                 animatedVisibilityScope = this@composable,
-                                title = res.getString(R.string.settings_app_theme_label)
+                                title = res.getString(R.string.settings_app_ui_label)
                             ) { navController.popBackStack() }
                         }
                     )

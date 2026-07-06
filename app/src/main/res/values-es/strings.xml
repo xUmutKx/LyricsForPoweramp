@@ -109,12 +109,14 @@
 
     <!-- settings activity -->
     <string name="top_bar_settings">Configuración</string>
-    <string name="settings_app_theme_label">Tema</string>
+    <string name="settings_app_ui_label">Tema</string>
+    <string name="settings_app_ui_description">Personaliza la interfaz de la app</string>
     <string name="settings_app_theme_description">Tema de la aplicación</string>
     <string name="settings_theme_auto_label">Predeterminado del sistema</string>
     <string name="settings_theme_light_label">Tema claro</string>
     <string name="settings_theme_dark_label">Tema oscuro</string>
     <string name="settings_lyrics_request_label">Solicitudes de letras</string>
+    <string name="settings_lyrics_request_description">Configura cómo las solicitudes de letras de Poweramp se manejan</string>
     <string name="settings_fallback_to_search_label">Usar búsqueda amplia como respaldo</string>
     <string name="settings_fallback_to_search_description">Si no se puede obtener una coincidencia exacta, se realizará una búsqueda más amplia.\nNota: esto puede devolver letras incorrectas en ocasiones.</string>
     <string name="settings_notification_permission_label">Permiso de notificaciones</string>
@@ -136,6 +138,7 @@
     <string name="settings_mark_instrumental_tracks">Marcar canciones instrumentales</string>
     <string name="settings_mark_instrumental_tracks_description">Marcar pistas sin voz como instrumentales. Poweramp no volverá a solicitar letras para estas pistas.</string>
     <string name="settings_lyrics_storage_label">Almacenamiento de letras</string>
+    <string name="settings_lyrics_storage_description">Administra dónde y cómo se guardarán las letras.</string>
     <string name="settings_send_to_poweramp_label">Enviar letras a Poweramp</string>
     <string name="settings_send_to_poweramp_description">Las letras se almacenarán en la caché de Poweramp, permitiendo actualizaciones desde la interfaz de Poweramp.</string>
     <string name="settings_save_as_file_label">Guardar letras como archivo</string>
@@ -152,6 +155,7 @@
     <string name="settings_add_folder_empty_list">No hay carpetas seleccionadas</string>
     <string name="settings_add_folder_permission_explanation">Necesitas conceder permiso para acceder a %1$s para guardar letras.</string>
     <string name="settings_lyrics_providers_label">Proveedores de letras</string>
+    <string name="settings_lyrics_providers_description">Configura dónde se obtendrán las letras.</string>
     <string name="settings_lyrics_providers_modify_lrclib_api_label">URLs de la API de Lrclib</string>
     <string name="settings_lyrics_providers_modify_lrclib_api_description">Agrega endpoints personalizados de servidores Lrclib. Solo se admiten APIs compatibles con Lrclib debido a diferencias en el formato de respuesta.</string>
     <string name="settings_lyrics_providers_default_api_url">API predeterminada</string>
@@ -162,6 +166,7 @@
     <string name="settings_lyrics_providers_selected_lrclib_api_label">API activa de Lrclib</string>
     <string name="settings_lyrics_providers_selected_lrclib_api_description">Esta API del servidor se usará para todas las futuras solicitudes de letras.</string>
     <string name="settings_editor_label">Editor de letras</string>
+    <string name="settings_editor_description">Personaliza la experiencia de edición de letras</string>
     <string name="settings_editor_api_keys_list">Claves API</string>
     <string name="settings_editor_api_keys_disclaimer">Necesita agregar su propia clave API para usar esta función. Esto mantiene la aplicación gratuita y evita límites de uso pagado. Su clave se almacena únicamente en su dispositivo; nunca se recopila ni se comparte.</string>
     <string name="settings_editor_ai_provider_settings_label">Configuración de proveedores de IA</string>
@@ -176,7 +181,8 @@
     <string name="settings_timestamp_step_summary">Cantidad de tiempo para desplazar las marcas temporales con cada pulsación de + o −.</string>
     <string name="settings_timestamp_step_dropdown_item">%1$d centisegundos</string>
     <string name="settings_filter_label">Filtros</string>
-    <string name="settings_filter_description">Estas palabras se eliminarán de los campos correspondientes durante el procesamiento. No distingue mayúsculas. Soporta expresiones regulares (regex).</string>
+    <string name="settings_filter_description">Personaliza los filtros de búsqueda</string>
+    <string name="settings_filter_detailed_description">Estas palabras se eliminarán de los campos correspondientes durante el procesamiento. No distingue mayúsculas. Soporta expresiones regulares (regex).</string>
     <string name="settings_filter_title_label">Filtro de título</string>
     <string name="settings_filter_artists_label">Filtro de artistas</string>
     <string name="settings_filter_album_label">Filtro de álbum</string>

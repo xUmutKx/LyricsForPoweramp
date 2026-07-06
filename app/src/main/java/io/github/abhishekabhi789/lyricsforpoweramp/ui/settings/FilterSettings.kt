@@ -26,7 +26,7 @@ fun FilterSettings(
 ) {
     SettingsPage(topbar = topbar, modifier = modifier) {
         Disclaimer(
-            textContent = AnnotatedString(stringResource(R.string.settings_filter_description)),
+            textContent = AnnotatedString(stringResource(R.string.settings_filter_detailed_description)),
             icon = Icons.Default.Info,
             modifier = Modifier.padding(8.dp)
         )
