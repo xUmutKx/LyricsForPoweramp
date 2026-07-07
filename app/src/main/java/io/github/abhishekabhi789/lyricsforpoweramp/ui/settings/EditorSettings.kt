@@ -1,103 +1,90 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProvider
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorSettings(
+private fun EditorSettingsContent(
     modifier: Modifier = Modifier,
     topbar: @Composable (() -> Unit),
-    viewmodel: SettingsViewModel
+    timestampDelta: Int,
+    onTimestampDeltaChange: (Int) -> Unit,
+    getAiProviderApiKey: suspend (AiProvider) -> String?,
+    onAiProviderApiKeyChange: (AiProvider, String) -> Unit,
+    getAiProviderModelFlow: (AiProvider) -> kotlinx.coroutines.flow.StateFlow<String>,
+    onAiProviderModelChange: (AiProvider, String) -> Unit
 ) {
-    SettingsPage(topbar = topbar, modifier = modifier) {
-        var showAiProvidersSettings by remember { mutableStateOf(false) }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { showAiProvidersSettings = !showAiProvidersSettings }) {
-                Text(
-                    text = stringResource(R.string.settings_editor_ai_provider_settings_label),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(Modifier.weight(1f))
-                ExposedDropdownMenuDefaults.TrailingIcon(showAiProvidersSettings)
+    SettingsPageLayout(topbar = topbar, modifier = modifier) {
+        Text(
+            text = stringResource(R.string.settings_editor_ai_provider_settings_label),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Disclaimer(
+            textContent = AnnotatedString(stringResource(R.string.settings_editor_api_keys_disclaimer)),
+            icon = Icons.Default.Info,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+        AiProvider.entries.forEach { provider ->
+            val (configUrl, modelsUrl) = when (provider) {
+                AiProvider.GEMINI -> "https://ai.google.dev/gemini-api/docs" to "https://ai.google.dev/gemini-api/docs/models"
+                AiProvider.OPENROUTER -> "https://openrouter.ai/" to "https://openrouter.ai/models?output_modalities=text"
             }
-        }
-        AnimatedVisibility(showAiProvidersSettings) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Disclaimer(
-                    textContent = AnnotatedString(stringResource(R.string.settings_editor_api_keys_disclaimer)),
-                    icon = Icons.Default.Info,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-                AiProvider.entries.forEach { provider ->
-                    val (configUrl, modelsUrl) = when (provider) {
-                        AiProvider.GEMINI -> "https://ai.google.dev/gemini-api/docs" to "https://ai.google.dev/gemini-api/docs/models"
-                        AiProvider.OPENROUTER -> "https://openrouter.ai/" to "https://openrouter.ai/models?output_modalities=text"
-                    }
-                    val providerName = stringResource(provider.nameRes)
-                    Disclaimer(
-                        textContent = AnnotatedString.fromHtml(
-                            stringResource(
-                                R.string.settings_editor_api_setup_instructions_html,
-                                configUrl, providerName, modelsUrl
-                            )
-                        ),
-                        icon = Icons.Default.Info,
-                        modifier = Modifier.padding(horizontal = 8.dp)
+            val providerName = stringResource(provider.nameRes)
+            Disclaimer(
+                textContent = AnnotatedString.fromHtml(
+                    stringResource(
+                        R.string.settings_editor_api_setup_instructions_html,
+                        configUrl, providerName, modelsUrl
                     )
+                ),
+                icon = Icons.Default.Info,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
 
-                    val apiKey: String by produceState(initialValue = "", key1 = provider) {
-                        value = withContext(Dispatchers.IO) {
-                            viewmodel.getAiProviderApiKey(provider) ?: ""
-                        }
-                    }
-                    val chosenProvider by viewmodel.getAiProviderModelFlow(provider)
-                        .collectAsStateWithLifecycle()
-
-                    AiProviderConfiguration(
-                        provider = provider,
-                        apiKey = apiKey,
-                        chosenModel = chosenProvider,
-                        onModelChange = { viewmodel.setAiProviderModel(provider, it) },
-                        onKeyChange = { viewmodel.setAiProviderApiKey(provider, it) },
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+            val apiKey: String by produceState(initialValue = "", key1 = provider) {
+                value = withContext(Dispatchers.IO) {
+                    getAiProviderApiKey(provider) ?: ""
                 }
             }
+            val chosenModel by getAiProviderModelFlow(provider)
+                .collectAsStateWithLifecycle()
+
+            AiProviderConfiguration(
+                provider = provider,
+                apiKey = apiKey,
+                chosenModel = chosenModel,
+                onModelChange = { onAiProviderModelChange(provider, it) },
+                onKeyChange = { onAiProviderApiKeyChange(provider, it) },
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
         }
         BasicSettings(
             label = stringResource(R.string.settings_timestamp_step_title),
@@ -105,16 +92,59 @@ fun EditorSettings(
         ) {
             val suggestedSteps = listOf(1, 5, 10, 25, 50)
             var expanded by remember { mutableStateOf(false) }
-            val savedValue by viewmodel.timestampDelta.collectAsStateWithLifecycle()
             DropdownSettings(
                 expanded = expanded,
-                currentValue = savedValue,
+                currentValue = timestampDelta,
                 values = suggestedSteps,
                 onExpandChanged = { expanded = it },
                 getLabel = { stringResource(R.string.settings_timestamp_step_dropdown_item, it) },
-                onSelection = { viewmodel.setTimestampDelta(it) },
+                onSelection = { onTimestampDeltaChange(it) },
                 modifier = Modifier.padding(start = 4.dp)
             )
         }
+    }
+}
+
+@Composable
+fun EditorSettings(
+    modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
+    viewmodel: SettingsViewModel
+) {
+    val timestampDelta by viewmodel.timestampDelta.collectAsStateWithLifecycle()
+
+    EditorSettingsContent(
+        modifier = modifier,
+        topbar = topbar,
+        timestampDelta = timestampDelta,
+        onTimestampDeltaChange = viewmodel::setTimestampDelta,
+        getAiProviderApiKey = viewmodel::getAiProviderApiKey,
+        onAiProviderApiKeyChange = viewmodel::setAiProviderApiKey,
+        getAiProviderModelFlow = viewmodel::getAiProviderModelFlow,
+        onAiProviderModelChange = viewmodel::setAiProviderModel
+    )
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun EditorSettingsPreview() {
+    var timestampDelta by remember { mutableStateOf(10) }
+    val models = remember {
+        mutableMapOf(
+            AiProvider.GEMINI to kotlinx.coroutines.flow.MutableStateFlow("gemini-1.5-flash"),
+            AiProvider.OPENROUTER to kotlinx.coroutines.flow.MutableStateFlow("google/gemini-2.0-flash-exp:free")
+        )
+    }
+
+    LyricsForPowerAmpTheme {
+        EditorSettingsContent(
+            topbar = { TopAppBar(title = { Text("Editor Settings") }) },
+            timestampDelta = timestampDelta,
+            onTimestampDeltaChange = { timestampDelta = it },
+            getAiProviderApiKey = { "demo_key" },
+            onAiProviderApiKeyChange = { _, _ -> },
+            getAiProviderModelFlow = { models[it]!! },
+            onAiProviderModelChange = { provider, model -> models[provider]?.value = model }
+        )
     }
 }

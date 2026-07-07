@@ -1,7 +1,9 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
 
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,11 +23,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,56 +38,70 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity.Companion.TAG
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
+import io.github.abhishekabhi789.lyricsforpoweramp.model.PowerampFolder
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.getTreeDocumentId
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun LyricsStorageSettings(
-    modifier: Modifier = Modifier, topbar: @Composable (() -> Unit), viewmodel: SettingsViewModel
+private fun LyricsStorageSettingsContent(
+    modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
+    sendLyricsToPoweramp: Boolean,
+    onSendLyricsToPowerampChange: (Boolean) -> Unit,
+    saveAsFile: Boolean,
+    onSaveAsFileChange: (Boolean) -> Unit,
+    saveIdTagsInFile: Boolean,
+    onSaveIdTagsInFileChange: (Boolean) -> Unit,
+    embedIntoFile: Boolean,
+    onEmbedIntoFileChange: (Boolean) -> Unit,
+    powerampFolders: List<PowerampFolder>,
+    savedUris: List<Uri>,
+    accessRequestedPath: Uri?,
+    onAccessRequestedPathChange: (String?) -> Unit,
+    onSaveNewUri: (Uri) -> Unit,
+    onLoadPowerampFolders: (Context) -> Unit
 ) {
     val context = LocalContext.current
-    SettingsPage(topbar = topbar, modifier = modifier) {
+    SettingsPageLayout(topbar = topbar, modifier = modifier) {
         BasicSettings(
             label = stringResource(R.string.settings_send_to_poweramp_label),
             description = stringResource(R.string.settings_send_to_poweramp_description)
         ) { interactionSource ->
-            val savedChoice by viewmodel.sendLyricsToPoweramp.collectAsStateWithLifecycle()
-            val onSwitchToggle = { enabled: Boolean -> viewmodel.setSendLyricsToPoweramp(enabled) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
-                        onSwitchToggle(!savedChoice)
+                        onSendLyricsToPowerampChange(!sendLyricsToPoweramp)
                     }
                 }
             }
 
-            val accessibilityLabel = (if (savedChoice) stringResource(R.string.disable)
+            val accessibilityLabel = (if (sendLyricsToPoweramp) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_send_to_poweramp_label)}"
             }
             Switch(
-                checked = savedChoice, onCheckedChange = onSwitchToggle,
+                checked = sendLyricsToPoweramp, onCheckedChange = onSendLyricsToPowerampChange,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
-        val saveAsFile by viewmodel.saveAsFile.collectAsStateWithLifecycle()
         BasicSettings(
             label = stringResource(R.string.settings_save_as_file_label),
             description = stringResource(R.string.settings_save_as_file_description)
         ) { interactionSource ->
-            val onSwitchToggle = { enabled: Boolean -> viewmodel.setSaveAsFile(enabled) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
-                        onSwitchToggle(!saveAsFile)
+                        onSaveAsFileChange(!saveAsFile)
                     }
                 }
             }
@@ -91,22 +110,18 @@ fun LyricsStorageSettings(
                 "$it ${stringResource(R.string.settings_save_as_file_label)}"
             }
             Switch(
-                checked = saveAsFile, onCheckedChange = onSwitchToggle,
+                checked = saveAsFile, onCheckedChange = onSaveAsFileChange,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
-        val saveIdTagsInFile by viewmodel.saveIdTagsInFile.collectAsStateWithLifecycle()
         AnimatedVisibility(visible = saveAsFile) {
             BasicSettings(
                 label = stringResource(R.string.settings_save_id_tags_in_lrc_file_label),
                 description = stringResource(R.string.settings_save_id_tags_in_lrc_file_description)
             ) { interactionSource ->
-                val onSwitchToggle = { enabled: Boolean ->
-                    viewmodel.setSaveIdTagsInFile(enabled)
-                }
                 LaunchedEffect(interactionSource) {
                     interactionSource.interactions.collect { interaction ->
                         if (interaction is PressInteraction.Release) {
-                            onSwitchToggle(!saveIdTagsInFile)
+                            onSaveIdTagsInFileChange(!saveIdTagsInFile)
                         }
                     }
                 }
@@ -115,24 +130,20 @@ fun LyricsStorageSettings(
                     "$it ${stringResource(R.string.settings_save_id_tags_in_lrc_file_label)}"
                 }
                 Switch(
-                    checked = saveIdTagsInFile, onCheckedChange = onSwitchToggle,
+                    checked = saveIdTagsInFile, onCheckedChange = onSaveIdTagsInFileChange,
                     modifier = Modifier.semantics { contentDescription = accessibilityLabel }
                 )
             }
         }
 
-        val embedIntoFile by viewmodel.embedLyricsIntoFile.collectAsStateWithLifecycle()
         BasicSettings(
             label = stringResource(R.string.settings_embed_into_song_file_label),
             description = stringResource(R.string.settings_embed_into_song_file_description)
         ) { interactionSource ->
-            val onSwitchToggle = { enabled: Boolean ->
-                viewmodel.setEmbedLyricsIntoFile(enabled)
-            }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
-                        onSwitchToggle(!embedIntoFile)
+                        onEmbedIntoFileChange(!embedIntoFile)
                     }
                 }
             }
@@ -141,16 +152,12 @@ fun LyricsStorageSettings(
                     "$it ${stringResource(R.string.settings_embed_into_song_file_label)}"
                 }
             Switch(
-                checked = embedIntoFile, onCheckedChange = onSwitchToggle,
+                checked = embedIntoFile, onCheckedChange = onEmbedIntoFileChange,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
 
-        val accessRequestedPath by viewmodel.accessRequestedPath.collectAsStateWithLifecycle()
-        val savedUris by viewmodel.savedUris.collectAsStateWithLifecycle()
-        val powerampFolders by viewmodel.powerampFolders.collectAsStateWithLifecycle()
-
         LaunchedEffect(Unit) {
-            viewmodel.loadPowerampFolders(context)
+            onLoadPowerampFolders(context)
         }
 
         val pickFolderLauncher = rememberLauncherForActivityResult(
@@ -161,7 +168,7 @@ fun LyricsStorageSettings(
                     it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                viewmodel.saveNewUri(uri)
+                onSaveNewUri(uri)
             }
         }
         if (powerampFolders.isNotEmpty()) {
@@ -297,10 +304,73 @@ fun LyricsStorageSettings(
                 allowToSuppress = false,
                 onConfirm = { pickFolderLauncher.launch(pathUri) },
                 onDismiss = {
-                    viewmodel.setAccessRequestedPath(null)
+                    onAccessRequestedPathChange(null)
                     Log.w(TAG, "LyricsStorageSettings: user ignored storage access request")
                 }
             )
         }
+    }
+}
+
+@Composable
+fun LyricsStorageSettings(
+    modifier: Modifier = Modifier, topbar: @Composable (() -> Unit), viewmodel: SettingsViewModel
+) {
+    val sendLyricsToPoweramp by viewmodel.sendLyricsToPoweramp.collectAsStateWithLifecycle()
+    val saveAsFile by viewmodel.saveAsFile.collectAsStateWithLifecycle()
+    val saveIdTagsInFile by viewmodel.saveIdTagsInFile.collectAsStateWithLifecycle()
+    val embedIntoFile by viewmodel.embedLyricsIntoFile.collectAsStateWithLifecycle()
+    val accessRequestedPath by viewmodel.accessRequestedPath.collectAsStateWithLifecycle()
+    val savedUris by viewmodel.savedUris.collectAsStateWithLifecycle()
+    val powerampFolders by viewmodel.powerampFolders.collectAsStateWithLifecycle()
+
+    LyricsStorageSettingsContent(
+        modifier = modifier,
+        topbar = topbar,
+        sendLyricsToPoweramp = sendLyricsToPoweramp,
+        onSendLyricsToPowerampChange = viewmodel::setSendLyricsToPoweramp,
+        saveAsFile = saveAsFile,
+        onSaveAsFileChange = viewmodel::setSaveAsFile,
+        saveIdTagsInFile = saveIdTagsInFile,
+        onSaveIdTagsInFileChange = viewmodel::setSaveIdTagsInFile,
+        embedIntoFile = embedIntoFile,
+        onEmbedIntoFileChange = viewmodel::setEmbedLyricsIntoFile,
+        powerampFolders = powerampFolders,
+        savedUris = savedUris,
+        accessRequestedPath = accessRequestedPath,
+        onAccessRequestedPathChange = viewmodel::setAccessRequestedPath,
+        onSaveNewUri = viewmodel::saveNewUri,
+        onLoadPowerampFolders = viewmodel::loadPowerampFolders
+    )
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun LyricsStorageSettingsPreview() {
+    var sendLyricsToPoweramp by remember { mutableStateOf(true) }
+    var saveAsFile by remember { mutableStateOf(false) }
+    var saveIdTagsInFile by remember { mutableStateOf(false) }
+    var embedIntoFile by remember { mutableStateOf(false) }
+    LyricsForPowerAmpTheme {
+        LyricsStorageSettingsContent(
+            topbar = { TopAppBar(title = { Text("Lyrics Storage Settings") }) },
+            sendLyricsToPoweramp = sendLyricsToPoweramp,
+            onSendLyricsToPowerampChange = { sendLyricsToPoweramp = it },
+            saveAsFile = saveAsFile,
+            onSaveAsFileChange = { saveAsFile = it },
+            saveIdTagsInFile = saveIdTagsInFile,
+            onSaveIdTagsInFileChange = { saveIdTagsInFile = it },
+            embedIntoFile = embedIntoFile,
+            onEmbedIntoFileChange = { embedIntoFile = it },
+            powerampFolders = listOf(
+                PowerampFolder(1, "Music", "primary:Music"),
+                PowerampFolder(2, "Downloads", "primary:Download")
+            ),
+            savedUris = emptyList(),
+            accessRequestedPath = null,
+            onAccessRequestedPathChange = {},
+            onSaveNewUri = {},
+            onLoadPowerampFolders = {}
+        )
     }
 }

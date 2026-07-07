@@ -64,9 +64,7 @@ fun AiProviderConfiguration(
     val availableModels = provider.availableModels + customModelLabel
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(provider.nameRes),
             style = MaterialTheme.typography.titleMedium,

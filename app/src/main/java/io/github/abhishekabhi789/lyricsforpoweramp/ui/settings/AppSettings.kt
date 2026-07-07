@@ -78,14 +78,14 @@ fun AppSettings(
         ) {
             NavHost(
                 navController = navController,
-                startDestination = SettingsCategory.Main,
+                startDestination = SettingsPage.Main,
                 enterTransition = { slideInHorizontally { it } + fadeIn() },
                 exitTransition = { slideOutHorizontally { -it / 3 } + fadeOut() },
                 popEnterTransition = { slideInHorizontally { -it / 3 } + fadeIn() },
                 popExitTransition = { slideOutHorizontally { it } + fadeOut() },
                 modifier = Modifier.fillMaxSize()
             ) {
-                composable<SettingsCategory.Main> {
+                composable<SettingsPage.Main> {
                     Scaffold(
                         topBar = {
                             LargeTopAppBar(
@@ -125,7 +125,7 @@ fun AppSettings(
                                     description = stringResource(R.string.settings_app_ui_description),
                                     icon = Icons.Default.ColorLens,
                                     animatedVisibilityScope = this@composable,
-                                    onClick = { navController.navigate(SettingsCategory.Theme) })
+                                    onClick = { navController.navigate(SettingsPage.Theme) })
                             }
                             item(key = 2) {
                                 MainListItem(
@@ -133,7 +133,7 @@ fun AppSettings(
                                     description = stringResource(R.string.settings_lyrics_request_description),
                                     icon = Icons.Default.Lyrics,
                                     animatedVisibilityScope = this@composable,
-                                    onClick = { navController.navigate(SettingsCategory.Request) })
+                                    onClick = { navController.navigate(SettingsPage.Request) })
                             }
                             item(key = 3) {
                                 MainListItem(
@@ -141,7 +141,7 @@ fun AppSettings(
                                     description = stringResource(R.string.settings_lyrics_storage_description),
                                     icon = Icons.Default.Storage,
                                     animatedVisibilityScope = this@composable,
-                                    onClick = { navController.navigate(SettingsCategory.Storage()) })
+                                    onClick = { navController.navigate(SettingsPage.Storage()) })
                             }
                             item(key = 4) {
                                 MainListItem(
@@ -149,7 +149,7 @@ fun AppSettings(
                                     description = stringResource(R.string.settings_lyrics_providers_description),
                                     icon = Icons.Default.CloudCircle,
                                     animatedVisibilityScope = this@composable,
-                                    onClick = { navController.navigate(SettingsCategory.LyricsProvider) })
+                                    onClick = { navController.navigate(SettingsPage.LyricsProvider) })
                             }
                             item(key = 5) {
                                 MainListItem(
@@ -157,7 +157,7 @@ fun AppSettings(
                                     description = stringResource(R.string.settings_editor_description),
                                     icon = Icons.Default.EditNote,
                                     animatedVisibilityScope = this@composable,
-                                    onClick = { navController.navigate(SettingsCategory.Editor) })
+                                    onClick = { navController.navigate(SettingsPage.Editor) })
                             }
                             item(key = 6) {
                                 MainListItem(
@@ -165,12 +165,12 @@ fun AppSettings(
                                     description = stringResource(R.string.settings_filter_description),
                                     icon = Icons.Default.FilterAlt,
                                     animatedVisibilityScope = this@composable,
-                                    onClick = { navController.navigate(SettingsCategory.Filter) })
+                                    onClick = { navController.navigate(SettingsPage.Filter) })
                             }
                         }
                     }
                 }
-                composable<SettingsCategory.Theme> {
+                composable<SettingsPage.Theme> {
                     AppThemeSettings(
                         viewmodel = viewmodel,
                         topbar = {
@@ -181,7 +181,7 @@ fun AppSettings(
                         }
                     )
                 }
-                composable<SettingsCategory.Request> {
+                composable<SettingsPage.Request> {
                     LyricsRequestSettings(
                         viewmodel = viewmodel,
                         topbar = {
@@ -192,8 +192,8 @@ fun AppSettings(
                         }
                     )
                 }
-                composable<SettingsCategory.Storage> { backStackEntry ->
-                    val navData = backStackEntry.toRoute<SettingsCategory.Storage>()
+                composable<SettingsPage.Storage> { backStackEntry ->
+                    val navData = backStackEntry.toRoute<SettingsPage.Storage>()
                     LaunchedEffect(navData.accessRequestedPath) {
                         viewmodel.setAccessRequestedPath(navData.accessRequestedPath)
                     }
@@ -207,7 +207,7 @@ fun AppSettings(
                         }
                     )
                 }
-                composable<SettingsCategory.LyricsProvider> {
+                composable<SettingsPage.LyricsProvider> {
                     LyricsProviderSettings(
                         viewmodel = viewmodel,
                         topbar = {
@@ -218,7 +218,7 @@ fun AppSettings(
                         }
                     )
                 }
-                composable<SettingsCategory.Editor> {
+                composable<SettingsPage.Editor> {
                     EditorSettings(
                         viewmodel = viewmodel,
                         topbar = {
@@ -229,7 +229,7 @@ fun AppSettings(
                         }
                     )
                 }
-                composable<SettingsCategory.Filter> {
+                composable<SettingsPage.Filter> {
                     FilterSettings(
                         viewmodel = viewmodel,
                         topbar = {

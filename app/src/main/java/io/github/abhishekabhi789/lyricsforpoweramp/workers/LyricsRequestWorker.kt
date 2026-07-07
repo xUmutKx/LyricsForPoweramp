@@ -25,7 +25,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
-import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsCategory
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsPage
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -80,7 +80,7 @@ class LyricsRequestWorker @AssistedInject constructor(
         if (!sendToPoweramp && !saveToStorage && !embedIntoFile) {
             Log.e(TAG, "handleLyricsRequest: all saving options are disabled")
             val extras = Bundle().apply {
-                val navData = Json.encodeToString<SettingsCategory>(SettingsCategory.Storage())
+                val navData = Json.encodeToString<SettingsPage>(SettingsPage.Storage())
                 putString(SettingsActivity.EXTRA_NAV_DATA, navData)
             }
             notificationHelper.postSettingsChangeRequest(
@@ -169,10 +169,10 @@ class LyricsRequestWorker @AssistedInject constructor(
                 else -> null
             }
             notificationText?.let {
-                val storagePathData = SettingsCategory.Storage(accessRequestedPath = path)
+                val storagePathData = SettingsPage.Storage(accessRequestedPath = path)
                 val extras = Bundle().apply {
                     val navData =
-                        runCatching { Json.encodeToString<SettingsCategory>(storagePathData) }.getOrNull()
+                        runCatching { Json.encodeToString<SettingsPage>(storagePathData) }.getOrNull()
                     putString(SettingsActivity.EXTRA_NAV_DATA, navData)
                 }
                 notificationHelper.postSettingsChangeRequest(

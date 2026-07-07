@@ -16,7 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.AppSettings
-import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsCategory
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsPage
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
@@ -40,7 +40,7 @@ class SettingsActivity : ComponentActivity() {
                             Log.w(TAG, "onCreate: EXTRA_NAV_DATA is null or blank")
                         } else {
                             val navData =
-                                runCatching { Json.decodeFromString<SettingsCategory>(navJson) }.getOrNull()
+                                runCatching { Json.decodeFromString<SettingsPage>(navJson) }.getOrNull()
                             if (navData == null) {
                                 Log.e(TAG, "onCreate: failed to build navData from json-$navJson")
                             } else {

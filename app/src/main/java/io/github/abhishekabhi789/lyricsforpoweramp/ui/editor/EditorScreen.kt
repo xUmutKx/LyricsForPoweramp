@@ -63,7 +63,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.TaglibHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.EditorInputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Timestamp
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultBottomSheet
-import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsCategory
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsPage
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.EditorViewmodel
@@ -143,7 +143,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                             val extras = Bundle().apply {
                                 putString(
                                     SettingsActivity.EXTRA_NAV_DATA,
-                                    Json.encodeToString(SettingsCategory.Editor)
+                                    Json.encodeToString(SettingsPage.Editor)
                                 )
                             }
                             val intent = Intent(context, SettingsActivity::class.java).apply {

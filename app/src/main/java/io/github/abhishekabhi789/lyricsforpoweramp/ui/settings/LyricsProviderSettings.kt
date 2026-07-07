@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -16,27 +18,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.TextInputWithChips
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @Composable
-fun LyricsProviderSettings(
+private fun LyricsProviderSettingsContent(
     modifier: Modifier = Modifier,
     topbar: @Composable (() -> Unit),
-    viewmodel: SettingsViewModel
+    lrclibApiInstances: List<String>,
+    onLrclibApiInstancesChange: (List<String>) -> Unit,
+    selectedLrcLibInstanceUrl: String,
+    onSelectedLrcLibInstanceUrlChange: (String) -> Unit
 ) {
-    SettingsPage(topbar = topbar, modifier = modifier) {
+    SettingsPageLayout(topbar = topbar, modifier = modifier) {
         val resources = LocalResources.current
         val defaultApiName = stringResource(R.string.settings_lyrics_providers_default_api_url)
-        val lrclibInstances by viewmodel.lrclibApiInstances.collectAsStateWithLifecycle()
-        val formattedApiList by remember(lrclibInstances) {
+        val formattedApiList by remember(lrclibApiInstances) {
             derivedStateOf {
-                lrclibInstances.map {
+                lrclibApiInstances.map {
                     if (it == AppPreference.DEFAULT_API_URL) defaultApiName else it
                 }
             }
@@ -56,7 +62,7 @@ fun LyricsProviderSettings(
             onChipListChange = { newList ->
                 val list =
                     newList.map { if (it == defaultApiName) AppPreference.DEFAULT_API_URL else it }
-                viewmodel.updateLrclibInstancesList(list)
+                onLrclibApiInstancesChange(list)
             },
             onValidateInput = { input ->
                 when {
@@ -75,9 +81,8 @@ fun LyricsProviderSettings(
             description = stringResource(R.string.settings_lyrics_providers_selected_lrclib_api_description)
         ) { interactionSource ->
             var showListSelection by remember { mutableStateOf(false) }
-            val currentValue by viewmodel.selectedLrcLibInstanceUrl.collectAsStateWithLifecycle()
             val selectedValue =
-                if (currentValue == AppPreference.DEFAULT_API_URL) defaultApiName else currentValue
+                if (selectedLrcLibInstanceUrl == AppPreference.DEFAULT_API_URL) defaultApiName else selectedLrcLibInstanceUrl
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
@@ -92,11 +97,47 @@ fun LyricsProviderSettings(
                 onSelection = { selected ->
                     val url =
                         if (selected == defaultApiName) AppPreference.DEFAULT_API_URL else selected
-                    viewmodel.updateSelectedLrclibUrl(url)
+                    onSelectedLrcLibInstanceUrlChange(url)
                 },
                 onExpandChanged = { if (showListSelection) showListSelection = false },
                 getLabel = { it },
             )
         }
+    }
+}
+
+@Composable
+fun LyricsProviderSettings(
+    modifier: Modifier = Modifier,
+    topbar: @Composable (() -> Unit),
+    viewmodel: SettingsViewModel
+) {
+    val lrclibInstances by viewmodel.lrclibApiInstances.collectAsStateWithLifecycle()
+    val selectedLrcLibInstanceUrl by viewmodel.selectedLrcLibInstanceUrl.collectAsStateWithLifecycle()
+
+    LyricsProviderSettingsContent(
+        modifier = modifier,
+        topbar = topbar,
+        lrclibApiInstances = lrclibInstances,
+        onLrclibApiInstancesChange = viewmodel::updateLrclibInstancesList,
+        selectedLrcLibInstanceUrl = selectedLrcLibInstanceUrl,
+        onSelectedLrcLibInstanceUrlChange = viewmodel::updateSelectedLrclibUrl
+    )
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun LyricsProviderSettingsPreview() {
+    var lrclibInstances by remember { mutableStateOf(listOf(AppPreference.DEFAULT_API_URL)) }
+    var selectedLrcLibInstanceUrl by remember { mutableStateOf(AppPreference.DEFAULT_API_URL) }
+
+    LyricsForPowerAmpTheme {
+        LyricsProviderSettingsContent(
+            topbar = { TopAppBar(title = { Text("Lyrics Provider Settings") }) },
+            lrclibApiInstances = lrclibInstances,
+            onLrclibApiInstancesChange = { lrclibInstances = it },
+            selectedLrcLibInstanceUrl = selectedLrcLibInstanceUrl,
+            onSelectedLrcLibInstanceUrlChange = { selectedLrcLibInstanceUrl = it }
+        )
     }
 }
