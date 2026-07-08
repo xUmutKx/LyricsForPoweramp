@@ -213,10 +213,12 @@ private fun LyricsRequestSettingsContent(
             description = stringResource(R.string.settings_preferred_lyrics_type_description)
         ) { interactionSource ->
             var expanded by remember { mutableStateOf(false) }
+            var ignoreInteractions by remember { mutableStateOf(false) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
-                        expanded = !expanded
+                        if (!ignoreInteractions) expanded = !expanded
+                        ignoreInteractions = false
                     }
                 }
             }
@@ -224,8 +226,14 @@ private fun LyricsRequestSettingsContent(
                 expanded = expanded,
                 currentValue = preferredLyricsType,
                 values = listOf(LyricsType.SYNCED, LyricsType.PLAIN),
-                onSelection = onPreferredLyricsTypeChange,
-                onExpandChanged = { if (expanded) expanded = false },
+                onSelection = {
+                    onPreferredLyricsTypeChange(it)
+                    expanded = false
+                },
+                onExpandChanged = {
+                    ignoreInteractions = true
+                    expanded = it
+                },
                 getLabel = { stringResource(it.shortLabelResId) }
             )
         }

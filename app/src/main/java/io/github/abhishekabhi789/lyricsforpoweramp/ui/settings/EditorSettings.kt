@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -8,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -26,6 +28,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.Disclaimer
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,16 +92,25 @@ private fun EditorSettingsContent(
         BasicSettings(
             label = stringResource(R.string.settings_timestamp_step_title),
             description = stringResource(R.string.settings_timestamp_step_summary)
-        ) {
+        ) { interactionSource ->
             val suggestedSteps = listOf(1, 5, 10, 25, 50)
             var expanded by remember { mutableStateOf(false) }
+            var ignoreInteractions by remember { mutableStateOf(false) }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collectLatest { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        if (!ignoreInteractions) expanded = !expanded
+                        ignoreInteractions = false
+                    }
+                }
+            }
             DropdownSettings(
                 expanded = expanded,
                 currentValue = timestampDelta,
                 values = suggestedSteps,
-                onExpandChanged = { expanded = it },
+                onExpandChanged = { ignoreInteractions = true; expanded = it },
                 getLabel = { stringResource(R.string.settings_timestamp_step_dropdown_item, it) },
-                onSelection = { onTimestampDeltaChange(it) },
+                onSelection = { onTimestampDeltaChange(it); expanded = false },
                 modifier = Modifier.padding(start = 4.dp)
             )
         }

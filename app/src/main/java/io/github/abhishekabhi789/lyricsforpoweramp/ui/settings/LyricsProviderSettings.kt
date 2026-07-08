@@ -83,10 +83,12 @@ private fun LyricsProviderSettingsContent(
             var showListSelection by remember { mutableStateOf(false) }
             val selectedValue =
                 if (selectedLrcLibInstanceUrl == AppPreference.DEFAULT_API_URL) defaultApiName else selectedLrcLibInstanceUrl
+            var ignoreInteractions by remember { mutableStateOf(false) }
             LaunchedEffect(interactionSource) {
                 interactionSource.interactions.collect { interaction ->
                     if (interaction is PressInteraction.Release) {
-                        if (!showListSelection) showListSelection = true
+                        if (!ignoreInteractions) showListSelection = !showListSelection
+                        ignoreInteractions = false
                     }
                 }
             }
@@ -98,8 +100,12 @@ private fun LyricsProviderSettingsContent(
                     val url =
                         if (selected == defaultApiName) AppPreference.DEFAULT_API_URL else selected
                     onSelectedLrcLibInstanceUrlChange(url)
+                    showListSelection = false
                 },
-                onExpandChanged = { if (showListSelection) showListSelection = false },
+                onExpandChanged = {
+                    ignoreInteractions = true
+                    showListSelection = it
+                },
                 getLabel = { it },
             )
         }

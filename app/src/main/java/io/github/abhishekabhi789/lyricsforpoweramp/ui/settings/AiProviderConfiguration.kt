@@ -2,6 +2,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.airewrite.AiProvider
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun AiProviderConfiguration(
@@ -97,9 +100,18 @@ fun AiProviderConfiguration(
             text = stringResource(R.string.settings_editor_ai_model_label),
             style = MaterialTheme.typography.titleSmall
         )
-        BasicSettings(label = stringResource(R.string.settings_editor_selected_ai_model_label)) {
+        BasicSettings(label = stringResource(R.string.settings_editor_selected_ai_model_label)) { interactionSource ->
             val currentModel by remember(useCustomModel, chosenModel) {
                 derivedStateOf { if (useCustomModel) customModelLabel else chosenModel }
+            }
+            var ignoreInteractions by remember { mutableStateOf(false) }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collectLatest { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        if (!ignoreInteractions) showModelSelectionList = !showModelSelectionList
+                        ignoreInteractions = false
+                    }
+                }
             }
             DropdownSettings(
                 expanded = showModelSelectionList,
@@ -110,9 +122,13 @@ fun AiProviderConfiguration(
                     else {
                         useCustomModel = false
                         onModelChange(it)
+                        showModelSelectionList = false
                     }
                 },
-                onExpandChanged = { showModelSelectionList = it },
+                onExpandChanged = {
+                    ignoreInteractions = true
+                    showModelSelectionList = it
+                },
                 getLabel = { it })
         }
         AnimatedVisibility(useCustomModel) {

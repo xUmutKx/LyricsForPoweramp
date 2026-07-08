@@ -72,10 +72,7 @@ fun <T> DropdownSettings(
                             textColor = if (value == currentValue)
                                 MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                         ),
-                    onClick = {
-                        onSelection(value)
-                        onExpandChanged(false)
-                    },
+                    onClick = { onSelection(value) },
                 )
             }
         }

@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
+import android.content.res.Configuration
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -19,6 +20,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 private fun AppThemeSettingsContent(
@@ -28,13 +30,15 @@ private fun AppThemeSettingsContent(
     onThemeChange: (AppTheme) -> Unit
 ) {
     SettingsPageLayout(topbar = topbar, modifier = modifier) {
-        var expanded by remember { mutableStateOf(false) }
-        val allThemes = remember { AppPreference.getThemes() }
         BasicSettings(label = stringResource(R.string.settings_app_theme_description)) { interactionSource ->
+            var expanded by remember { mutableStateOf(false) }
+            var ignoreInteractions by remember { mutableStateOf(false) }
+            val allThemes = remember { AppPreference.getThemes() }
             LaunchedEffect(interactionSource) {
-                interactionSource.interactions.collect { interaction ->
+                interactionSource.interactions.collectLatest { interaction ->
                     if (interaction is PressInteraction.Release) {
-                        if (!expanded) expanded = true
+                        if (!ignoreInteractions) expanded = !expanded
+                        ignoreInteractions = false
                     }
                 }
             }
@@ -42,8 +46,14 @@ private fun AppThemeSettingsContent(
                 expanded = expanded,
                 currentValue = currentTheme,
                 values = allThemes,
-                onSelection = onThemeChange,
-                onExpandChanged = { if (expanded) expanded = false },
+                onSelection = {
+                    onThemeChange(it)
+                    expanded = false
+                },
+                onExpandChanged = {
+                    ignoreInteractions = true
+                    expanded = it
+                },
                 getLabel = { theme -> stringResource(theme.labelResId) }
             )
         }
@@ -65,11 +75,12 @@ fun AppThemeSettings(
     )
 }
 
-@Preview(showSystemUi = true)
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Preview(showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PreviewAppThemeSettings() {
     var appTheme by remember { mutableStateOf(AppTheme.Auto) }
-    LyricsForPowerAmpTheme (useDarkTheme = isDarkTheme(appTheme)){
+    LyricsForPowerAmpTheme(useDarkTheme = isDarkTheme(appTheme)) {
         AppThemeSettingsContent(
             topbar = { TopAppBar(title = { Text("App Theme") }) },
             currentTheme = appTheme,
