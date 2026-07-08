@@ -104,15 +104,9 @@ private fun LyricsRequestSettingsContent(
         BasicSettings(
             label = stringResource(id = R.string.settings_fallback_to_search_label),
             description = stringResource(id = R.string.settings_fallback_to_search_description),
+            onClick = { onFallbackToSearchChange(!fallbackToSearch) },
             modifier = Modifier
         ) { interactionSource ->
-            LaunchedEffect(interactionSource) {
-                interactionSource.interactions.collect { interaction ->
-                    if (interaction is PressInteraction.Release) {
-                        onFallbackToSearchChange(!fallbackToSearch)
-                    }
-                }
-            }
             val accessibilityLabel = (if (fallbackToSearch) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_fallback_to_search_label)}"
@@ -120,6 +114,7 @@ private fun LyricsRequestSettingsContent(
             Switch(
                 checked = fallbackToSearch,
                 onCheckedChange = onFallbackToSearchChange,
+                interactionSource = interactionSource,
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .semantics { contentDescription = accessibilityLabel }
@@ -128,15 +123,9 @@ private fun LyricsRequestSettingsContent(
         BasicSettings(
             label = stringResource(id = R.string.settings_request_fail_notification_label),
             description = stringResource(id = R.string.settings_request_fail_notification_description),
+            onClick = { onShowNotificationChange(!showNotification) },
             modifier = Modifier
         ) { interactionSource ->
-            LaunchedEffect(interactionSource) {
-                interactionSource.interactions.collect { interaction ->
-                    if (interaction is PressInteraction.Release) {
-                        onShowNotificationChange(!showNotification)
-                    }
-                }
-            }
             val accessibilityLabel = (if (showNotification) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_request_fail_notification_label)}"
@@ -144,6 +133,7 @@ private fun LyricsRequestSettingsContent(
             Switch(
                 checked = showNotification,
                 onCheckedChange = onShowNotificationChange,
+                interactionSource = interactionSource,
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .semantics { contentDescription = accessibilityLabel }
@@ -158,17 +148,10 @@ private fun LyricsRequestSettingsContent(
             ) {
                 BasicSettings(
                     label = stringResource(R.string.settings_notification_permission_label),
-                    description = stringResource(R.string.settings_notification_permission_description)
-                ) { interactionSource ->
-                    val onButtonClick = { askPermission = true }
-                    LaunchedEffect(interactionSource) {
-                        interactionSource.interactions.collect { interaction ->
-                            if (interaction is PressInteraction.Release) {
-                                onButtonClick()
-                            }
-                        }
-                    }
-                    Button(onClick = onButtonClick, enabled = !hasNotificationPermission) {
+                    description = stringResource(R.string.settings_notification_permission_description),
+                    onClick = { if (!hasNotificationPermission) askPermission = true }
+                ) { _ ->
+                    Button(onClick = { askPermission = true }, enabled = !hasNotificationPermission) {
                         Text(stringResource(R.string.settings_permission_button_grant))
                     }
                 }
@@ -182,15 +165,9 @@ private fun LyricsRequestSettingsContent(
             BasicSettings(
                 label = stringResource(id = R.string.settings_overwrite_existing_notification_label),
                 description = stringResource(id = R.string.settings_overwrite_existing_notification_description),
+                onClick = { if (hasNotificationPermission) onOverwriteNotificationChange(!overwriteNotification) },
                 modifier = Modifier.alpha(if (hasNotificationPermission) 1.0f else 0.7f)
             ) { interactionSource ->
-                LaunchedEffect(interactionSource) {
-                    interactionSource.interactions.collect { interaction ->
-                        if (interaction is PressInteraction.Release) {
-                            onOverwriteNotificationChange(!overwriteNotification)
-                        }
-                    }
-                }
                 val accessibilityLabel =
                     (if (overwriteNotification) stringResource(R.string.disable)
                     else stringResource(R.string.enable)).let {
@@ -200,6 +177,7 @@ private fun LyricsRequestSettingsContent(
                     checked = overwriteNotification,
                     enabled = hasNotificationPermission,
                     onCheckedChange = onOverwriteNotificationChange,
+                    interactionSource = interactionSource,
                     modifier = Modifier
                         .padding(start = 4.dp)
                         .semantics { contentDescription = accessibilityLabel }
@@ -239,16 +217,9 @@ private fun LyricsRequestSettingsContent(
         }
         BasicSettings(
             label = stringResource(R.string.settings_mark_instrumental_tracks),
-            description = stringResource(R.string.settings_mark_instrumental_tracks_description)
+            description = stringResource(R.string.settings_mark_instrumental_tracks_description),
+            onClick = { onMarkInstrumentalChange(!markInstrumental) }
         ) { interactionSource ->
-            LaunchedEffect(interactionSource) {
-                interactionSource.interactions.collect { interaction ->
-                    if (interaction is PressInteraction.Release) {
-                        onMarkInstrumentalChange(!markInstrumental)
-                    }
-                }
-            }
-
             val accessibilityLabel = (if (markInstrumental) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_mark_instrumental_tracks)}"
@@ -256,6 +227,7 @@ private fun LyricsRequestSettingsContent(
             Switch(
                 checked = markInstrumental,
                 onCheckedChange = onMarkInstrumentalChange,
+                interactionSource = interactionSource,
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .semantics { contentDescription = accessibilityLabel }

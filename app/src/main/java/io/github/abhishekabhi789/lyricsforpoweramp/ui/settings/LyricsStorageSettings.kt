@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -76,61 +75,45 @@ private fun LyricsStorageSettingsContent(
     SettingsPageLayout(topbar = topbar, modifier = modifier) {
         BasicSettings(
             label = stringResource(R.string.settings_send_to_poweramp_label),
-            description = stringResource(R.string.settings_send_to_poweramp_description)
+            description = stringResource(R.string.settings_send_to_poweramp_description),
+            onClick = { onSendLyricsToPowerampChange(!sendLyricsToPoweramp) }
         ) { interactionSource ->
-            LaunchedEffect(interactionSource) {
-                interactionSource.interactions.collect { interaction ->
-                    if (interaction is PressInteraction.Release) {
-                        onSendLyricsToPowerampChange(!sendLyricsToPoweramp)
-                    }
-                }
-            }
-
             val accessibilityLabel = (if (sendLyricsToPoweramp) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_send_to_poweramp_label)}"
             }
             Switch(
                 checked = sendLyricsToPoweramp, onCheckedChange = onSendLyricsToPowerampChange,
+                interactionSource = interactionSource,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
         BasicSettings(
             label = stringResource(R.string.settings_save_as_file_label),
-            description = stringResource(R.string.settings_save_as_file_description)
+            description = stringResource(R.string.settings_save_as_file_description),
+            onClick = { onSaveAsFileChange(!saveAsFile) }
         ) { interactionSource ->
-            LaunchedEffect(interactionSource) {
-                interactionSource.interactions.collect { interaction ->
-                    if (interaction is PressInteraction.Release) {
-                        onSaveAsFileChange(!saveAsFile)
-                    }
-                }
-            }
             val accessibilityLabel = (if (saveAsFile) stringResource(R.string.disable)
             else stringResource(R.string.enable)).let {
                 "$it ${stringResource(R.string.settings_save_as_file_label)}"
             }
             Switch(
                 checked = saveAsFile, onCheckedChange = onSaveAsFileChange,
+                interactionSource = interactionSource,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
         AnimatedVisibility(visible = saveAsFile) {
             BasicSettings(
                 label = stringResource(R.string.settings_save_id_tags_in_lrc_file_label),
-                description = stringResource(R.string.settings_save_id_tags_in_lrc_file_description)
+                description = stringResource(R.string.settings_save_id_tags_in_lrc_file_description),
+                onClick = { onSaveIdTagsInFileChange(!saveIdTagsInFile) }
             ) { interactionSource ->
-                LaunchedEffect(interactionSource) {
-                    interactionSource.interactions.collect { interaction ->
-                        if (interaction is PressInteraction.Release) {
-                            onSaveIdTagsInFileChange(!saveIdTagsInFile)
-                        }
-                    }
-                }
                 val accessibilityLabel = (if (saveIdTagsInFile) stringResource(R.string.disable)
                 else stringResource(R.string.enable)).let {
                     "$it ${stringResource(R.string.settings_save_id_tags_in_lrc_file_label)}"
                 }
                 Switch(
                     checked = saveIdTagsInFile, onCheckedChange = onSaveIdTagsInFileChange,
+                    interactionSource = interactionSource,
                     modifier = Modifier.semantics { contentDescription = accessibilityLabel }
                 )
             }
@@ -138,21 +121,16 @@ private fun LyricsStorageSettingsContent(
 
         BasicSettings(
             label = stringResource(R.string.settings_embed_into_song_file_label),
-            description = stringResource(R.string.settings_embed_into_song_file_description)
+            description = stringResource(R.string.settings_embed_into_song_file_description),
+            onClick = { onEmbedIntoFileChange(!embedIntoFile) }
         ) { interactionSource ->
-            LaunchedEffect(interactionSource) {
-                interactionSource.interactions.collect { interaction ->
-                    if (interaction is PressInteraction.Release) {
-                        onEmbedIntoFileChange(!embedIntoFile)
-                    }
-                }
-            }
             val accessibilityLabel =
                 stringResource(if (embedIntoFile) R.string.disable else R.string.enable).let {
                     "$it ${stringResource(R.string.settings_embed_into_song_file_label)}"
                 }
             Switch(
                 checked = embedIntoFile, onCheckedChange = onEmbedIntoFileChange,
+                interactionSource = interactionSource,
                 modifier = Modifier.semantics { contentDescription = accessibilityLabel })
         }
 
