@@ -2,10 +2,8 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -14,8 +12,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,8 +45,10 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.StorageHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.PowerampFolder
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialog
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.FolderAccessState
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.rememberFolderAccess
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.getTreeDocumentId
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -138,139 +138,132 @@ private fun LyricsStorageSettingsContent(
             onLoadPowerampFolders(context)
         }
 
+        if (powerampFolders.isNotEmpty()) {
+            SettingsGroup {
+                Text(
+                    text = stringResource(R.string.settings_poweramp_folders),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                powerampFolders.forEach { folder ->
+                    val normalizedPath = StorageHelper.normalizeToDocumentId(folder.path)
+                    if (normalizedPath != null) {
+                        val folderAccessState = rememberFolderAccess(normalizedPath)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                Text(folder.name, style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    folder.path,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                            if (folderAccessState.hasPermission) {
+                                IconButton(
+                                    enabled = folderAccessState.isRemovable,
+                                    onClick = folderAccessState::revokeAccess
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = stringResource(R.string.settings_add_folder_button_remove),
+                                        tint = Color.Red.copy(alpha = if (folderAccessState.isRemovable) 0.7f else 0.4f)
+                                    )
+                                }
+                            } else {
+                                TextButton(onClick = folderAccessState::requestAccess) {
+                                    Text(stringResource(R.string.settings_add_folder_button_grant_access))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         val pickFolderLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree()
         ) { uri ->
             uri?.let {
                 context.contentResolver.takePersistableUriPermission(
-                    it,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    it, FolderAccessState.PERMISSION_MODE_FLAGS
                 )
                 onSaveNewUri(uri)
             }
         }
-        if (powerampFolders.isNotEmpty()) {
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            Text(
-                text = stringResource(R.string.settings_poweramp_folders),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .padding(bottom = 8.dp)
-            )
-            powerampFolders.forEach { folder ->
-                val normalizedPath = StorageHelper.normalizeToDocumentId(folder.path)
-                if (normalizedPath != null) {
-                    val folderAccessState = rememberFolderAccess(normalizedPath)
+        val onPermissionRequest = {
+            try {
+                pickFolderLauncher.launch(null)
+            } catch (e: Exception) {
+                Log.e(TAG, "LyricsStorageSettings: request failed", e)
+                context.makeToast(R.string.failed_to_open_folder_picker)
+            }
+        }
+        SettingsGroup {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_add_custom_folder_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = onPermissionRequest) {
+                    Icon(
+                        imageVector = Icons.Default.AddCircle,
+                        contentDescription = stringResource(R.string.settings_add_folder_add_new),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            if (savedUris.isNotEmpty()) {
+                val addedUris by remember(savedUris, powerampFolders) {
+                    derivedStateOf {
+                        savedUris.filter { uri ->
+                            powerampFolders.none { it.path.removeSuffix("/") == uri.getTreeDocumentId() }
+                        }
+                    }
+                }
+                for ((i, uri) in addedUris.withIndex()) {
+                    val path by remember(uri) { derivedStateOf { uri.getTreeDocumentId() } }
+                    val folderAccessState = rememberFolderAccess(path)
+                    val onPermissionRequest = { folderAccessState.requestAccess() }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(vertical = 8.dp)
-                        ) {
-                            Text(folder.name, style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                folder.path,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.outline
-                            )
-                        }
-                        if (folderAccessState.hasPermission) {
-                            IconButton(
-                                enabled = folderAccessState.isRemovable,
-                                onClick = folderAccessState::revokeAccess
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = stringResource(R.string.settings_add_folder_button_remove),
-                                    tint = Color.Red.copy(alpha = if (folderAccessState.isRemovable) 0.7f else 0.4f)
-                                )
-                            }
-                        } else {
-                            TextButton(onClick = folderAccessState::requestAccess) {
+                        Text("${i + 1}.", modifier = Modifier.padding(end = 8.dp))
+                        Text(
+                            path,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (!folderAccessState.hasPermission) {
+                            TextButton(onClick = onPermissionRequest) {
                                 Text(stringResource(R.string.settings_add_folder_button_grant_access))
                             }
                         }
-                    }
-                }
-            }
-        }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        Text(
-            text = stringResource(R.string.settings_add_folder),
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .padding(bottom = 8.dp)
-        )
-        val onPermissionRequest = {
-            runCatching { pickFolderLauncher.launch(null) }.exceptionOrNull()?.let {
-                Log.e(TAG, "LyricsStorageSettings: request failed", it)
-                Toast(context).run {
-                    setText(R.string.failed_to_open_folder_picker)
-                    duration = Toast.LENGTH_SHORT
-                    show()
-                }
-            }
-            Unit
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = stringResource(R.string.settings_add_custom_folder_title),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.weight(1f)
-            )
-            TextButton(onClick = onPermissionRequest) {
-                Text(stringResource(R.string.settings_add_folder_add_new))
-            }
-        }
-        if (savedUris.isNotEmpty()) {
-            val addedUris by remember(savedUris, powerampFolders) {
-                derivedStateOf {
-                    savedUris.filter { uri ->
-                        powerampFolders.none { it.path.removeSuffix("/") == uri.getTreeDocumentId() }
-                    }
-                }
-            }
-            for ((i, uri) in addedUris.withIndex()) {
-                val path by remember(uri) { derivedStateOf { uri.getTreeDocumentId() } }
-                val folderAccessState = rememberFolderAccess(path)
-                val onPermissionRequest = { folderAccessState.requestAccess() }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
-                ) {
-                    Text("${i + 1}.", modifier = Modifier.padding(end = 8.dp))
-                    Text(
-                        path,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (!folderAccessState.hasPermission) {
-                        TextButton(onClick = onPermissionRequest) {
-                            Text(stringResource(R.string.settings_add_folder_button_grant_access))
+                        IconButton(onClick = folderAccessState::revokeAccess) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.settings_add_folder_button_remove),
+                                tint = Color.Red.copy(alpha = 0.7f)
+                            )
                         }
                     }
-                    IconButton(onClick = folderAccessState::revokeAccess) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.settings_add_folder_button_remove),
-                            tint = Color.Red.copy(alpha = 0.7f)
-                        )
-                    }
                 }
+            } else {
+                Text(
+                    text = stringResource(R.string.settings_add_folder_empty_list),
+                )
             }
-        } else {
-            Text(
-                text = stringResource(R.string.settings_add_folder_empty_list),
-            )
         }
 
         accessRequestedPath?.let { pathUri ->

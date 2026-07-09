@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -44,51 +46,52 @@ private fun EditorSettingsContent(
     onAiProviderModelChange: (AiProvider, String) -> Unit
 ) {
     SettingsPageLayout(topbar = topbar, modifier = modifier) {
-        Text(
-            text = stringResource(R.string.settings_editor_ai_provider_settings_label),
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Disclaimer(
-            textContent = AnnotatedString(stringResource(R.string.settings_editor_api_keys_disclaimer)),
-            icon = Icons.Default.Info,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-        AiProvider.entries.forEach { provider ->
-            val (configUrl, modelsUrl) = when (provider) {
-                AiProvider.GEMINI -> "https://ai.google.dev/gemini-api/docs" to "https://ai.google.dev/gemini-api/docs/models"
-                AiProvider.OPENROUTER -> "https://openrouter.ai/" to "https://openrouter.ai/models?output_modalities=text"
-            }
-            val providerName = stringResource(provider.nameRes)
-            Disclaimer(
-                textContent = AnnotatedString.fromHtml(
-                    stringResource(
-                        R.string.settings_editor_api_setup_instructions_html,
-                        configUrl, providerName, modelsUrl
-                    )
-                ),
-                icon = Icons.Default.Info,
-                modifier = Modifier.padding(horizontal = 8.dp)
+        SettingsGroup {
+            Text(
+                text = stringResource(R.string.settings_editor_ai_provider_settings_label),
+                style = MaterialTheme.typography.labelLarge
             )
-
-            val apiKey: String by produceState(initialValue = "", key1 = provider) {
-                value = withContext(Dispatchers.IO) {
-                    getAiProviderApiKey(provider) ?: ""
-                }
-            }
-            val chosenModel by getAiProviderModelFlow(provider)
-                .collectAsStateWithLifecycle()
-
-            AiProviderConfiguration(
-                provider = provider,
-                apiKey = apiKey,
-                chosenModel = chosenModel,
-                onModelChange = { onAiProviderModelChange(provider, it) },
-                onKeyChange = { onAiProviderApiKeyChange(provider, it) },
-                modifier = Modifier.padding(horizontal = 8.dp)
+            Disclaimer(
+                textContent = AnnotatedString(stringResource(R.string.settings_editor_api_keys_disclaimer)),
+                icon = Icons.Default.Info,
             )
         }
+        AiProvider.entries.forEach { provider ->
+            val providerName = stringResource(provider.nameRes)
+            SettingsGroup {
+                Text(text = providerName, style = MaterialTheme.typography.titleMedium)
+                val (configUrl, modelsUrl) = when (provider) {
+                    AiProvider.GEMINI -> "https://ai.google.dev/gemini-api/docs" to "https://ai.google.dev/gemini-api/docs/models"
+                    AiProvider.OPENROUTER -> "https://openrouter.ai/" to "https://openrouter.ai/models?output_modalities=text"
+                }
+                Disclaimer(
+                    textContent = AnnotatedString.fromHtml(
+                        stringResource(
+                            R.string.settings_editor_api_setup_instructions_html,
+                            configUrl, providerName, modelsUrl
+                        )
+                    ),
+                    icon = Icons.Default.Info,
+                )
+
+                val apiKey: String by produceState(initialValue = "", key1 = provider) {
+                    value = withContext(Dispatchers.IO) {
+                        getAiProviderApiKey(provider) ?: ""
+                    }
+                }
+                val chosenModel by getAiProviderModelFlow(provider)
+                    .collectAsStateWithLifecycle()
+
+                AiProviderConfiguration(
+                    provider = provider,
+                    apiKey = apiKey,
+                    chosenModel = chosenModel,
+                    onModelChange = { onAiProviderModelChange(provider, it) },
+                    onKeyChange = { onAiProviderApiKeyChange(provider, it) },
+                )
+            }
+        }
+        HorizontalDivider()
         BasicSettings(
             label = stringResource(R.string.settings_timestamp_step_title),
             description = stringResource(R.string.settings_timestamp_step_summary)
@@ -140,7 +143,7 @@ fun EditorSettings(
 @Preview(showSystemUi = true)
 @Composable
 private fun EditorSettingsPreview() {
-    var timestampDelta by remember { mutableStateOf(10) }
+    var timestampDelta by remember { mutableIntStateOf(10) }
     val models = remember {
         mutableMapOf(
             AiProvider.GEMINI to kotlinx.coroutines.flow.MutableStateFlow("gemini-1.5-flash"),

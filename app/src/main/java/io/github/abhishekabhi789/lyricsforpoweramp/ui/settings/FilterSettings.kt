@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -37,20 +38,21 @@ private fun FilterSettingsContent(
         Disclaimer(
             textContent = AnnotatedString(stringResource(R.string.settings_filter_detailed_description)),
             icon = Icons.Default.Info,
-            modifier = Modifier.padding(8.dp)
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-            modifier = Modifier.padding(8.dp)
         ) {
             filters.forEach { (filterType, value) ->
-                TextInputWithChips(
-                    fieldLabel = stringResource(filterType.labelResId),
-                    leadingIcon = filterType.icon,
-                    chipItems = value,
-                    onChipListChange = { onFilterChange(filterType, it) },
-                    isRemovable = { true }
-                )
+                ElevatedCard {
+                    TextInputWithChips(
+                        fieldLabel = stringResource(filterType.labelResId),
+                        leadingIcon = filterType.icon,
+                        chipItems = value,
+                        onChipListChange = { onFilterChange(filterType, it) },
+                        isRemovable = { true },
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
             }
         }
     }

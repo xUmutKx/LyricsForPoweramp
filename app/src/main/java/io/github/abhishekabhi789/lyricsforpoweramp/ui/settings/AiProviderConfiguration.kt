@@ -3,7 +3,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Column import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,10 +14,8 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Key
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -68,12 +66,6 @@ fun AiProviderConfiguration(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(provider.nameRes),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.secondary
-        )
-        Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
             value = inputValue,
             onValueChange = { inputValue = it },
@@ -94,13 +86,12 @@ fun AiProviderConfiguration(
                 .onFocusChanged { showPassword = it.isFocused })
 
         Spacer(Modifier.height(8.dp))
-
         var showModelSelectionList by remember { mutableStateOf(false) }
-        Text(
-            text = stringResource(R.string.settings_editor_ai_model_label),
-            style = MaterialTheme.typography.titleSmall
-        )
-        BasicSettings(label = stringResource(R.string.settings_editor_selected_ai_model_label)) { interactionSource ->
+        BasicSettings(
+            label = stringResource(R.string.settings_editor_selected_ai_model_label),
+            isElevated = false,
+            paddingValues = PaddingValues(vertical = 8.dp)
+        ) { interactionSource ->
             val currentModel by remember(useCustomModel, chosenModel) {
                 derivedStateOf { if (useCustomModel) customModelLabel else chosenModel }
             }
@@ -181,6 +172,5 @@ fun AiProviderConfiguration(
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        HorizontalDivider(Modifier.fillMaxWidth())
     }
 }

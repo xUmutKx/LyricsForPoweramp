@@ -3,8 +3,11 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
@@ -30,6 +33,7 @@ fun SettingsPageLayout(
                 .consumeWindowInsets(contentPadding)
                 .padding(horizontal = 8.dp)
                 .verticalScroll(rememberScrollState())
+                .padding(WindowInsets.safeDrawing.asPaddingValues())
         )
     }
 }

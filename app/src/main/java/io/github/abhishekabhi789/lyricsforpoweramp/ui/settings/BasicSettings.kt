@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -25,13 +26,16 @@ fun BasicSettings(
     label: String,
     description: String? = null,
     onClick: (() -> Unit)? = null,
+    isElevated: Boolean = true,
+    paddingValues: PaddingValues = PaddingValues(12.dp),
     control: @Composable ((interactionSource: MutableInteractionSource) -> Unit)
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    ElevatedCard(modifier = modifier) {
+    val cardContent = @Composable {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.defaultMinSize(minHeight = 16.dp)
+            modifier = Modifier
+                .defaultMinSize(minHeight = 16.dp)
                 .then(
                     if (onClick != null) {
                         Modifier.clickable(
@@ -47,7 +51,7 @@ fun BasicSettings(
 
                     }
                 )
-                .padding(12.dp)
+                .padding(paddingValues)
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -55,7 +59,7 @@ fun BasicSettings(
             ) {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 description?.let {
@@ -68,6 +72,15 @@ fun BasicSettings(
             }
             Spacer(Modifier.width(1.dp))
             control.invoke(interactionSource)
+        }
+    }
+    if (isElevated) {
+        ElevatedCard(modifier = modifier) {
+            cardContent.invoke()
+        }
+    } else {
+        ElevatedCard(modifier = modifier) {
+            cardContent.invoke()
         }
     }
 }

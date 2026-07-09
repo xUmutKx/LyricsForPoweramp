@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -47,35 +48,37 @@ private fun LyricsProviderSettingsContent(
                 }
             }
         }
-        BasicSettings(
-            label = stringResource(R.string.settings_lyrics_providers_modify_lrclib_api_label),
-            control = {})
-
-        Disclaimer(
-            textContent = AnnotatedString(stringResource(R.string.settings_lyrics_providers_modify_lrclib_api_description)),
-            icon = Icons.Default.Info
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        TextInputWithChips(
-            fieldLabel = stringResource(R.string.settings_lyrics_providers_add_new_lrclib_api_url_label),
-            chipItems = formattedApiList,
-            onChipListChange = { newList ->
-                val list =
-                    newList.map { if (it == defaultApiName) AppPreference.DEFAULT_API_URL else it }
-                onLrclibApiInstancesChange(list)
-            },
-            onValidateInput = { input ->
-                when {
-                    input.isBlank() -> resources.getString(R.string.settings_lyrics_providers_error_blank)
-                    !input.startsWith("https://") -> resources.getString(R.string.settings_lyrics_providers_url_must_start_with)
-                    !input.endsWith("/api") -> resources.getString(R.string.settings_lyrics_providers_url_must_end_with)
-                    else -> null
+        SettingsGroup {
+            Text(
+                text = stringResource(R.string.settings_lyrics_providers_modify_lrclib_api_label),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Disclaimer(
+                textContent = AnnotatedString(stringResource(R.string.settings_lyrics_providers_modify_lrclib_api_description)),
+                icon = Icons.Default.Info
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TextInputWithChips(
+                fieldLabel = stringResource(R.string.settings_lyrics_providers_add_new_lrclib_api_url_label),
+                chipItems = formattedApiList,
+                onChipListChange = { newList ->
+                    val list =
+                        newList.map { if (it == defaultApiName) AppPreference.DEFAULT_API_URL else it }
+                    onLrclibApiInstancesChange(list)
+                },
+                onValidateInput = { input ->
+                    when {
+                        input.isBlank() -> resources.getString(R.string.settings_lyrics_providers_error_blank)
+                        !input.startsWith("https://") -> resources.getString(R.string.settings_lyrics_providers_url_must_start_with)
+                        !input.endsWith("/api") -> resources.getString(R.string.settings_lyrics_providers_url_must_end_with)
+                        else -> null
+                    }
+                },
+                isRemovable = { item ->
+                    item != defaultApiName && item !in AppPreference.DEFAULT_LRCLIB_API_URLS
                 }
-            },
-            isRemovable = { item ->
-                item != defaultApiName && item !in AppPreference.DEFAULT_LRCLIB_API_URLS
-            }
-        )
+            )
+        }
         BasicSettings(
             label = stringResource(R.string.settings_lyrics_providers_selected_lrclib_api_label),
             description = stringResource(R.string.settings_lyrics_providers_selected_lrclib_api_description)
