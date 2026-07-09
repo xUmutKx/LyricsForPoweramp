@@ -25,6 +25,7 @@ import androidx.compose.ui.window.DialogProperties
 import io.github.abhishekabhi789.lyricsforpoweramp.BuildConfig
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun FirstTimeInfoDialog(
@@ -33,7 +34,7 @@ fun FirstTimeInfoDialog(
     var buttonTimeout by rememberSaveable { mutableIntStateOf(10) }
     LaunchedEffect(Unit) {
         while (buttonTimeout > 0) {
-            delay(1000)
+            delay(1.seconds)
             buttonTimeout -= 1
         }
     }

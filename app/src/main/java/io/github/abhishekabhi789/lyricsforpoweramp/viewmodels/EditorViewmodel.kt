@@ -237,7 +237,6 @@ class EditorViewmodel @Inject constructor(
     }
 
     override fun onCleared() {
-        super.onCleared()
         Log.d(TAG, "onCleared: stopping playback")
         playbackHelper.destroy()
     }

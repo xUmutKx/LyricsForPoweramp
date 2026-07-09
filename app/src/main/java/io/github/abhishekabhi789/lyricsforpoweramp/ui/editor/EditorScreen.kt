@@ -403,9 +403,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                         .flatMap { line ->
                             timeStampRegex.findAll(line)
                                 .mapNotNull { match -> Timestamp.fromString(match.value) }
-                        }
-                        .filter { it.toSeconds() <= playbackPosition }
-                        .lastOrNull()
+                        }.lastOrNull { it.toSeconds() <= playbackPosition }
 
                     if (lastTimestamp != null) {
                         lyricsLines.mapIndexedNotNull { index, line ->

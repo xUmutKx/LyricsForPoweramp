@@ -114,7 +114,7 @@ fun ResultScreen(
                                 DropdownMenuItem(
                                     text = {
                                         Text(
-                                            text = sortOrder.label,
+                                            text = stringResource(sortOrder.label),
                                             color = if (isSelected) MaterialTheme.colorScheme.primary else LocalContentColor.current
                                         )
                                     },

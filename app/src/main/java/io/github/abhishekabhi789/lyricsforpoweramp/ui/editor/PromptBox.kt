@@ -101,7 +101,7 @@ fun PromptBox(
                 supportingText = {
                     if (isError) {
                         Text(
-                            text = requestState.errorMessage ?: stringResource(R.string.failed),
+                            text = requestState.errorMessage ?: stringResource(R.string.ai_rewrite_failed),
                             color = MaterialTheme.colorScheme.error
                         )
                     }

@@ -23,6 +23,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
 class PlaybackHelper @Inject constructor(@ActivityContext context: Context) {
@@ -133,7 +134,7 @@ class PlaybackHelper @Inject constructor(@ActivityContext context: Context) {
         updateJob = scope.launch {
             while (isActive) {
                 _playbackSeconds.value = (currentPlaybackPosition / 1000L).toInt().coerceAtLeast(0)
-                delay(100L)
+                delay(100.milliseconds)
             }
         }
     }

@@ -138,10 +138,6 @@ class AppPreference @Inject constructor(
         setPreference(stringPreferencesKey(aiProvider.key), apiKey)
     }
 
-    suspend fun getAiProviderApiKey(aiProvider: AiProvider): String? {
-        return getPreference(stringPreferencesKey(aiProvider.key))
-    }
-
     suspend fun setAiProviderModel(provider: AiProvider, model: String) {
         setPreference(getKeyForModel(provider), model)
     }
@@ -158,15 +154,6 @@ class AppPreference @Inject constructor(
 
     suspend fun <T> getPreference(key: Preferences.Key<T>): T? {
         return runCatching { dataStore.data.map { it[key] }.firstOrNull() }.getOrNull()
-    }
-
-    fun <T> getPreferenceFlow(key: Preferences.Key<T>): Flow<T?> {
-        return dataStore.data.map { preferences -> preferences[key] }
-    }
-
-    suspend fun <T> getPreference(key: Preferences.Key<T>, default: T): T {
-        return runCatching { dataStore.data.map { it[key] }.firstOrNull() ?: default }
-            .getOrDefault(default)
     }
 
     companion object {
