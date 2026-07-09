@@ -20,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,8 +37,8 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 fun CustomChip(
     modifier: Modifier = Modifier,
     label: String,
-    selected: Boolean,
-    tooltipDescription: String,
+    selected: Boolean = false,
+    tooltipDescription: String? = null,
     icon: Any? = null,
     onClick: () -> Unit = {}
 ) {
@@ -58,11 +59,13 @@ fun CustomChip(
                     shape = CardDefaults.shape
                 )
             ) {
-                Text(
-                    text = tooltipDescription,
-                    color = cs.onSurface,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
+                if (tooltipDescription != null) {
+                    Text(
+                        text = tooltipDescription,
+                        color = cs.onSurface,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                }
             }
         },
         modifier = modifier.requiredHeight(AssistChipDefaults.Height)
@@ -76,7 +79,8 @@ fun CustomChip(
             modifier = Modifier
                 .background(backgroundColor, AssistChipDefaults.shape)
                 .border(1.dp, cs.outline.copy(alpha = 0.3f), AssistChipDefaults.shape)
-                .padding(horizontal = 2.dp),
+                .padding(horizontal = 2.dp)
+                .minimumInteractiveComponentSize(),
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

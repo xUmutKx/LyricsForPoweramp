@@ -14,11 +14,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,11 +31,11 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.InterpreterMode
 import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CardDefaults
@@ -63,10 +61,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.Dp
@@ -90,7 +88,6 @@ fun LyricItem(
     onEditLyrics: (preferredLyricsType: LyricsType) -> Unit,
     onFixMetadata: () -> Unit
 ) {
-    LocalContext.current
     val scope = rememberCoroutineScope()
     val lyricPages = remember(lyrics) { listOfNotNull(lyrics.plainLyrics, lyrics.syncedLyrics) }
     val pagerState = rememberPagerState(pageCount = { lyricPages.size }, initialPage = 0)
@@ -122,7 +119,7 @@ fun LyricItem(
                         Text(
                             text = lyrics.trackName,
                             color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -140,7 +137,7 @@ fun LyricItem(
                             Text(
                                 text = it,
                                 color = MaterialTheme.colorScheme.secondary,
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(start = 8.dp)
                             )
                         }
@@ -159,7 +156,7 @@ fun LyricItem(
                             Text(
                                 text = it,
                                 color = MaterialTheme.colorScheme.secondary,
-                                style = MaterialTheme.typography.titleSmall,
+                                style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(start = 8.dp)
                             )
                         }
@@ -167,8 +164,7 @@ fun LyricItem(
                 }
             }
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Timer,
@@ -179,6 +175,7 @@ fun LyricItem(
                 Text(
                     text = lyrics.getFormattedDuration(),
                     color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(start = 8.dp)
                 )
                 trackDuration?.let { duration ->
@@ -188,9 +185,9 @@ fun LyricItem(
                     }
                     val bgColor = MaterialTheme.colorScheme.secondaryContainer
                     Surface(
-                        color = bgColor,
+                        color = bgColor.copy(alpha = 0.3f),
                         contentColor = contentColorFor(bgColor),
-                        shape = MaterialTheme.shapes.extraSmall,
+                        shape = MaterialTheme.shapes.medium,
                         shadowElevation = 2.dp,
                         border = BorderStroke(Dp.Hairline, MaterialTheme.colorScheme.outline)
                     ) {
@@ -201,8 +198,8 @@ fun LyricItem(
                         ) {
                             if (difference == 0) {
                                 Icon(
-                                    Icons.Default.Done,
-                                    stringResource(R.string.result_same_duration)
+                                    imageVector = Icons.Default.Done,
+                                    contentDescription = stringResource(R.string.result_same_duration)
                                 )
                             } else {
                                 Text(text = if (difference > 0) "+" else "-")
@@ -213,14 +210,12 @@ fun LyricItem(
                 }
             }
             FlowRow(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
+                horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()
             ) {
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
-                    verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
-                    modifier = Modifier.weight(0.5f)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+                    modifier = Modifier.fillMaxWidth(0.5f)
                 ) {
                     if (lyrics.plainLyrics != null) {
                         CustomChip(
@@ -241,11 +236,9 @@ fun LyricItem(
                 }
                 if (isLaunchedFromPowerAmp) {
                     FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .weight(0.5f)
-                            .height(IntrinsicSize.Min)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+                        modifier = Modifier.fillMaxWidth(0.5f)
                     ) {
                         val availableLyrics = remember(lyrics) {
                             buildList {
@@ -268,25 +261,19 @@ fun LyricItem(
                                 onConfirm = onEditLyrics
                             )
                             LyricsAction(
-                                actionIcon = Icons.Default.Done,
+                                actionIcon = Icons.Default.Save,
                                 actionLabel = stringResource(R.string.save),
                                 availableLyricsTypes = availableLyrics,
                                 preferredLyricsType = preferredLyricsType,
+                                selected = true,
                                 onConfirm = onLyricChosen
                             )
+                            CustomChip(
+                                label = stringResource(R.string.edit_metadata),
+                                icon = Icons.Default.Code,
+                                onClick = onFixMetadata
+                            )
                         }
-                        AssistChip(
-                            onClick = onFixMetadata,
-                            leadingIcon = {
-                                Icon(imageVector = Icons.Default.Code, contentDescription = null)
-                            },
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.edit_metadata),
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        )
                     }
                 }
             }
@@ -310,13 +297,13 @@ fun LyricItem(
                                 fontStyle = FontStyle.Italic,
                                 color = MaterialTheme.colorScheme.onSurface
                             ),
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp)
                                 .clickable(interactionSource = null, indication = null) {
                                     expanded = !expanded
-                                }
-                        )
+                                })
                     }
                 }
 
@@ -352,6 +339,7 @@ fun LyricsAction(
     actionIcon: ImageVector,
     actionLabel: String,
     availableLyricsTypes: List<LyricsType>,
+    selected: Boolean = false,
     preferredLyricsType: LyricsType,
     onConfirm: (LyricsType) -> Unit,
 ) {
@@ -363,12 +351,12 @@ fun LyricsAction(
             onConfirm(availableLyricsTypes.first())
         }
     }
-    AssistChip(
+    CustomChip(
+        label = actionLabel,
+        icon = actionIcon,
         onClick = invokeAction,
-        leadingIcon = { Icon(actionIcon, null) },
-        label = { Text(actionLabel, color = MaterialTheme.colorScheme.primary) }
+        selected = selected
     )
-
     if (showDialog) {
         val dialogShape = MaterialTheme.shapes.large
         BasicAlertDialog(
@@ -395,8 +383,7 @@ fun LyricsAction(
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(
                         8.dp, Alignment.CenterHorizontally
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ), verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     availableLyricsTypes.forEach { lyricsType ->
                         InputChip(
@@ -404,11 +391,10 @@ fun LyricsAction(
                             onClick = { onConfirm(lyricsType); showDialog = false },
                             label = {
                                 Text(stringResource(lyricsType.longLabelResId))
-                            }
-                        )
+                            })
                     }
                     OutlinedButton(onClick = { showDialog = false }) {
-                        Text(stringResource(R.string.dismiss))
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             }
@@ -436,6 +422,5 @@ fun PreviewLyricItem() {
         preferredLyricsType = LyricsType.SYNCED,
         onLyricChosen = { },
         onEditLyrics = {},
-        onFixMetadata = {}
-    )
+        onFixMetadata = {})
 }
