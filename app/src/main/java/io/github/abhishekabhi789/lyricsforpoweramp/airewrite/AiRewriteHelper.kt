@@ -20,7 +20,7 @@ class AiRewriteHelper @Inject constructor(
     private var openRouter: OpenRouterAiProvider? = null
 
     suspend fun refreshProviders() {
-        appPreference.aiProviders.firstOrNull()?.let { providers ->
+        appPreference.aiProvidersFlow.firstOrNull()?.let { providers ->
             providers.forEach { (provider, key) ->
                 if (!key.isNullOrBlank()) {
                     when (provider) {

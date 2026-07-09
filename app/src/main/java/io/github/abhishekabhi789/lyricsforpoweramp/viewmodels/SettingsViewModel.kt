@@ -17,10 +17,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.FilterType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -186,35 +183,20 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    val aiApiKeys = appPreference.aiProvidersFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
     fun setAiProviderApiKey(provider: AiProvider, apiKey: String) {
         viewModelScope.launch { appPreference.setAiProviderApiKey(provider, apiKey) }
     }
 
-    suspend fun getAiProviderApiKey(provider: AiProvider): String? {
-        return appPreference.getAiProviderApiKey(provider)
-    }
+    val aiModels = appPreference.aiProvidersModelFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     fun setAiProviderModel(provider: AiProvider, model: String) {
-        viewModelScope.launch {
-            appPreference.setAiProviderModel(provider, model)
-        }
+        viewModelScope.launch { appPreference.setAiProviderModel(provider, model) }
     }
 
-    private val providerModelFlows = mutableMapOf<AiProvider, StateFlow<String>>()
-
-    fun getAiProviderModelFlow(provider: AiProvider): StateFlow<String> {
-        return providerModelFlows.getOrPut(provider) {
-            val modelKey = AppPreference.getKeyForModel(provider)
-            appPreference.getPreferenceFlow(modelKey)
-                .map { it ?: provider.defaultModel }
-                .distinctUntilChanged()
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(5000),
-                    initialValue = provider.defaultModel
-                )
-        }
-    }
 
     val filters = appPreference.filters
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())

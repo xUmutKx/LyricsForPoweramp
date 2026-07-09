@@ -89,7 +89,7 @@ class EditorViewmodel @Inject constructor(
         }
     }
 
-    val aiProviders = appPreference.aiProviders
+    val aiProviders = appPreference.aiProvidersFlow
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
 
     val chosenAiProvider = appPreference.chosenAiProvider

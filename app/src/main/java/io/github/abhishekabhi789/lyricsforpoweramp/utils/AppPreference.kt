@@ -86,8 +86,14 @@ class AppPreference @Inject constructor(
         }
     }
 
-    val aiProviders = dataStore.data.map { preferences ->
+    val aiProvidersFlow = dataStore.data.map { preferences ->
         AiProvider.entries.associateWith { preferences[stringPreferencesKey(it.key)] }
+    }
+
+    val aiProvidersModelFlow = dataStore.data.map { preferences ->
+        AiProvider.entries.associateWith { provider ->
+            preferences[getKeyForModel(provider)] ?: provider.defaultModel
+        }
     }
 
     val chosenAiProvider = dataStore.data.map { preferences ->
