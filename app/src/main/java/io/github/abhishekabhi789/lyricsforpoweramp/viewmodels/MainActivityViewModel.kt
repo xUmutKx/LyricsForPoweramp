@@ -219,6 +219,13 @@ class MainActivityViewModel @Inject constructor(
         updateInputValidStatus(true)
     }
 
+    var nowPlayingTrack = MutableStateFlow<Track?>(null)
+        private set
+
+    fun updateNowPlayingTrack(track: Track?) {
+        nowPlayingTrack.value = track
+    }
+
     companion object {
         private const val TAG = "MainActivityViewModel"
     }

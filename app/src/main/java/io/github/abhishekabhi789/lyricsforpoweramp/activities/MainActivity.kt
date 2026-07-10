@@ -1,7 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.activities
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
@@ -40,7 +39,6 @@ import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewMo
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @SuppressLint("InlinedApi")
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()

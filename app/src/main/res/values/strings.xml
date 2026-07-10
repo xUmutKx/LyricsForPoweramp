@@ -39,7 +39,7 @@
     <!-- top bar -->
     <string name="top_bar_menu_descriptions">More Options</string>
 
-    <!-- search ui -->
+    <!-- main ui -->
     <string name="coarse_search">Coarse Search</string>
     <string name="fine_search">Fine Search</string>
     <string name="clear_field">Clear %1$s</string>
@@ -50,6 +50,7 @@
     <string name="input_track_album_label">Album</string>
     <string name="search">Search</string>
     <string name="add_custom_lyrics">Write lyrics</string>
+    <string name="fab_load_track_for_search_label">Search for current track</string>
 
     <!-- lyrics result -->
     <string name="failed_to_prepare_search_result">Failed to prepare result</string>

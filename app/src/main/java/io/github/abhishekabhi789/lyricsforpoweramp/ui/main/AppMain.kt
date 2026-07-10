@@ -7,13 +7,13 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -25,12 +25,17 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.EditorActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SearchResultActivity
+import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
+import io.github.abhishekabhi789.lyricsforpoweramp.receivers.TrackChangeReceiver
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.FabData
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.MultiFab
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -91,17 +96,52 @@ fun AppMain(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             context.startActivity(intent)
         }
     }
+    DisposableEffect(Unit) {
+        val trackChangeReceiver = TrackChangeReceiver(
+            onTrackChanged = { track -> viewModel.updateNowPlayingTrack(track) }
+        )
+        ContextCompat.registerReceiver(
+            context,
+            trackChangeReceiver,
+            TrackChangeReceiver.IntentFilter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
+        onDispose { context.unregisterReceiver(trackChangeReceiver) }
+    }
+    val nowPlayingTrack by viewModel.nowPlayingTrack.collectAsStateWithLifecycle()
     Scaffold(
         topBar = { TopBar() },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
-            if (hasRealId) {
-                FloatingActionButton(onClick = launchedEditor) {
-                    Icon(
-                        Icons.Default.EditNote,
-                        contentDescription = stringResource(R.string.add_custom_lyrics)
+            val searchForNowPlayingTrack = {
+                nowPlayingTrack?.let { track ->
+                    viewModel.updateQueryTrack(track)
+                    viewModel.updateQueryString(track.trackName)
+                    viewModel.updateSearchMode(InputState.SearchMode.Fine)
+                }
+                Unit
+            }
+            val fabList = buildList {
+                if (hasRealId) {
+                    add(
+                        FabData(
+                            label = stringResource(R.string.settings_editor_label),
+                            icon = Icons.Default.EditNote, onClick = launchedEditor
+                        )
                     )
                 }
+                if (nowPlayingTrack?.realId != inputState.queryTrack.realId) {
+                    add(
+                        FabData(
+                            label = stringResource(R.string.fab_load_track_for_search_label),
+                            icon = Icons.Default.Search,
+                            onClick = searchForNowPlayingTrack
+                        )
+                    )
+                }
+            }
+            if (fabList.isNotEmpty()) {
+                MultiFab(fabList = fabList)
             }
         },
         modifier = modifier.then(focusRemoverModifier)
