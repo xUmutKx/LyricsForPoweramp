@@ -92,9 +92,10 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
     val inputState by viewmodel.inputState.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
-    val isUnsaved by viewmodel.isDirty.collectAsStateWithLifecycle()
+    val isUnsaved by viewmodel.isUnsaved.collectAsStateWithLifecycle()
     val lyricsSavingState by viewmodel.lyricsSavingState.collectAsStateWithLifecycle()
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
+    val folderAccessState = rememberFolderAccess(filePath)
     val isPlaying by viewmodel.isPlaying.collectAsStateWithLifecycle()
     var showPromptDialog by rememberSaveable { mutableStateOf(false) }
     var showWarningForUnsaved by rememberSaveable { mutableStateOf(false) }
@@ -278,7 +279,6 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                 }
             }
             var fileUri: Uri? by rememberSaveable { mutableStateOf(null) }
-            val folderAccessState = rememberFolderAccess(filePath)
             LaunchedEffect(folderAccessState) {
                 if (!folderAccessState.hasPermission) {
                     folderAccessState.requestAccess()
@@ -329,7 +329,9 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                     content = {
                         TextButton(
                             onClick = {
-                                viewmodel.updateInputState(EditorInputState(lyricsFromFile ?: ""))
+                                val lyrics = lyricsFromFile ?: ""
+                                viewmodel.updateInputState(EditorInputState(lyrics))
+                                viewmodel.setLastSavedLyrics(lyrics)
                                 context.makeToast(R.string.editor_loaded_from_lyrics_file)
                                 showLyricsSourceSelection = false
                             },
@@ -337,7 +339,9 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                         ) { Text(stringResource(R.string.editor_load_from_lyrics_file)) }
                         TextButton(
                             onClick = {
-                                viewmodel.updateInputState(EditorInputState(embeddedLyrics ?: ""))
+                                val lyrics = embeddedLyrics ?: ""
+                                viewmodel.updateInputState(EditorInputState(lyrics))
+                                viewmodel.setLastSavedLyrics(lyrics)
                                 context.makeToast(R.string.editor_loaded_from_embedded)
                                 showLyricsSourceSelection = false
                             },
@@ -355,12 +359,16 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                             showLyricsSourceSelection = true
 
                         !lyricsFromFile.isNullOrBlank() -> {
-                            viewmodel.updateInputState(EditorInputState(lyricsFromFile ?: ""))
+                            val lyrics = lyricsFromFile ?: ""
+                            viewmodel.updateInputState(EditorInputState(lyrics))
+                            viewmodel.setLastSavedLyrics(lyrics)
                             context.makeToast(R.string.editor_loaded_from_lyrics_file)
                         }
 
                         !embeddedLyrics.isNullOrBlank() -> {
-                            viewmodel.updateInputState(EditorInputState(embeddedLyrics ?: ""))
+                            val lyrics = embeddedLyrics ?: ""
+                            viewmodel.updateInputState(EditorInputState(lyrics))
+                            viewmodel.setLastSavedLyrics(lyrics)
                             context.makeToast(R.string.editor_loaded_from_embedded)
                         }
                     }
@@ -522,11 +530,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
             ResultBottomSheet(
                 lyricsSavingState = lyricsSavingState,
                 onDismiss = viewmodel::resetLyricsSavingState,
-                grantAccess = {
-                    pathAccess.requestAccess {
-                        viewmodel.saveLyrics()
-                    }
-                }
+                grantAccess = { pathAccess.requestAccess(onResult = { viewmodel.saveLyrics() }) }
             )
         }
         if (showPromptDialog) {

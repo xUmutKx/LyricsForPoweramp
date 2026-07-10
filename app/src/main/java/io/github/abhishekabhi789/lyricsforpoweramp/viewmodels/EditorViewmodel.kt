@@ -48,7 +48,7 @@ class EditorViewmodel @Inject constructor(
     val inputState: StateFlow<EditorInputState> = _inputState.asStateFlow()
 
     private val _lastSavedLyrics = MutableStateFlow("")
-    val isDirty: StateFlow<Boolean> = combine(_inputState, _lastSavedLyrics) { input, lastSaved ->
+    val isUnsaved: StateFlow<Boolean> = combine(_inputState, _lastSavedLyrics) { input, lastSaved ->
         input.lyrics.trim() != lastSaved.trim()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
@@ -149,7 +149,7 @@ class EditorViewmodel @Inject constructor(
                 ?: ""
         val normalizedLyrics = lyrics.replace("\r\n", "\n")
         this._inputState.value = EditorInputState(lyrics = normalizedLyrics)
-        this._lastSavedLyrics.value = normalizedLyrics
+        setLastSavedLyrics(normalizedLyrics)
         Log.i(TAG, "initialize: viewmodel initialized")
         isInitialized = true
     }
@@ -167,9 +167,13 @@ class EditorViewmodel @Inject constructor(
                 markInstrumental = false
             ).collect { state ->
                 _lyricsSavingState.value = state
-                if (state.progress == 1f) _lastSavedLyrics.value = lyricsContent
+                if (state.progress == 1f) setLastSavedLyrics(lyricsContent)
             }
         }
+    }
+
+    fun setLastSavedLyrics(lyrics: String) {
+        _lastSavedLyrics.value = lyrics
     }
 
     fun resetLyricsSavingState() {
