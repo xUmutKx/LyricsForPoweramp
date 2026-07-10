@@ -21,6 +21,7 @@
     <string name="first_time_info_dialog_content">Esta aplicación depende de metadatos precisos de las pistas (título, artista, etc.) para encontrar las letras.\nSi los metadatos faltan o son incorrectos, la búsqueda puede fallar — esto no es un error.\n\nEn esos casos, deberás ajustar manualmente la consulta de búsqueda.\nLas letras se obtienen de un servidor de terceros y pueden no estar siempre disponibles, incluso si los metadatos son correctos.\n\n¿Necesitas ayuda? Contacta con el soporte: %1$s\n</string>
     <string name="got_it">Entendido</string>
     <string name="cancel">Cancelar</string>
+    <string name="discard">Descartar</string>
     <string name="closing_with_timeout">Cerrando en %1$ss</string>
     <string name="folder_access_request_title">Se necesita acceso a la carpeta</string>
     <string name="folder_access_request_explanation">Para gestionar letras, la aplicación necesita acceso a la carpeta: %1$s</string>
@@ -78,6 +79,8 @@
     <string name="undo">Deshacer</string>
     <string name="redo">Rehacer</string>
     <string name="save">Guardar</string>
+    <string name="unsaved_changes_title">Cambios sin guardar</string>
+    <string name="unsaved_changes_message">Tienes cambios sin guardar. ¿Quieres guardarlos antes de salir?</string>
     <string name="increase_timestamp_by">Aumentar tiempo en %1$d centisegundos</string>
     <string name="decrease_timestamp_by">Reducir tiempo en %1$d centisegundos</string>
     <string name="editor_placeholder">Introduce las letras</string>

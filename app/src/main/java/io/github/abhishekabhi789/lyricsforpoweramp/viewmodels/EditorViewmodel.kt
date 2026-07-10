@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -45,6 +46,11 @@ class EditorViewmodel @Inject constructor(
 
     private val _inputState = MutableStateFlow(EditorInputState())
     val inputState: StateFlow<EditorInputState> = _inputState.asStateFlow()
+
+    private val _lastSavedLyrics = MutableStateFlow("")
+    val isDirty: StateFlow<Boolean> = combine(_inputState, _lastSavedLyrics) { input, lastSaved ->
+        input.lyrics.trim() != lastSaved.trim()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private var powerampId = PowerampAPI.ID_NO_ID
 
@@ -143,21 +149,24 @@ class EditorViewmodel @Inject constructor(
                 ?: ""
         val normalizedLyrics = lyrics.replace("\r\n", "\n")
         this._inputState.value = EditorInputState(lyrics = normalizedLyrics)
+        this._lastSavedLyrics.value = normalizedLyrics
         Log.i(TAG, "initialize: viewmodel initialized")
         isInitialized = true
     }
 
     fun saveLyrics() {
-        _inputState.value.lyrics.takeIf { it.isNotBlank() }?.let { lyricsContent ->
-            viewModelScope.launch(Dispatchers.IO) {
-                resetLyricsSavingState()
-                lyricsSavingHelper.saveLyrics(
-                    filePath = _filepath.value,
-                    powerampId = powerampId,
-                    lyrics = lyrics.copy(syncedLyrics = lyricsContent),
-                    lyricsType = LyricsType.SYNCED,
-                    markInstrumental = false
-                ).collect { state -> _lyricsSavingState.value = state }
+        val lyricsContent = _inputState.value.lyrics
+        viewModelScope.launch(Dispatchers.IO) {
+            resetLyricsSavingState()
+            lyricsSavingHelper.saveLyrics(
+                filePath = _filepath.value,
+                powerampId = powerampId,
+                lyrics = lyrics.copy(syncedLyrics = lyricsContent),
+                lyricsType = LyricsType.SYNCED,
+                markInstrumental = false
+            ).collect { state ->
+                _lyricsSavingState.value = state
+                if (state.progress == 1f) _lastSavedLyrics.value = lyricsContent
             }
         }
     }

@@ -5,21 +5,28 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -85,10 +92,12 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
     val inputState by viewmodel.inputState.collectAsStateWithLifecycle()
     val canUndo by viewmodel.canUndo.collectAsStateWithLifecycle()
     val canRedo by viewmodel.canRedo.collectAsStateWithLifecycle()
+    val isUnsaved by viewmodel.isDirty.collectAsStateWithLifecycle()
     val lyricsSavingState by viewmodel.lyricsSavingState.collectAsStateWithLifecycle()
     val filePath by viewmodel.filePath.collectAsStateWithLifecycle()
     val isPlaying by viewmodel.isPlaying.collectAsStateWithLifecycle()
     var showPromptDialog by rememberSaveable { mutableStateOf(false) }
+    var showWarningForUnsaved by rememberSaveable { mutableStateOf(false) }
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(inputState.lyrics, inputState.selection))
     }
@@ -96,9 +105,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
     val lyricsLines by remember(lyricsContent) { derivedStateOf { lyricsContent.lines() } }
     val timestampDeltaCenti by viewmodel.timestampDelta.collectAsStateWithLifecycle()
     val savedFontSize by viewmodel.editorFontSize.collectAsStateWithLifecycle()
-    var fontSize by remember {
-        mutableFloatStateOf(savedFontSize ?: defaultFontSize)
-    }
+    var fontSize by remember { mutableFloatStateOf(savedFontSize ?: defaultFontSize) }
 
     LaunchedEffect(savedFontSize) {
         if (fontSize == defaultFontSize) savedFontSize?.let { fontSize = it }
@@ -124,12 +131,16 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
             }
         }
     }
-    BackHandler { onFinish() }
+    val handleBack = {
+        if (isUnsaved) showWarningForUnsaved = true
+        else onFinish()
+    }
+    BackHandler(onBack = handleBack)
     Scaffold(
         topBar = {
             TopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = onFinish) {
+                    IconButton(onClick = handleBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.navigate_back_action)
@@ -234,11 +245,13 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                 })
         }, floatingActionButton = {
             FloatingActionButton(onClick = { viewmodel.saveLyrics() }) {
-                Icon(
-                    imageVector = Icons.Default.Save,
-                    contentDescription = stringResource(R.string.save),
-                    tint = LocalContentColor.current.copy(alpha = if (lyricsContent.isBlank()) 0.4f else 1f)
-                )
+                AnimatedContent(isUnsaved) { showSave ->
+                    Icon(
+                        imageVector = if (showSave) Icons.Default.Save else Icons.Default.Done,
+                        contentDescription = stringResource(R.string.save),
+                        tint = LocalContentColor.current.copy(alpha = if (showSave) 1f else 0.4f)
+                    )
+                }
             }
         }, modifier = modifier
             .fillMaxSize()
@@ -395,6 +408,47 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                 )
             }
 
+            if (showWarningForUnsaved) {
+                BasicAlertDialog(onDismissRequest = { showWarningForUnsaved = false }) {
+                    Surface(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        tonalElevation = 8.dp
+                    ) {
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            Text(
+                                text = stringResource(R.string.unsaved_changes_title),
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                text = stringResource(R.string.unsaved_changes_message),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Spacer(Modifier.height(24.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                TextButton(onClick = { showWarningForUnsaved = false }) {
+                                    Text(stringResource(R.string.cancel))
+                                }
+                                TextButton(onClick = {
+                                    showWarningForUnsaved = false
+                                    onFinish()
+                                }) {
+                                    Text(stringResource(R.string.discard))
+                                }
+                                TextButton(onClick = {
+                                    showWarningForUnsaved = false
+                                    viewmodel.saveLyrics()
+                                }) {
+                                    Text(stringResource(R.string.save))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             val playbackPosition by viewmodel.playbackPosition.collectAsStateWithLifecycle()
             val indexesOfCurrentLines: IntArray by remember(playbackPosition) {
@@ -473,7 +527,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                         viewmodel.saveLyrics()
                     }
                 },
-                onFinish = onFinish
+                onFinish = {}
             )
         }
         if (showPromptDialog) {

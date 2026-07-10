@@ -23,6 +23,7 @@
     <string name="first_time_info_dialog_content">This app depends on accurate track metadata (title, artist, etc.) to find lyrics.\nIf the metadata is missing or incorrect, the search may fail — this is not a bug.\n\nIn such cases, you’ll need to manually adjust the search query.\nLyrics are fetched from a third-party server. They may not always be available, even if the metadata is correct.\n\nNeed help? Contact support: %1$s\n</string>
     <string name="got_it">Got it</string>
     <string name="cancel">Cancel</string>
+    <string name="discard">Discard</string>
     <string name="closing_with_timeout">Closing in %1$ss</string>
     <string name="folder_access_request_title">Folder Access Needed</string>
     <string name="folder_access_request_explanation">To manage lyrics, this app needs access to the folder: %1$s</string>
@@ -79,6 +80,8 @@
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
     <string name="save">Save</string>
+    <string name="unsaved_changes_title">Unsaved Changes</string>
+    <string name="unsaved_changes_message">You have unsaved changes. Do you want to save them before leaving?</string>
     <string name="increase_timestamp_by">Increase timestamp by %1$d centiseconds</string>
     <string name="decrease_timestamp_by">Decrease timestamp by %1$d centiseconds</string>
     <string name="editor_placeholder">Enter lyrics</string>
