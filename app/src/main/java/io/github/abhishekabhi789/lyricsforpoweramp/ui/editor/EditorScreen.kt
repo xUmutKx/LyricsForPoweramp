@@ -526,8 +526,7 @@ fun EditorScreen(modifier: Modifier = Modifier, viewmodel: EditorViewmodel, onFi
                     pathAccess.requestAccess {
                         viewmodel.saveLyrics()
                     }
-                },
-                onFinish = {}
+                }
             )
         }
         if (showPromptDialog) {

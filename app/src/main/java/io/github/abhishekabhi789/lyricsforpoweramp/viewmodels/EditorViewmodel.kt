@@ -156,10 +156,11 @@ class EditorViewmodel @Inject constructor(
 
     fun saveLyrics() {
         val lyricsContent = _inputState.value.lyrics
+        val filePath = _filepath.value
         viewModelScope.launch(Dispatchers.IO) {
             resetLyricsSavingState()
             lyricsSavingHelper.saveLyrics(
-                filePath = _filepath.value,
+                filePath = filePath,
                 powerampId = powerampId,
                 lyrics = lyrics.copy(syncedLyrics = lyricsContent),
                 lyricsType = LyricsType.SYNCED,

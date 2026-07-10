@@ -1,5 +1,6 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -62,7 +63,7 @@ fun ResultBottomSheet(
     lyricsSavingState: LyricsSavingState,
     grantAccess: () -> Unit,
     onDismiss: () -> Unit,
-    onFinish: () -> Unit,
+    onFinish: (() -> Unit)? = null,
 ) {
     val timeout = remember { 3.seconds }
     val sendToPoweramp by remember(lyricsSavingState) { derivedStateOf { lyricsSavingState.sendToPoweramp } }
@@ -134,23 +135,29 @@ fun ResultBottomSheet(
                 }
                 val completed: Boolean? by remember(lyricsSavingState) {
                     derivedStateOf {
-                        val send = !sendToPoweramp.shouldPerform || sendToPoweramp.result == true
-                        val saved =
-                            !saveToStorage.shouldPerform || saveToStorage.result == StorageHelper.Result.SUCCESS
-                        val embedded =
-                            !embedIntoFile.shouldPerform || embedIntoFile.result == StorageHelper.Result.SUCCESS
-                        when {
-                            !sendToPoweramp.shouldPerform && !saveToStorage.shouldPerform && !embedIntoFile.shouldPerform -> false
-                            lyricsSavingState.progress == 1f -> true
-                            (sendToPoweramp.result != null && !send) || (saveToStorage.result != null && !saved) || (embedIntoFile.result != null && !embedded) -> false
-                            else -> null
+                        if (lyricsSavingState.progress == 1f) return@derivedStateOf true
+                        val sendToPa: Boolean? =
+                            if (sendToPoweramp.shouldPerform) sendToPoweramp.result else true
+                        val saveToFile: Boolean? = if (saveToStorage.shouldPerform) {
+                            if (saveToStorage.result == null) null else saveToStorage.result == StorageHelper.Result.SUCCESS
+                        } else true
+                        val embedIntoFile: Boolean? = if (embedIntoFile.shouldPerform) {
+                            if (embedIntoFile.result == null) null else embedIntoFile.result == StorageHelper.Result.SUCCESS
+                        } else true
+                        return@derivedStateOf listOf(sendToPa, saveToFile, embedIntoFile).run {
+                            when {
+                                any { it == null } -> null
+                                any { it == false } -> false
+                                all { it == true } -> true
+                                else -> null
+                            }
                         }
                     }
                 }
                 StepIndicator(stringResource(R.string.done), completed)
             }
         }
-        if (lyricsSavingState.progress == 1f) {
+        AnimatedVisibility(onFinish != null && lyricsSavingState.progress == 1f) {
             Row(
                 verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     .fillMaxWidth()
@@ -169,7 +176,7 @@ fun ResultBottomSheet(
                         delay(1.seconds)
                         exitTimeout = exitTimeout.minus(1.seconds)
                     }
-                    onFinish()
+                    onFinish?.invoke()
                 }
                 Text(
                     stringResource(R.string.closing_with_timeout, exitTimeout.inWholeSeconds),

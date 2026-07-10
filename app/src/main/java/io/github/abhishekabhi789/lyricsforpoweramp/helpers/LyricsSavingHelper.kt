@@ -43,7 +43,7 @@ class LyricsSavingHelper @Inject constructor(
         emit(state)
 
         val totalSteps = listOf(shouldSendToPA, shouldSaveAsFile, embedIntoFile).count { it }
-        val stepSize = 0.5f / totalSteps
+        val stepSize = 1f / totalSteps
 
         val lyricsText: String? = when (lyricsType) {
             LyricsType.PLAIN -> (lyrics.plainLyrics ?: lyrics.syncedLyrics)
@@ -95,7 +95,7 @@ class LyricsSavingHelper @Inject constructor(
                     lyricsType = lyricsType,
                 )
                 Log.i(TAG, "saveLyrics: save to storage $saveResult")
-                progress += stepSize
+                if (saveResult == StorageHelper.Result.SUCCESS) progress += stepSize
                 val savedToFile = state.saveAsFile.copy(result = saveResult)
                 state = state.copy(progress = progress, saveAsFile = savedToFile)
                 emit(state)
@@ -103,40 +103,31 @@ class LyricsSavingHelper @Inject constructor(
             if (embedIntoFile) {
                 if (filePath != null) {
                     val onSessionError = { error: StorageHelper.Result ->
-                        state = state.copy(
-                            progress = progress,
-                            embedIntoFile = state.embedIntoFile.copy(result = error)
-                        )
+                        state = state.copy(embedIntoFile = state.embedIntoFile.copy(result = error))
                     }
                     taglibHelper.getTaglibSession(filePath, onError = onSessionError)
                         ?.use { session ->
-                            session.updateLyricsTag(lyricsText)
-                            session.saveModifiedFile()
-                            Log.i(TAG, "saveLyrics: embedded into song tag")
-                            progress += stepSize
-                            state = state.copy(
-                                progress = progress,
-                                embedIntoFile = state.embedIntoFile.copy(result = StorageHelper.Result.SUCCESS)
+                            if (session.updateLyricsTag(lyricsText) && session.saveModifiedFile()) {
+                                Log.i(TAG, "saveLyrics: embedded into song tag")
+                                progress += stepSize
+                                state = state.copy(
+                                    progress = progress,
+                                    embedIntoFile = state.embedIntoFile.copy(result = StorageHelper.Result.SUCCESS)
+                                )
+                            } else state = state.copy(
+                                embedIntoFile = state.embedIntoFile.copy(result = StorageHelper.Result.UNKNOWN_ERROR)
                             )
                         }
                 } else {
                     state = state.copy(
-                        progress = progress,
                         embedIntoFile = state.embedIntoFile.copy(result = StorageHelper.Result.INVALID_FILEPATH)
                     )
                 }
                 emit(state)
             }
         }
-        val sent = !state.sendToPoweramp.shouldPerform || state.sendToPoweramp.result == true
-        val saved =
-            !state.saveAsFile.shouldPerform || state.saveAsFile.result == StorageHelper.Result.SUCCESS
-        val embedded =
-            !state.embedIntoFile.shouldPerform || state.embedIntoFile.result == StorageHelper.Result.SUCCESS
-        if (sent && saved && embedded) {
-            state = state.copy(progress = 1f)
-            emit(state)
-        }
+        state = state.copy(progress = state.progress.coerceIn(0.0f, 1f))
+        emit(state)
     }.flowOn(Dispatchers.IO)
 
     companion object {
