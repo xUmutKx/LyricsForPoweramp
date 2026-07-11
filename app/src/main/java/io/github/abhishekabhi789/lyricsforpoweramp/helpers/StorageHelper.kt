@@ -28,10 +28,6 @@ object StorageHelper {
             Log.e(TAG, "writeLyricsFile: filepath is null; aborting")
             return@withContext Result.INVALID_FILEPATH
         }
-        if (lyricsContent.isBlank()) {
-            Log.e(TAG, "writeLyricsFile: aborting lyrics write due to null lyrics")
-            return@withContext Result.INVALID_LYRICS
-        }
         val filePath = normalizeToDocumentId(filePath)
         Log.d(TAG, "writeLyricsFile: track file path $filePath")
         if (filePath.isNullOrBlank()) return@withContext Result.INVALID_FILEPATH
@@ -51,6 +47,11 @@ object StorageHelper {
         if (lyricsFileName.isBlank()) {
             Log.e(TAG, "writeLyricsFile: failed to make lyrics file name $lyricsFileName")
             return@withContext Result.INVALID_FILEPATH
+        }
+
+        if (lyricsContent.isBlank()) {
+            parentFolder.findFile(lyricsFileName)?.delete()
+            return@withContext Result.SUCCESS
         }
 
         val lyricsFile = runCatching {
@@ -140,9 +141,6 @@ object StorageHelper {
 
         /** Invalid file path. */
         INVALID_FILEPATH(R.string.lyrics_write_invalid_path),
-
-        /** Invalid lyrics content. */
-        INVALID_LYRICS(R.string.lyrics_write_invalid_lyrics),
 
         /** An unknown error occurred while writing the file. */
         UNKNOWN_ERROR(R.string.lyrics_write_unknown_error)

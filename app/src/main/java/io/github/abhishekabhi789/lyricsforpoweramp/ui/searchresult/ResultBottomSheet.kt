@@ -65,7 +65,7 @@ fun ResultBottomSheet(
     onDismiss: () -> Unit,
     onFinish: (() -> Unit)? = null,
 ) {
-    val timeout = remember { 3.seconds }
+    val timeout = 3.seconds
     val sendToPoweramp by remember(lyricsSavingState) { derivedStateOf { lyricsSavingState.sendToPoweramp } }
     val saveToStorage by remember(lyricsSavingState) { derivedStateOf { lyricsSavingState.saveAsFile } }
     val embedIntoFile by remember(lyricsSavingState) { derivedStateOf { lyricsSavingState.embedIntoFile } }

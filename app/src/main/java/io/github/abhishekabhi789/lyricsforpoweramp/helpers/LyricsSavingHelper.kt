@@ -45,15 +45,12 @@ class LyricsSavingHelper @Inject constructor(
         val totalSteps = listOf(shouldSendToPA, shouldSaveAsFile, embedIntoFile).count { it }
         val stepSize = 1f / totalSteps
 
-        val lyricsText: String? = when (lyricsType) {
+        val lyricsText: String = when (lyricsType) {
             LyricsType.PLAIN -> (lyrics.plainLyrics ?: lyrics.syncedLyrics)
             LyricsType.SYNCED -> (lyrics.syncedLyrics ?: lyrics.plainLyrics)
             LyricsType.INSTRUMENTAL -> PowerampApiHelper.INSTRUMENTAL_MARKING
-        }
-        if (lyricsText.isNullOrBlank()) {
-            Log.w(TAG, "saveLyrics: lyrics content is null or blank, aborting")
-            return@flow
-        }
+        } ?: ""
+
         if (shouldSendToPA) {
             var sentToPa = false
             try {
