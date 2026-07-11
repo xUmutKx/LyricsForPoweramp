@@ -178,7 +178,7 @@ fun LyricItem(
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(start = 8.dp)
                 )
-                trackDuration?.let { duration ->
+                trackDuration?.takeIf { it > 0 }?.let { duration ->
                     Spacer(Modifier.width(8.dp))
                     val difference = remember(duration, lyrics.duration) {
                         lyrics.duration.toInt() - duration
@@ -192,6 +192,7 @@ fun LyricItem(
                         border = BorderStroke(Dp.Hairline, MaterialTheme.colorScheme.outline)
                     ) {
                         Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .wrapContentWidth()
                                 .padding(horizontal = 4.dp)
@@ -199,11 +200,16 @@ fun LyricItem(
                             if (difference == 0) {
                                 Icon(
                                     imageVector = Icons.Default.Done,
-                                    contentDescription = stringResource(R.string.result_same_duration)
+                                    contentDescription = stringResource(R.string.result_same_duration),
+                                    modifier = Modifier.size(16.dp)
                                 )
                             } else {
-                                Text(text = if (difference > 0) "+" else "-")
-                                Text("${abs(difference)} s")
+                                val text = buildString {
+                                    append(if (difference > 0) '+' else '-')
+                                    append(abs(difference))
+                                    append('s')
+                                }
+                                Text(text = text, style = MaterialTheme.typography.labelMedium)
                             }
                         }
                     }
@@ -417,7 +423,7 @@ fun PreviewLyricItem() {
     )
     LyricItem(
         lyrics = data,
-        trackDuration = 210,
+        trackDuration = 200,
         isLaunchedFromPowerAmp = true,
         preferredLyricsType = LyricsType.SYNCED,
         onLyricChosen = { },
