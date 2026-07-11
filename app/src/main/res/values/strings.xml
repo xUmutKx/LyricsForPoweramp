@@ -111,6 +111,11 @@
     <string name="link_to_guide">Read Guide</string>
     <string name="link_to_feedback">Feedback</string>
     <string name="link_to_more_projects">More Projects</string>
+    <string name="email_dialog_title">Contact Developer</string>
+    <string name="email_dialog_message">If you are reporting an issue, including device information can help in debugging.</string>
+    <string name="email_dialog_include_device_info">Include device info</string>
+    <string name="email_dialog_device_info_details">App Version, OS Version, and Device Model will be included. No personal information is collected.</string>
+    <string name="email_dialog_send">Send Email</string>
 
     <!--    settings-->
     <string name="top_bar_settings">Settings</string>

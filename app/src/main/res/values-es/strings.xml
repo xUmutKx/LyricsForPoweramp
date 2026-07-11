@@ -110,6 +110,11 @@
     <string name="link_to_guide">Leer guía</string>
     <string name="link_to_feedback">Comentarios</string>
     <string name="link_to_more_projects">Más proyectos</string>
+    <string name="email_dialog_title">Contactar con el desarrollador</string>
+    <string name="email_dialog_message">Si informa de un problema, incluir información del dispositivo puede ayudar en la depuración.</string>
+    <string name="email_dialog_include_device_info">Incluir información del dispositivo</string>
+    <string name="email_dialog_device_info_details">Se incluirá la versión de la aplicación, el SO y el modelo del dispositivo. No se recopila información personal.</string>
+    <string name="email_dialog_send">Enviar correo</string>
 
     <!-- settings activity -->
     <string name="top_bar_settings">Configuración</string>

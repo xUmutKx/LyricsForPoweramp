@@ -2,16 +2,21 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.about
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -23,17 +28,24 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.HelpCenter
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,6 +82,8 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
     val playStoreUrl =
         BuildConfig.PLAY_STORE_URL + "&referrer=utm_source=app&utm_medium=l4pa&utm_campaign=about"
     val guideUrl = "https://abhishekabhi789.github.io/LyricsForPoweramp/guide"
+    var includeDeviceInfoInMail by remember { mutableStateOf(true) }
+    var showEmailDialog by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -174,7 +188,7 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
                             leadingIcon = { Icon(Icons.AutoMirrored.Filled.HelpCenter, null) }
                         )
                         AssistChip(
-                            onClick = { browseUrl(context, "mailto:${BuildConfig.EMAIL}") },
+                            onClick = { showEmailDialog = true },
                             label = { Text(stringResource(R.string.link_to_feedback)) },
                             leadingIcon = { Icon(Icons.Default.Mail, null) }
                         )
@@ -192,6 +206,57 @@ fun AboutScreen(modifier: Modifier = Modifier, onFinish: () -> Unit) {
                 }
             }
         }
+        if (showEmailDialog) {
+            AlertDialog(
+                onDismissRequest = { showEmailDialog = false },
+                title = { Text(stringResource(R.string.email_dialog_title)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.email_dialog_message))
+                        Surface(tonalElevation = 4.dp, shape = MaterialTheme.shapes.medium) {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(8.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(MaterialTheme.shapes.medium)//ripple border
+                                        .clickable {
+                                            includeDeviceInfoInMail = !includeDeviceInfoInMail
+                                        }
+                                ) {
+                                    Checkbox(
+                                        checked = includeDeviceInfoInMail,
+                                        onCheckedChange = { includeDeviceInfoInMail = it }
+                                    )
+                                    Text(stringResource(R.string.email_dialog_include_device_info))
+                                }
+                                Text(
+                                    text = stringResource(R.string.email_dialog_device_info_details),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showEmailDialog = false
+                        browseUrl(context, composeMailUri(includeDeviceInfoInMail))
+                    }) {
+                        Text(stringResource(R.string.email_dialog_send))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showEmailDialog = false }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -201,5 +266,22 @@ fun browseUrl(context: Context, url: String) {
     } catch (e: Exception) {
         Log.e(TAG, "browseUrl: unable to open link $url", e)
         Toast.makeText(context, R.string.toast_failed_to_browse_link, Toast.LENGTH_SHORT).show()
+    }
+}
+
+fun composeMailUri(includeDeviceDetails: Boolean): String {
+    val body = if (includeDeviceDetails) buildString {
+        append("App Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
+        append("OS Version: Android ${Build.VERSION.RELEASE}\n")
+        append("Device: ${Build.MANUFACTURER} ${Build.MODEL}\n")
+        append("---\n")
+    } else null
+    return buildString {
+        append("mailto:")
+        append(BuildConfig.EMAIL)
+        body?.let {
+            append("?body=")
+            append(Uri.encode(it))
+        }
     }
 }
