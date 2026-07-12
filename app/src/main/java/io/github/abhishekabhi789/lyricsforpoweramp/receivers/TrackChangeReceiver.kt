@@ -19,7 +19,8 @@ class TrackChangeReceiver(
                 val trackName = intent.getStringExtra(PowerampAPI.Track.TITLE) ?: ""
                 val artistName = intent.getStringExtra(PowerampAPI.Track.ARTIST) ?: ""
                 val albumName = intent.getStringExtra(PowerampAPI.Track.ALBUM) ?: ""
-                val filePath = intent.getStringExtra(PowerampAPI.Track.PATH) ?: ""
+                val filePath =
+                    intent.getStringExtra(PowerampAPI.Track.PATH)?.replaceFirst('/', ':') ?: ""
                 val duration = intent.getIntExtra(PowerampAPI.Track.DURATION, -1)
                 onTrackChanged(
                     Track(
@@ -32,7 +33,6 @@ class TrackChangeReceiver(
                     )
                 )
             }
-
 
             else -> {
                 Log.d(TAG, "onReceive: receiver got another intent ${intent.action}")

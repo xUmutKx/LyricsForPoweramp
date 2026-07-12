@@ -149,7 +149,6 @@ class EditorViewmodel @Inject constructor(
                 ?: ""
         val normalizedLyrics = lyrics.replace("\r\n", "\n")
         this._inputState.value = EditorInputState(lyrics = normalizedLyrics)
-        setLastSavedLyrics(normalizedLyrics)
         Log.i(TAG, "initialize: viewmodel initialized")
         isInitialized = true
     }

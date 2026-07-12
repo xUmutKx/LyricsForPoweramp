@@ -32,11 +32,11 @@ class EditorActivity : ComponentActivity() {
                 ?.firstOrNull()
         }
         val powerampId = intent.getLongExtra(Track.KEY_REAL_ID, PowerampAPI.ID_NO_ID)
-        val filePath = intent.getStringExtra(Track.KEY_FILE_PATH)?.replaceFirst("/", ":")
+        val filePath = intent.getStringExtra(Track.KEY_FILE_PATH)
         val chosenLyricsType = intent.getStringExtra(KEY_LYRICS_TYPE)
             ?.let { name -> LyricsType.valueOf(name) }
         if (powerampId == 0L || filePath == null || lyrics == null) {
-            Log.i(TAG, "onCreate: realId = $powerampId || path = $filePath || lyrics == $lyrics")
+            Log.d(TAG, "onCreate: realId = $powerampId || path = $filePath || lyrics == $lyrics")
             Log.e(TAG, "onCreate: failed to get required parameters, returning")
             makeToast(R.string.failed)
             finish()
