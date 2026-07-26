@@ -9,6 +9,7 @@ You cannot directly view lyrics in this plugin or select it as a **_Preferred Ly
 Poweramp automatically sends a lyrics request when lyrics are unavailable for a track.
 
 ## Lyrics Fetching
+### Automatic Lyrics Fetching
 
 - When there are no lyrics available for a track to display, Poweramp makes an automatic background request with the track information.
 - This request will be intercepted by the plugin, which will attempt to find lyrics from the internet and third-party lyrics providers.
@@ -20,7 +21,7 @@ Poweramp automatically sends a lyrics request when lyrics are unavailable for a 
   manual search**.
 - To initiate a manual search easily, enable [Notify on Lyrics Request Failure](#notify-on-lyrics-request-failure) to get a notification where you can easily start a manual search.
 
-## Manual Search
+### Manual Search
 
 If the app fails to retrieve lyrics for a track, you can perform a manual search.
 
@@ -28,7 +29,8 @@ You can do manual search from following methods.
 
 1. When automatic background search fails you will receive a notification, from which you can start a manual search. See [Lyrics Fetching](#lyrics-fetching) for more.
 2. If Poweramp shows cached lyrics sent by this plugin, you can find a (») button in the top header that launches the plugin search screen with pre-populated search fields.
-3. For the PlayStore variant, clicking on the library item will show a panel of additional actions which contains a search button, clicking on it will take you for a manual search.
+3. On the search screen(Main screen) of the plugin, tap on the Floating action button which will show you a search button labeled "Search for current track", clicking on it will populate the search field for now-playing track.
+4. For the PlayStore variant, clicking on the library item will show a panel of additional actions which contains a search button, clicking on it will take you for a manual search.
 
 ### Manual Search Modes
 
@@ -50,6 +52,7 @@ The app offers two search options to perform a manual search:
 - You can only edit or save lyrics to a track if the search was initiated within the context of a track (i.e., started from the Poweramp lyrics UI, a plugin notification, or the plugin library).Therefore, if you perform a random search, you will only see the results without the option to edit or save them.
 - Both edit and save lyrics buttons will display a dialog allowing you to choose whether to proceed with synced lyrics or plain lyrics. Your preferred choice will be highlighted.
 - An "Edit metadata" option is available alongside the edit/save options, allowing you to update or fix the track metadata(title, artist, album).
+- On the topbar you can find the sort button and shortcut to launch settings.
 
 ## Edit Lyrics for a Track
 
@@ -94,6 +97,8 @@ For Play Store builds, you can edit embedded song metadata (including lyrics) fr
 4. Update the fields (Title, Artist, Album, Lyrics, etc.) in the dialog and save.
 
 Note: This requires [Storage Access Permission](#selected-folders).
+
+You can also edit metadata from lyrics search results.
 
 Important: You need to refresh the library in Poweramp first, and then refresh the plugin library to see the updated metadata in the plugin library.
 
@@ -163,7 +168,11 @@ Important: You need to refresh the library in Poweramp first, and then refresh t
       The track metadata (Title, Artist, and Album Name) will be set from the lyrics metadata.
 
     - #### Selected Folders
+      The plugin automatically lists folders from Poweramp library data. 
+      
       The plugin requires read and write access to these folders to manage lyrics files and track metadata.
+
+      When you grant access to a parent folder, the plugin will automatically get access to all subfolders.
 
       Tips for Selecting Folders:
         * When choosing a music directory, try to select the parent folder rather than multiple individual subfolders.
@@ -174,6 +183,8 @@ Important: You need to refresh the library in Poweramp first, and then refresh t
       You can add custom Lrclib server URLs. The app will route subsequent requests to the specified servers.
     - #### Active Lrclib API
       This displays the primary API server currently handling all requests. Only one can be active at a time; secondary fallbacks are not supported.
+    
+      **IMPORTANT**: It's recommended to use Default API for faster and reliable lyrics search operations. 
 
 - ### Lyrics Editor
     - #### AI Provider Settings

@@ -5,8 +5,8 @@
 [![App Name](docs/assets/app_name.png)](#)
 A lyrics plugin for <a href="https://powerampapp.com/">Poweramp</a><br>
 <br>
-<a href="https://developer.android.com/tools/releases/platforms#5.0">
-<img alt="Android 6.0+" src="https://img.shields.io/badge/API-23%2B-brightgreen.svg?style=for-the-badge&color=FF0800&logo=android" title="Android 6.0+">
+<a href="https://developer.android.com/tools/releases/platforms#7.0">
+<img alt="Android 7.0+" src="https://img.shields.io/badge/API-24%2B-brightgreen.svg?style=for-the-badge&color=FF0800&logo=android" title="Android 7.0+">
 </a>
 <a href="https://github.com/abhishekabhi789/LyricsForPowerAmp/releases">
 <img alt="GitHub release download count" src="https://img.shields.io/github/downloads/abhishekabhi789/LyricsForPowerAmp/total?style=for-the-badge&color=00C853&logo=github" title="GitHub download count">
@@ -55,7 +55,7 @@ See [Usage Instructions](docs/guide.md)
 
 ### :lock_with_ink_pen: Privacy Policy
 
-Read the Privacy Policy [Here](docs/privacy-policy.md)
+Read the Privacy Policy [here](docs/privacy-policy.md)
 
 ### :books: References & Credits
 
