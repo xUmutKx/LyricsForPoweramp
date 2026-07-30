@@ -47,8 +47,23 @@ object PowerampPlaybackHelper {
             }
             context.grantUriPermissionSafely(audioUri)
             context.sendBroadcast(intent)
+            context.bringPowerampToFront()
             true
         }.onFailure { Log.e(TAG, "openToPlay: failed for $audioUri", it) }.getOrDefault(false)
+    }
+
+    /**
+     * The API command alone only starts playback in the background, which looks like nothing
+     * happened. Opening Poweramp right after puts the player on screen at the line that was tapped.
+     */
+    private fun Context.bringPowerampToFront() {
+        runCatching {
+            val launchIntent = packageManager.getLaunchIntentForPackage(PowerampAPI.PACKAGE_NAME)
+                ?: return
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            startActivity(launchIntent)
+        }.onFailure { Log.w(TAG, "bringPowerampToFront: couldn't open Poweramp", it) }
     }
 
     /** Opens the file with whatever player the user picks, used when Poweramp can't take it. */

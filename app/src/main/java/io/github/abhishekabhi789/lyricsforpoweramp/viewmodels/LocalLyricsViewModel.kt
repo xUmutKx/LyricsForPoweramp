@@ -39,6 +39,7 @@ class LocalLyricsViewModel @Inject constructor(
     }
 
     val appTheme = appPreference.appTheme
+    val accentColor = appPreference.accentColor
 
     val folder = appPreference.localLyricsFolder
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)

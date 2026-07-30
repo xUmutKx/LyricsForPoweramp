@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,9 +22,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.InterpreterMode
+import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -54,6 +59,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.LocalLyricsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.model.InputState.SearchMode
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.TextInput
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
@@ -134,21 +140,45 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
             }
         }
     }
+    val context = LocalContext.current
     Column(modifier = modifier.fillMaxSize()) {
-        SecondaryTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            containerColor = TopAppBarDefaults.topAppBarColors().containerColor,
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(TopAppBarDefaults.topAppBarColors().containerColor)
         ) {
-            tabs.forEachIndexed { tabIndex, tab ->
-                val selected = pagerState.currentPage == tabIndex
-                Tab(
-                    text = { Text(stringResource(id = tab.labelResId)) },
-                    selected = selected,
-                    onClick = {
-                        scope.launch { pagerState.animateScrollToPage(tabIndex) }
-                    }
+            SecondaryTabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = TopAppBarDefaults.topAppBarColors().containerColor,
+                modifier = Modifier.weight(1f)
+            ) {
+                tabs.forEachIndexed { tabIndex, tab ->
+                    val selected = pagerState.currentPage == tabIndex
+                    Tab(
+                        text = { Text(stringResource(id = tab.labelResId)) },
+                        selected = selected,
+                        onClick = {
+                            scope.launch { pagerState.animateScrollToPage(tabIndex) }
+                        }
+                    )
+                }
+            }
+            // third way to search, sitting right next to the two online ones
+            FilledTonalButton(
+                onClick = {
+                    context.startActivity(Intent(context, LocalLyricsActivity::class.java))
+                },
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.LibraryMusic,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
                 )
+                Spacer(modifier = Modifier.padding(3.dp))
+                Text(stringResource(R.string.local_lyrics_tab_label))
             }
         }
         HorizontalPager(

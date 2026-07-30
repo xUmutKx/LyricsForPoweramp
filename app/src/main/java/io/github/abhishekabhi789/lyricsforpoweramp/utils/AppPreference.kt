@@ -49,6 +49,12 @@ class AppPreference @Inject constructor(
         preferences[APP_THEME]?.let { AppTheme.valueOf(it) } ?: defaultTheme
     }.stateIn(scope, SharingStarted.Eagerly, defaultTheme)
 
+    val accentColor = dataStore.data.map { preferences ->
+        preferences[ACCENT_COLOR]?.let { saved ->
+            AccentColor.entries.firstOrNull { it.name == saved }
+        } ?: AccentColor.Default
+    }.stateIn(scope, SharingStarted.Eagerly, AccentColor.Default)
+
     val firstTimeInfoShown = dataStore.data.map { it[FIRST_TIME_INFO_SHOWN] ?: false }
 
     val fallbackSearch = dataStore.data.map { it[FALLBACK_SEARCH] ?: false }
@@ -175,6 +181,7 @@ class AppPreference @Inject constructor(
 
         val FIRST_TIME_INFO_SHOWN = booleanPreferencesKey("first_time_info_shown")
         val APP_THEME = stringPreferencesKey("app_theme")
+        val ACCENT_COLOR = stringPreferencesKey("accent_color")
         val FALLBACK_SEARCH = booleanPreferencesKey("perform_search_if_get_failed")
         val SHOW_LYRICS_REQUEST_NOTIFICATION =
             booleanPreferencesKey("lyrics_requests_show_notification")

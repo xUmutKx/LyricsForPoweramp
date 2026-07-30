@@ -33,6 +33,7 @@ class SearchResultActivity : ComponentActivity() {
         setContent {
             val viewmodel: SearchResultViewmodel = viewModel()
             val preferredTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
+            val accent by viewmodel.accentColor.collectAsStateWithLifecycle()
             LaunchedEffect(Unit) {
                 searchResultData?.let {
                     if (!viewmodel.setSearchResultDataKey(it)) {
@@ -46,7 +47,8 @@ class SearchResultActivity : ComponentActivity() {
             val useDarkTheme = isDarkTheme(theme = preferredTheme)
             LyricsForPowerAmpTheme(
                 useDarkTheme = useDarkTheme,
-                amoled = preferredTheme == AppTheme.Amoled
+                amoled = preferredTheme == AppTheme.Amoled,
+                accent = accent
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),

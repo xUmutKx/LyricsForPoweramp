@@ -17,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AccentColor
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
@@ -27,7 +28,9 @@ private fun AppThemeSettingsContent(
     modifier: Modifier = Modifier,
     topbar: @Composable (() -> Unit),
     currentTheme: AppTheme,
-    onThemeChange: (AppTheme) -> Unit
+    currentAccent: AccentColor = AccentColor.Default,
+    onThemeChange: (AppTheme) -> Unit,
+    onAccentChange: (AccentColor) -> Unit = {}
 ) {
     SettingsPageLayout(topbar = topbar, modifier = modifier) {
         BasicSettings(label = stringResource(R.string.settings_app_theme_description)) { interactionSource ->
@@ -57,6 +60,33 @@ private fun AppThemeSettingsContent(
                 getLabel = { theme -> stringResource(theme.labelResId) }
             )
         }
+        BasicSettings(label = stringResource(R.string.settings_accent_description)) { interactionSource ->
+            var expanded by remember { mutableStateOf(false) }
+            var ignoreInteractions by remember { mutableStateOf(false) }
+            val accents = remember { AccentColor.entries.toList() }
+            LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collectLatest { interaction ->
+                    if (interaction is PressInteraction.Release) {
+                        if (!ignoreInteractions) expanded = !expanded
+                        ignoreInteractions = false
+                    }
+                }
+            }
+            DropdownSettings(
+                expanded = expanded,
+                currentValue = currentAccent,
+                values = accents,
+                onSelection = {
+                    onAccentChange(it)
+                    expanded = false
+                },
+                onExpandChanged = {
+                    ignoreInteractions = true
+                    expanded = it
+                },
+                getLabel = { accent -> stringResource(accent.labelResId) }
+            )
+        }
     }
 }
 
@@ -67,11 +97,14 @@ fun AppThemeSettings(
     viewmodel: SettingsViewModel
 ) {
     val appTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
+    val accentColor by viewmodel.accentColor.collectAsStateWithLifecycle()
     AppThemeSettingsContent(
         modifier = modifier,
         topbar = topbar,
         currentTheme = appTheme,
-        onThemeChange = viewmodel::updateTheme
+        currentAccent = accentColor,
+        onThemeChange = viewmodel::updateTheme,
+        onAccentChange = viewmodel::updateAccentColor
     )
 }
 

@@ -2,6 +2,7 @@ package io.github.abhishekabhi789.lyricsforpoweramp.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -10,7 +11,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AccentColor
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -263,17 +266,60 @@ val unspecified_scheme = ColorFamily(
     Color.Unspecified, Color.Unspecified, Color.Unspecified, Color.Unspecified
 )
 
+/**
+ * Repaints the accent roles from a single colour. The neutrals stay as they are, so an AMOLED
+ * background is still black and a light background is still light - only the highlights change.
+ */
+private fun ColorScheme.withAccent(accent: AccentColor, useDarkTheme: Boolean): ColorScheme {
+    if (accent == AccentColor.Default) return this
+    val primary = Color(if (useDarkTheme) accent.dark else accent.light)
+    val onPrimary = contrastingColorFor(primary)
+    val container = if (useDarkTheme) primary.blendWith(Color.Black, 0.68f)
+    else primary.blendWith(Color.White, 0.78f)
+    val onContainer = contrastingColorFor(container)
+    val secondary = if (useDarkTheme) primary.blendWith(Color.White, 0.25f)
+    else primary.blendWith(Color.Black, 0.15f)
+    return copy(
+        primary = primary,
+        onPrimary = onPrimary,
+        primaryContainer = container,
+        onPrimaryContainer = onContainer,
+        inversePrimary = if (useDarkTheme) accent.light.let { Color(it) } else Color(accent.dark),
+        secondary = secondary,
+        onSecondary = contrastingColorFor(secondary),
+        secondaryContainer = container,
+        onSecondaryContainer = onContainer,
+        tertiary = primary.blendWith(secondary, 0.5f),
+        onTertiary = onPrimary,
+        tertiaryContainer = container,
+        onTertiaryContainer = onContainer,
+        surfaceTint = primary
+    )
+}
+
+private fun Color.blendWith(other: Color, ratio: Float): Color = Color(
+    red = red + (other.red - red) * ratio,
+    green = green + (other.green - green) * ratio,
+    blue = blue + (other.blue - blue) * ratio,
+    alpha = 1f
+)
+
+private fun contrastingColorFor(color: Color): Color =
+    if (color.luminance() > 0.45f) Color(0xFF10110F) else Color.White
+
 @Composable
 fun LyricsForPowerAmpTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
     amoled: Boolean = false,
+    accent: AccentColor = AccentColor.Default,
     content: @Composable () -> Unit
 ) {
 
-    val colorScheme = when {
+    val baseScheme = when {
         amoled -> amoledScheme
 
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        // a picked accent replaces the wallpaper colours, otherwise those still win
+        accent == AccentColor.Default && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
@@ -281,6 +327,7 @@ fun LyricsForPowerAmpTheme(
         useDarkTheme -> darkScheme
         else -> lightScheme
     }
+    val colorScheme = baseScheme.withAccent(accent, useDarkTheme || amoled)
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,

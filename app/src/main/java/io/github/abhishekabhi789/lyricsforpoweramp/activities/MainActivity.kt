@@ -48,12 +48,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: MainActivityViewModel by viewModels()
             val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
+            val accent by viewModel.accentColor.collectAsStateWithLifecycle()
             val useDarkTheme = isDarkTheme(theme = appTheme)
             val firstTimeInfoShown by viewModel.firstTimeInfo.collectAsStateWithLifecycle()
             var readyToShowFirstTimeInfo by rememberSaveable { mutableStateOf(false) }
             LyricsForPowerAmpTheme(
                 useDarkTheme = useDarkTheme,
-                amoled = appTheme == AppTheme.Amoled
+                amoled = appTheme == AppTheme.Amoled,
+                accent = accent
             ) {
                 /* should not ask from here if user disabled notifications from settings*/
                 val shouldAskForNotificationPermission by viewModel.showNotification.collectAsStateWithLifecycle()

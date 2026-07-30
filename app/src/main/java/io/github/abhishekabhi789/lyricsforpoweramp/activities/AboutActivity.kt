@@ -23,9 +23,11 @@ class AboutActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val appTheme by appPreference.appTheme.collectAsStateWithLifecycle()
+            val accent by appPreference.accentColor.collectAsStateWithLifecycle()
             LyricsForPowerAmpTheme(
                 useDarkTheme = isDarkTheme(appTheme),
-                amoled = appTheme == AppTheme.Amoled
+                amoled = appTheme == AppTheme.Amoled,
+                accent = accent
             ) {
                 AboutScreen(onFinish = ::finish)
             }

@@ -27,9 +27,11 @@ class LocalLyricsActivity : ComponentActivity() {
         setContent {
             val viewModel: LocalLyricsViewModel by viewModels()
             val appTheme by viewModel.appTheme.collectAsStateWithLifecycle()
+            val accent by viewModel.accentColor.collectAsStateWithLifecycle()
             LyricsForPowerAmpTheme(
                 useDarkTheme = isDarkTheme(appTheme),
-                amoled = appTheme == AppTheme.Amoled
+                amoled = appTheme == AppTheme.Amoled,
+                accent = accent
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),

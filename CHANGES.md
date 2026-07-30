@@ -6,7 +6,7 @@ and jumping straight to the line you found.
 
 ## Offline lyrics library
 
-Menu → **Offline Lyrics**.
+Right of the two online search tabs there's a third button, **Offline** (it's also in the menu).
 
 Pick the folder your music (and lyrics) live in. Everything under it is walked once, every
 `.lrc` file is parsed, and the result is kept in a small cache file, so opening the screen
@@ -17,7 +17,11 @@ Searching runs over the parsed lines, not the file names, so you can find a song
 half remembered line in the middle of it. Every hit is shown with the line above and below
 it for context, and the matched words are highlighted.
 
-Files: `helpers/LocalLyricsIndexer.kt`, `utils/LocalLyricsSearch.kt`,
+Each result carries its cover art, read straight out of the audio file's tags — no media
+permission needed, since the folder grant already covers it, and decoded covers are cached so
+scrolling doesn't re-read the files.
+
+Files: `helpers/LocalLyricsIndexer.kt`, `helpers/LocalArtLoader.kt`, `utils/LocalLyricsSearch.kt`,
 `viewmodels/LocalLyricsViewModel.kt`, `ui/locallyrics/`.
 
 ## Play from the matched line in Poweramp
@@ -28,7 +32,9 @@ seeks to that line's timestamp, so playback starts exactly where the words you s
 are sung. If Poweramp isn't installed the file is offered to any other player instead.
 
 The seek position is sent both as `pos` in seconds (what the documented API reads) and as a
-millisecond extra, since older Poweramp builds only honour the latter.
+millisecond extra, since older Poweramp builds only honour the latter. Poweramp is then brought
+to the front — the API command on its own starts playback in the background, which looks like
+nothing happened.
 
 Files: `helpers/PowerampPlaybackHelper.kt`.
 
@@ -51,9 +57,13 @@ Turkish text is lowercased with `I → ı` and `İ → i` handled explicitly, so
 
 Files: `utils/LocalLyricsSearch.kt`, `utils/Utils.kt` (`matchesAsPhrase`).
 
-## AMOLED theme
+## AMOLED theme and a choice of accent
 
-Settings → Theme → **AMOLED**. Pure black surfaces instead of the dark grey ones, for OLED
-screens.
+Settings → Theme → **AMOLED** gives pure black surfaces instead of the dark grey ones.
 
-Files: `ui/theme/Theme.kt`, `utils/Constants.kt`.
+Settings → Theme → **Accent Colour** picks what the highlights are painted with: green, blue,
+purple, pink, orange, red, teal or amber, each with its own light and dark shade. "App default"
+keeps the palette the app ships with — and on Android 12+ the wallpaper colours, which a picked
+accent replaces. Only the accent roles change; black stays black on AMOLED.
+
+Files: `ui/theme/Theme.kt`, `utils/Constants.kt`, `ui/settings/AppThemeSettings.kt`.

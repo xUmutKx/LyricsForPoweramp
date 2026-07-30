@@ -219,7 +219,20 @@
     <string name="error_no_results">No results found</string>
     <string name="error_processing_error">Failed to process response</string>
 
+    <!-- accent colour -->
+    <string name="settings_accent_description">Accent Colour</string>
+    <string name="settings_accent_default_label">App default</string>
+    <string name="settings_accent_green_label">Green</string>
+    <string name="settings_accent_blue_label">Blue</string>
+    <string name="settings_accent_purple_label">Purple</string>
+    <string name="settings_accent_pink_label">Pink</string>
+    <string name="settings_accent_orange_label">Orange</string>
+    <string name="settings_accent_red_label">Red</string>
+    <string name="settings_accent_teal_label">Teal</string>
+    <string name="settings_accent_amber_label">Amber</string>
+
     <!-- offline lyrics library -->
+    <string name="local_lyrics_tab_label">Offline</string>
     <string name="local_lyrics_title">Offline Lyrics</string>
     <string name="local_lyrics_search_label">Search in your lyrics files</string>
     <string name="local_lyrics_choose_folder">Choose folder</string>

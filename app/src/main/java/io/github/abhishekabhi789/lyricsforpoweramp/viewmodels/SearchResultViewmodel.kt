@@ -33,6 +33,7 @@ class SearchResultViewmodel @Inject constructor(
 ) :
     ViewModel() {
     val appTheme = appPreference.appTheme
+    val accentColor = appPreference.accentColor
     private val _searchResultData = MutableStateFlow<SearchResultData?>(null)
     val searchResultData = _searchResultData.asStateFlow()
 

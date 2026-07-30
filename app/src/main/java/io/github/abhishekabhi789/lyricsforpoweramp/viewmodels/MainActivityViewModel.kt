@@ -40,6 +40,7 @@ class MainActivityViewModel @Inject constructor(
 ) : ViewModel() {
 
     val appTheme = appPreference.appTheme
+    val accentColor = appPreference.accentColor
 
     val firstTimeInfo = appPreference.firstTimeInfoShown
         .stateIn(viewModelScope, SharingStarted.Lazily, false)

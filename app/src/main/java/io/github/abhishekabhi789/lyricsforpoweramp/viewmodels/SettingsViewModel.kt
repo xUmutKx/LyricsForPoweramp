@@ -13,6 +13,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampApiHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LyricsType
 import io.github.abhishekabhi789.lyricsforpoweramp.model.PowerampFolder
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AccentColor
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.FilterType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ class SettingsViewModel @Inject constructor(
 ) :
     ViewModel() {
     val appTheme = appPreference.appTheme
+    val accentColor = appPreference.accentColor
 
     private val _accessRequestedPath: MutableStateFlow<Uri?> = MutableStateFlow(null)
     val accessRequestedPath = _accessRequestedPath.asStateFlow()
@@ -38,6 +40,12 @@ class SettingsViewModel @Inject constructor(
     fun updateTheme(newTheme: AppTheme) {
         viewModelScope.launch {
             appPreference.setPreference(AppPreference.APP_THEME, newTheme.name)
+        }
+    }
+
+    fun updateAccentColor(accentColor: AccentColor) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.ACCENT_COLOR, accentColor.name)
         }
     }
 

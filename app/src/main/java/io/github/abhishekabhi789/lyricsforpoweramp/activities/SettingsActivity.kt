@@ -31,6 +31,7 @@ class SettingsActivity : ComponentActivity() {
         setContent {
             val viewmodel: SettingsViewModel = hiltViewModel()
             val preferredTheme by viewmodel.appTheme.collectAsStateWithLifecycle()
+            val accent by viewmodel.accentColor.collectAsStateWithLifecycle()
             val useDarkTheme = isDarkTheme(theme = preferredTheme)
             val navController = rememberNavController()
             LaunchedEffect(Unit) {
@@ -54,7 +55,8 @@ class SettingsActivity : ComponentActivity() {
 
             LyricsForPowerAmpTheme(
                 useDarkTheme = useDarkTheme,
-                amoled = preferredTheme == AppTheme.Amoled
+                amoled = preferredTheme == AppTheme.Amoled,
+                accent = accent
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
