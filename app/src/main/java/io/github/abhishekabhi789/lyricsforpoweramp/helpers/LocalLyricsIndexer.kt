@@ -1,10 +1,12 @@
 package io.github.abhishekabhi789.lyricsforpoweramp.helpers
 
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.abhishekabhi789.lyricsforpoweramp.model.LocalAudioWithoutLyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LocalLyricsEntry
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LocalLyricsIndex
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LocalLyricsLine
@@ -62,6 +64,100 @@ class LocalLyricsIndexer @Inject constructor(
     fun clearCache() {
         cacheFile.delete()
     }
+
+    /** Every audio file under [treeUri] that has no sibling `.lrc` file next to it. */
+    suspend fun findAudioWithoutLyrics(treeUri: Uri): List<LocalAudioWithoutLyrics> =
+        withContext(Dispatchers.IO) {
+            val rootId = runCatching { DocumentsContract.getTreeDocumentId(treeUri) }.getOrNull()
+                ?: return@withContext emptyList()
+            val result = mutableListOf<LocalAudioWithoutLyrics>()
+            scanForMissingLyrics(treeUri, rootId, result)
+            result
+        }
+
+    private suspend fun scanForMissingLyrics(
+        treeUri: Uri,
+        documentId: String,
+        result: MutableList<LocalAudioWithoutLyrics>
+    ) {
+        coroutineContext.ensureActive()
+        val children = listChildren(treeUri, documentId)
+        val lrcBaseNames = children.filter { it.isLrc }
+            .map { it.baseName.lowercase(Locale.ROOT) }
+            .toSet()
+
+        for (child in children) {
+            coroutineContext.ensureActive()
+            when {
+                child.isDirectory -> scanForMissingLyrics(treeUri, child.documentId, result)
+
+                child.isAudio && child.baseName.lowercase(Locale.ROOT) !in lrcBaseNames -> {
+                    val audioUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, child.documentId)
+                    val (title, artist) = readAudioTags(audioUri, fallbackTitle = child.baseName)
+                    result.add(
+                        LocalAudioWithoutLyrics(
+                            audioUri = audioUri.toString(),
+                            folderDocumentId = documentId,
+                            title = title,
+                            artist = artist,
+                            fileBaseName = child.baseName
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /** Title/artist straight from the file's own tags, falling back to the filename. */
+    private fun readAudioTags(uri: Uri, fallbackTitle: String): Pair<String, String?> {
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(context, uri)
+            val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+                ?.takeIf { it.isNotBlank() } ?: fallbackTitle
+            val artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+                ?.takeIf { it.isNotBlank() }
+            title to artist
+        } catch (e: Exception) {
+            Log.d(TAG, "readAudioTags: no tags for $uri", e)
+            fallbackTitle to null
+        } finally {
+            runCatching { retriever.release() }
+        }
+    }
+
+    /** Writes [content] as a new file named [fileBaseName].[extension] inside [folderDocumentId]. */
+    suspend fun writeSiblingFile(
+        treeUri: Uri,
+        folderDocumentId: String,
+        fileBaseName: String,
+        extension: String,
+        mimeType: String,
+        content: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        runCatching {
+            val folderUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, folderDocumentId)
+            val fileName = "$fileBaseName.$extension"
+            val existing = findChildDocumentId(treeUri, folderDocumentId, fileName)
+            if (existing != null) {
+                DocumentsContract.deleteDocument(
+                    context.contentResolver,
+                    DocumentsContract.buildDocumentUriUsingTree(treeUri, existing)
+                )
+            }
+            val newFileUri = DocumentsContract.createDocument(
+                context.contentResolver, folderUri, mimeType, fileName
+            ) ?: return@withContext false
+            context.contentResolver.openOutputStream(newFileUri)?.use { out ->
+                out.write(content.toByteArray())
+            }
+            true
+        }.onFailure { Log.e(TAG, "writeSiblingFile: failed for $fileBaseName.$extension", it) }
+            .getOrDefault(false)
+    }
+
+    private fun findChildDocumentId(treeUri: Uri, folderDocumentId: String, displayName: String): String? =
+        listChildren(treeUri, folderDocumentId).firstOrNull { it.displayName == displayName }?.documentId
 
     private suspend fun scanFolder(
         treeUri: Uri,

@@ -25,9 +25,7 @@ import androidx.compose.material.icons.outlined.InterpreterMode
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -142,44 +140,37 @@ fun SearchUi(modifier: Modifier = Modifier, viewModel: MainActivityViewModel) {
     }
     val context = LocalContext.current
     Column(modifier = modifier.fillMaxSize()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(TopAppBarDefaults.topAppBarColors().containerColor)
+        // One tab row, same as before — the offline search is a third tab in it rather than a
+        // separate button squeezed in beside it, so this stays a single bar, not two glued
+        // together. Its own screen isn't a pager page, so tapping it just launches that activity
+        // instead of changing the selected page.
+        SecondaryTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            containerColor = TopAppBarDefaults.topAppBarColors().containerColor,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            SecondaryTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                containerColor = TopAppBarDefaults.topAppBarColors().containerColor,
-                modifier = Modifier.weight(1f)
-            ) {
-                tabs.forEachIndexed { tabIndex, tab ->
-                    val selected = pagerState.currentPage == tabIndex
-                    Tab(
-                        text = { Text(stringResource(id = tab.labelResId)) },
-                        selected = selected,
-                        onClick = {
-                            scope.launch { pagerState.animateScrollToPage(tabIndex) }
-                        }
-                    )
-                }
-            }
-            // third way to search, sitting right next to the two online ones
-            FilledTonalButton(
-                onClick = {
-                    context.startActivity(Intent(context, LocalLyricsActivity::class.java))
-                },
-                contentPadding = PaddingValues(horizontal = 12.dp),
-                modifier = Modifier.padding(horizontal = 8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.LibraryMusic,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+            tabs.forEachIndexed { tabIndex, tab ->
+                val selected = pagerState.currentPage == tabIndex
+                Tab(
+                    text = { Text(stringResource(id = tab.labelResId)) },
+                    selected = selected,
+                    onClick = {
+                        scope.launch { pagerState.animateScrollToPage(tabIndex) }
+                    }
                 )
-                Spacer(modifier = Modifier.padding(3.dp))
-                Text(stringResource(R.string.local_lyrics_tab_label))
             }
+            Tab(
+                text = { Text(stringResource(R.string.local_lyrics_tab_label)) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.LibraryMusic,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
+                selected = false,
+                onClick = { context.startActivity(Intent(context, LocalLyricsActivity::class.java)) }
+            )
         }
         HorizontalPager(
             state = pagerState,

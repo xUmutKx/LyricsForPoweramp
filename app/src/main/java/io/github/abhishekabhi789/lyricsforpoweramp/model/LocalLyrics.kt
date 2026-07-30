@@ -32,6 +32,16 @@ data class LocalLyricsIndex(
     val entries: List<LocalLyricsEntry> = emptyList()
 )
 
+/** An audio file found in the picked folder that has no sibling `.lrc` yet. */
+data class LocalAudioWithoutLyrics(
+    val audioUri: String,
+    /** Document id of the folder the audio file sits in - where the new `.lrc` gets written. */
+    val folderDocumentId: String,
+    val title: String,
+    val artist: String?,
+    val fileBaseName: String
+)
+
 /** A lyric line prepared for display - either a hit itself or a line kept for context. */
 data class LocalLyricsMatchLine(
     val line: LocalLyricsLine,

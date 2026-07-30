@@ -6,7 +6,7 @@ and jumping straight to the line you found.
 
 ## Offline lyrics library
 
-Right of the two online search tabs there's a third button, **Offline** (it's also in the menu).
+Right of the two online search tabs there's a third one, **Offline**.
 
 Pick the folder your music (and lyrics) live in. Everything under it is walked once, every
 `.lrc` file is parsed, and the result is kept in a small cache file, so opening the screen
@@ -22,8 +22,24 @@ permission needed, since the folder grant already covers it, and decoded covers 
 scrolling doesn't re-read the files. The card itself is styled after the online result card
 (same icon rows, same chip), so the two search modes don't look like different apps.
 
+With the search box empty, the screen shows the whole indexed library instead — every `.lrc`
+found, alphabetical, so you can browse it like a track list rather than having to remember a
+line first.
+
 Files: `helpers/LocalLyricsIndexer.kt`, `helpers/LocalArtLoader.kt`, `utils/LocalLyricsSearch.kt`,
 `viewmodels/LocalLyricsViewModel.kt`, `ui/locallyrics/`.
+
+## Download the lyrics that are still missing
+
+The cloud-download icon in the offline screen's top bar walks the whole folder for audio files
+that have no lyrics file next to them yet, searches LRCLIB for each one (using the track's own
+tags, or the filename when it has none), and writes whatever it finds right beside the audio —
+`.lrc` when synced lyrics exist, `.txt` for plain-only. A dialog tracks progress and can be
+cancelled mid-run; either way the library re-scans itself afterward so new hits show up
+immediately.
+
+Files: `helpers/BulkLyricsDownloader.kt`, `helpers/LocalLyricsIndexer.kt`
+(`findAudioWithoutLyrics`, `writeSiblingFile`).
 
 ## Play from the matched line in Poweramp
 

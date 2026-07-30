@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.BulkLyricsDownloader
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LocalLyricsIndexer
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LocalLyricsEntry
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LocalLyricsMatch
@@ -27,7 +28,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LocalLyricsViewModel @Inject constructor(
     private val appPreference: AppPreference,
-    private val indexer: LocalLyricsIndexer
+    private val indexer: LocalLyricsIndexer,
+    private val bulkDownloader: BulkLyricsDownloader
 ) : ViewModel() {
 
     sealed interface IndexState {
@@ -65,14 +67,22 @@ class LocalLyricsViewModel @Inject constructor(
     private val _isSearching = MutableStateFlow(false)
     val isSearching = _isSearching.asStateFlow()
 
-    private var entries: List<LocalLyricsEntry> = emptyList()
+    /** All indexed songs, alphabetical - shown as-is while the search box is empty. */
+    private val _entries = MutableStateFlow<List<LocalLyricsEntry>>(emptyList())
+    val browseEntries = _entries.asStateFlow()
+    private val entries: List<LocalLyricsEntry> get() = _entries.value
+
+    private val _bulkDownload = MutableStateFlow<BulkLyricsDownloader.Progress?>(null)
+    val bulkDownload = _bulkDownload.asStateFlow()
+
     private var scanJob: Job? = null
+    private var bulkDownloadJob: Job? = null
 
     init {
         viewModelScope.launch {
             folder.collectLatest { uri ->
                 if (uri == null) {
-                    entries = emptyList()
+                    _entries.value = emptyList()
                     _results.value = emptyList()
                     _indexState.value = IndexState.NoFolder
                 } else {
@@ -107,7 +117,7 @@ class LocalLyricsViewModel @Inject constructor(
         scanJob = viewModelScope.launch {
             val cached = indexer.loadCache(uri)
             if (cached.isNotEmpty()) {
-                entries = cached
+                _entries.value = sortedByTitle(cached)
                 _indexState.value = IndexState.Ready(cached.size)
                 refreshResults()
             } else {
@@ -118,7 +128,7 @@ class LocalLyricsViewModel @Inject constructor(
                     if (cached.isEmpty()) _indexState.value = IndexState.Scanning(found)
                 }
             }.onSuccess { scanned ->
-                entries = scanned
+                _entries.value = sortedByTitle(scanned)
                 _indexState.value = IndexState.Ready(scanned.size)
                 refreshResults()
             }.onFailure { error ->
@@ -137,6 +147,9 @@ class LocalLyricsViewModel @Inject constructor(
         }
     }
 
+    private fun sortedByTitle(list: List<LocalLyricsEntry>) =
+        list.sortedBy { LocalLyricsSearch.trLower(it.title) }
+
     fun setFolder(uri: Uri) {
         viewModelScope.launch {
             indexer.clearCache()
@@ -154,7 +167,7 @@ class LocalLyricsViewModel @Inject constructor(
                         _indexState.value = IndexState.Scanning(found)
                     }
                 }.onSuccess {
-                    entries = it
+                    _entries.value = sortedByTitle(it)
                     _indexState.value = IndexState.Ready(it.size)
                     refreshResults()
                 }.onFailure { error ->
@@ -167,6 +180,25 @@ class LocalLyricsViewModel @Inject constructor(
 
     fun updateQuery(query: String) {
         _query.value = query
+    }
+
+    /** Searches LRCLIB for every song in the folder that has no lyrics file yet, and saves the hits. */
+    fun startBulkDownload() {
+        val uri = folder.value ?: return
+        if (bulkDownloadJob?.isActive == true) return
+        bulkDownloadJob = viewModelScope.launch {
+            bulkDownloader.run(uri) { progress -> _bulkDownload.value = progress }
+            rescan()
+        }
+    }
+
+    fun cancelBulkDownload() {
+        bulkDownloadJob?.cancel()
+        bulkDownloadJob = null
+    }
+
+    fun dismissBulkDownloadResult() {
+        _bulkDownload.value = null
     }
 
     companion object {

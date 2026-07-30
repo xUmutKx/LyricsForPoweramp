@@ -248,6 +248,14 @@
     <string name="local_lyrics_playback_failed">No app could open this track</string>
     <string name="local_lyrics_playback_settings">Playback</string>
     <string name="local_lyrics_play_from_matched_line">Start from the matched line</string>
+    <string name="local_lyrics_browse_empty">No .lrc files found in this folder yet</string>
+    <string name="local_lyrics_download_missing">Download missing lyrics</string>
+    <string name="local_lyrics_download_scanning">Looking for songs with no lyrics…</string>
+    <string name="local_lyrics_download_progress">Searching %1$d of %2$d\n%3$s</string>
+    <string name="local_lyrics_download_cancel">Stop</string>
+    <string name="local_lyrics_download_done_title">Done</string>
+    <string name="local_lyrics_download_done_summary">%1$d downloaded, %2$d had no match, %3$d failed — out of %4$d songs</string>
+    <string name="local_lyrics_download_close">Close</string>
     <plurals name="local_lyrics_hit_count">
         <item quantity="one">%1$d match</item>
         <item quantity="other">%1$d matches</item>

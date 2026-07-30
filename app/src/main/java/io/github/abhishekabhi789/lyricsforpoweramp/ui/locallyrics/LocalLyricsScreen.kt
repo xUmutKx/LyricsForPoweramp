@@ -14,11 +14,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +35,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.abhishekabhi789.lyricsforpoweramp.R
+import io.github.abhishekabhi789.lyricsforpoweramp.helpers.BulkLyricsDownloader
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.PowerampPlaybackHelper
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.MIN_SEARCH_QUERY_LENGTH
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.LocalLyricsViewModel
@@ -66,9 +71,11 @@ fun LocalLyricsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val query by viewModel.query.collectAsStateWithLifecycle()
     val results by viewModel.results.collectAsStateWithLifecycle()
+    val browseEntries by viewModel.browseEntries.collectAsStateWithLifecycle()
     val indexState by viewModel.indexState.collectAsStateWithLifecycle()
     val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
     val playFromMatchedLine by viewModel.playFromMatchedLine.collectAsStateWithLifecycle()
+    val bulkDownload by viewModel.bulkDownload.collectAsStateWithLifecycle()
     val chooserTitle = stringResource(R.string.local_lyrics_play_with)
     val playbackFailedMessage = stringResource(R.string.local_lyrics_playback_failed)
     var showMenu by remember { mutableStateOf(false) }
@@ -93,6 +100,14 @@ fun LocalLyricsScreen(
         }
     }
 
+    if (bulkDownload != null) {
+        BulkDownloadDialog(
+            progress = bulkDownload,
+            onCancel = viewModel::cancelBulkDownload,
+            onDismiss = viewModel::dismissBulkDownloadResult
+        )
+    }
+
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -109,6 +124,12 @@ fun LocalLyricsScreen(
                 },
                 actions = {
                     if (indexState !is IndexState.NoFolder) {
+                        IconButton(onClick = viewModel::startBulkDownload) {
+                            Icon(
+                                imageVector = Icons.Default.CloudDownload,
+                                contentDescription = stringResource(R.string.local_lyrics_download_missing)
+                            )
+                        }
                         IconButton(onClick = viewModel::rescan) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
@@ -179,6 +200,19 @@ fun LocalLyricsScreen(
             when {
                 isSearching -> LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
 
+                // nothing typed yet: browse the whole library instead of asking for a query
+                query.isBlank() -> when {
+                    browseEntries.isEmpty() -> InfoText(stringResource(R.string.local_lyrics_browse_empty))
+                    else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(items = browseEntries, key = { it.lrcUri }) { entry ->
+                            LocalLyricsBrowseItem(
+                                entry = entry,
+                                onPlay = { entry.audioUri?.let { playInPoweramp(it, null) } }
+                            )
+                        }
+                    }
+                }
+
                 query.trim().length < MIN_SEARCH_QUERY_LENGTH -> InfoText(
                     stringResource(R.string.local_lyrics_min_characters, MIN_SEARCH_QUERY_LENGTH)
                 )
@@ -198,6 +232,71 @@ fun LocalLyricsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun BulkDownloadDialog(
+    progress: BulkLyricsDownloader.Progress?,
+    onCancel: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val done = progress as? BulkLyricsDownloader.Progress.Done
+    AlertDialog(
+        onDismissRequest = { if (done != null) onDismiss() },
+        confirmButton = {
+            if (done != null) {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.local_lyrics_download_close)) }
+            } else {
+                TextButton(onClick = onCancel) { Text(stringResource(R.string.local_lyrics_download_cancel)) }
+            }
+        },
+        title = { Text(stringResource(R.string.local_lyrics_download_missing)) },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                when (progress) {
+                    null, is BulkLyricsDownloader.Progress.Scanning -> {
+                        CircularProgressIndicator()
+                        Text(
+                            text = stringResource(R.string.local_lyrics_download_scanning),
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
+
+                    is BulkLyricsDownloader.Progress.Downloading -> {
+                        val fraction = if (progress.total > 0) {
+                            progress.current.toFloat() / progress.total
+                        } else 0f
+                        LinearProgressIndicator(
+                            progress = { fraction },
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.local_lyrics_download_progress,
+                                progress.current + 1,
+                                progress.total,
+                                progress.trackTitle
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    is BulkLyricsDownloader.Progress.Done -> {
+                        Text(
+                            text = stringResource(
+                                R.string.local_lyrics_download_done_summary,
+                                progress.downloaded,
+                                progress.skipped,
+                                progress.failed,
+                                progress.total
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+    )
 }
 
 @Composable
