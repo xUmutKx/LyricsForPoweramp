@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -124,12 +123,6 @@ fun LocalLyricsScreen(
                 },
                 actions = {
                     if (indexState !is IndexState.NoFolder) {
-                        IconButton(onClick = viewModel::startBulkDownload) {
-                            Icon(
-                                imageVector = Icons.Default.CloudDownload,
-                                contentDescription = stringResource(R.string.local_lyrics_download_missing)
-                            )
-                        }
                         IconButton(onClick = viewModel::rescan) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
