@@ -87,6 +87,9 @@ class AppPreference @Inject constructor(
         preference[LOCAL_LYRICS_FOLDER]?.takeIf { it.isNotBlank() }?.toUri()
     }
 
+    /** Whether tapping an offline match seeks Poweramp to that line, or just opens the track. */
+    val playFromMatchedLine = dataStore.data.map { it[PLAY_FROM_MATCHED_LINE] ?: true }
+
     val timestampDelta = dataStore.data.map { it[TIMESTAMP_DELTA] ?: 10 }
 
     val editorFontSize = dataStore.data.map { it[EDITOR_FONT_SIZE_SP] }
@@ -194,6 +197,7 @@ class AppPreference @Inject constructor(
         val EMBED_LYRICS_AS_TAG = booleanPreferencesKey("embed_lyrics_as_tag")
         val FOLDER_URIS = stringSetPreferencesKey("folder_uri_list")
         val LOCAL_LYRICS_FOLDER = stringPreferencesKey("local_lyrics_folder_uri")
+        val PLAY_FROM_MATCHED_LINE = booleanPreferencesKey("local_lyrics_play_from_matched_line")
         val MARK_INSTRUMENTAL_LYRICS = booleanPreferencesKey("mark_instrumental_lyrics")
         val TIMESTAMP_DELTA = intPreferencesKey("timestamp_delta_in_centi_seconds")
         val CHOSEN_AI_PROVIDER = stringPreferencesKey("chosen_ai_provider_for_rewrite")

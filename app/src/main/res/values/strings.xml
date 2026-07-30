@@ -246,6 +246,8 @@
     <string name="local_lyrics_play_in_poweramp">Play in Poweramp</string>
     <string name="local_lyrics_play_with">Play with</string>
     <string name="local_lyrics_playback_failed">No app could open this track</string>
+    <string name="local_lyrics_playback_settings">Playback</string>
+    <string name="local_lyrics_play_from_matched_line">Start from the matched line</string>
     <plurals name="local_lyrics_hit_count">
         <item quantity="one">%1$d match</item>
         <item quantity="other">%1$d matches</item>

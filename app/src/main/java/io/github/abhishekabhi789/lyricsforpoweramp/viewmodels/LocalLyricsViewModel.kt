@@ -44,6 +44,15 @@ class LocalLyricsViewModel @Inject constructor(
     val folder = appPreference.localLyricsFolder
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    val playFromMatchedLine = appPreference.playFromMatchedLine
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    fun setPlayFromMatchedLine(enabled: Boolean) {
+        viewModelScope.launch {
+            appPreference.setPreference(AppPreference.PLAY_FROM_MATCHED_LINE, enabled)
+        }
+    }
+
     private val _indexState = MutableStateFlow<IndexState>(IndexState.NoFolder)
     val indexState = _indexState.asStateFlow()
 

@@ -19,7 +19,8 @@ it for context, and the matched words are highlighted.
 
 Each result carries its cover art, read straight out of the audio file's tags — no media
 permission needed, since the folder grant already covers it, and decoded covers are cached so
-scrolling doesn't re-read the files.
+scrolling doesn't re-read the files. The card itself is styled after the online result card
+(same icon rows, same chip), so the two search modes don't look like different apps.
 
 Files: `helpers/LocalLyricsIndexer.kt`, `helpers/LocalArtLoader.kt`, `utils/LocalLyricsSearch.kt`,
 `viewmodels/LocalLyricsViewModel.kt`, `ui/locallyrics/`.
@@ -36,7 +37,10 @@ millisecond extra, since older Poweramp builds only honour the latter. Poweramp 
 to the front — the API command on its own starts playback in the background, which looks like
 nothing happened.
 
-Files: `helpers/PowerampPlaybackHelper.kt`.
+Whether tapping a line seeks to that point or just opens the track from the beginning is a
+toggle in the screen's overflow menu (⋮ → Playback → "Start from the matched line").
+
+Files: `helpers/PowerampPlaybackHelper.kt`, `ui/locallyrics/LocalLyricsScreen.kt`.
 
 ## Searching only starts at three characters
 

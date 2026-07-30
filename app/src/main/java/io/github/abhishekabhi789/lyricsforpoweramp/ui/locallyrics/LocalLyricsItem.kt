@@ -11,12 +11,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.outlined.Audiotrack
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.InterpreterMode
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,43 +48,91 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.helpers.LocalArtLoader
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LocalLyricsMatch
 import io.github.abhishekabhi789.lyricsforpoweramp.model.LocalLyricsMatchLine
+import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.CustomChip
 
+/**
+ * Styled to match [io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.LyricItem] - same
+ * card, icon rows and chip so the offline results don't look like a different app.
+ */
 @Composable
 fun LocalLyricsItem(
     match: LocalLyricsMatch,
     onPlay: (positionMs: Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
-    ) {
-        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.padding(8.dp)
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 AlbumArt(audioUri = match.entry.audioUri)
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = match.entry.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = listOf(match.entry.artist, match.entry.folder)
-                            .filter { it.isNotBlank() }.distinct().joinToString(" • "),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = pluralStringResource(
-                            R.plurals.local_lyrics_hit_count, match.hits, match.hits
-                        ),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().wrapContentHeight()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Audiotrack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(AssistChipDefaults.IconSize)
+                        )
+                        Text(
+                            text = match.entry.title,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                    if (match.entry.artist.isNotBlank()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.InterpreterMode,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(AssistChipDefaults.IconSize)
+                            )
+                            Text(
+                                text = match.entry.artist,
+                                color = MaterialTheme.colorScheme.secondary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                    if (match.entry.folder.isNotBlank()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Folder,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(AssistChipDefaults.IconSize)
+                            )
+                            Text(
+                                text = match.entry.folder,
+                                color = MaterialTheme.colorScheme.secondary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
                 }
                 if (match.entry.hasAudio) {
                     IconButton(onClick = { onPlay(match.firstHitPositionMs) }) {
@@ -90,6 +144,12 @@ fun LocalLyricsItem(
                     }
                 }
             }
+            CustomChip(
+                label = pluralStringResource(R.plurals.local_lyrics_hit_count, match.hits, match.hits)
+            )
+        }
+        HorizontalDivider(modifier = Modifier.padding(4.dp))
+        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
             match.lines.forEach { matchLine ->
                 MatchedLineRow(
                     matchLine = matchLine,
