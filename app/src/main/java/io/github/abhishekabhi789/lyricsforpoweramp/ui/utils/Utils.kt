@@ -8,6 +8,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 fun isDarkTheme(theme: AppTheme): Boolean {
     return when (theme) {
         AppTheme.Dark -> true
+        AppTheme.Amoled -> true
         AppTheme.Light -> false
         AppTheme.Auto -> isSystemInDarkTheme()
     }

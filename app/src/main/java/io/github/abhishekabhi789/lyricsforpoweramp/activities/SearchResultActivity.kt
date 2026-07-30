@@ -18,6 +18,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.searchresult.ResultScreen
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SearchResultViewmodel
 import kotlinx.coroutines.delay
@@ -43,7 +44,10 @@ class SearchResultActivity : ComponentActivity() {
                 }
             }
             val useDarkTheme = isDarkTheme(theme = preferredTheme)
-            LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
+            LyricsForPowerAmpTheme(
+                useDarkTheme = useDarkTheme,
+                amoled = preferredTheme == AppTheme.Amoled
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.tertiaryContainer,

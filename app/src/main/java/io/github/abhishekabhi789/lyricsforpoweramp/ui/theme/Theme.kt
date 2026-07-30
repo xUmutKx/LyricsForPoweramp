@@ -240,6 +240,17 @@ private val highContrastDarkColorScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
 )
 
+private val amoledScheme = darkScheme.copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceDim = Color.Black,
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = Color(0xFF0A0A0A),
+    surfaceContainer = Color(0xFF0D0D0D),
+    surfaceContainerHigh = Color(0xFF121212),
+    surfaceContainerHighest = Color(0xFF161616),
+)
+
 @Immutable
 data class ColorFamily(
     val color: Color,
@@ -255,10 +266,13 @@ val unspecified_scheme = ColorFamily(
 @Composable
 fun LyricsForPowerAmpTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
+    amoled: Boolean = false,
     content: @Composable () -> Unit
 ) {
 
     val colorScheme = when {
+        amoled -> amoledScheme
+
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)

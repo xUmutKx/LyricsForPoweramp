@@ -19,6 +19,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.AppSettings
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.settings.SettingsPage
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.SettingsViewModel
 import kotlinx.serialization.json.Json
 
@@ -51,7 +52,10 @@ class SettingsActivity : ComponentActivity() {
                 }
             }
 
-            LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
+            LyricsForPowerAmpTheme(
+                useDarkTheme = useDarkTheme,
+                amoled = preferredTheme == AppTheme.Amoled
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,

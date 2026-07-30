@@ -10,7 +10,8 @@ import io.github.abhishekabhi789.lyricsforpoweramp.R
 enum class AppTheme(val labelResId: Int) {
     Auto(R.string.settings_theme_auto_label),
     Light(R.string.settings_theme_light_label),
-    Dark(R.string.settings_theme_dark_label)
+    Dark(R.string.settings_theme_dark_label),
+    Amoled(R.string.settings_theme_amoled_label)
 }
 
 enum class FilterType(val key: String, val labelResId: Int, val icon: ImageVector) {

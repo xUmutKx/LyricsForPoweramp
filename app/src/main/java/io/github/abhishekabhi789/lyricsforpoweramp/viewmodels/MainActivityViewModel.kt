@@ -13,7 +13,9 @@ import io.github.abhishekabhi789.lyricsforpoweramp.model.Lyrics
 import io.github.abhishekabhi789.lyricsforpoweramp.model.SearchResultData
 import io.github.abhishekabhi789.lyricsforpoweramp.model.Track
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppPreference
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.MIN_SEARCH_QUERY_LENGTH
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.SearchRepository
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.matchesAsPhrase
 import io.github.abhishekabhi789.lyricsforpoweramp.workers.LyricsRequestWorker.Companion.MANUAL_SEARCH_ACTION
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -118,7 +120,9 @@ class MainActivityViewModel @Inject constructor(
     /** Ensures user inputs are suffice to perform search */
     private fun isValidInput(): Boolean {
         return when (_inputState.value.searchMode) {
-            InputState.SearchMode.Coarse -> _inputState.value.queryString.isNotBlank()
+            InputState.SearchMode.Coarse ->
+                _inputState.value.queryString.trim().length >= MIN_SEARCH_QUERY_LENGTH
+
             InputState.SearchMode.Fine -> inputState.value.queryTrack.trackName.isNotBlank()
         }
     }
@@ -155,6 +159,7 @@ class MainActivityViewModel @Inject constructor(
                     val result = when (inputState.searchMode) {
                         InputState.SearchMode.Coarse -> {
                             lrclibApiHelper.searchLyricsForQuery(inputState.queryString)
+                                .asPhraseFilteredIfPossible(inputState.queryString)
                         }
 
                         InputState.SearchMode.Fine -> {
@@ -224,6 +229,22 @@ class MainActivityViewModel @Inject constructor(
 
     fun updateNowPlayingTrack(track: Track?) {
         nowPlayingTrack.value = track
+    }
+
+    /**
+     * LRCLIB's free-text search matches each word independently anywhere in the
+     * track/artist/album, which surfaces a lot of loosely-related noise. Prefer
+     * results where the typed words appear together, in order; if that empties
+     * the list, fall back to the original results rather than showing nothing.
+     */
+    private fun LrclibApiHelper.Result.asPhraseFilteredIfPossible(query: String): LrclibApiHelper.Result {
+        if (this !is LrclibApiHelper.Result.Success) return this
+        val phraseMatched = data.filter { lyrics ->
+            val searchable = listOfNotNull(lyrics.trackName, lyrics.artistName, lyrics.albumName)
+                .joinToString(" ")
+            matchesAsPhrase(searchable, query)
+        }
+        return if (phraseMatched.isNotEmpty()) LrclibApiHelper.Result.Success(phraseMatched) else this
     }
 
     companion object {

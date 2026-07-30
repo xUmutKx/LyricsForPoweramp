@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.abhishekabhi789.lyricsforpoweramp.R
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.AboutActivity
+import io.github.abhishekabhi789.lyricsforpoweramp.activities.LocalLyricsActivity
 import io.github.abhishekabhi789.lyricsforpoweramp.activities.SettingsActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +86,25 @@ fun TopBar(modifier: Modifier = Modifier) {
                 )
             }
             DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(R.string.local_lyrics_title),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        context.startActivity(Intent(context, LocalLyricsActivity::class.java))
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.LibraryMusic,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                )
                 DropdownMenuItem(
                     text = {
                         Text(

@@ -33,6 +33,7 @@ import io.github.abhishekabhi789.lyricsforpoweramp.ui.components.PermissionDialo
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.main.AppMain
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.theme.LyricsForPowerAmpTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.ui.utils.isDarkTheme
+import io.github.abhishekabhi789.lyricsforpoweramp.utils.AppTheme
 import io.github.abhishekabhi789.lyricsforpoweramp.utils.makeToast
 import io.github.abhishekabhi789.lyricsforpoweramp.viewmodels.MainActivityViewModel
 
@@ -50,7 +51,10 @@ class MainActivity : ComponentActivity() {
             val useDarkTheme = isDarkTheme(theme = appTheme)
             val firstTimeInfoShown by viewModel.firstTimeInfo.collectAsStateWithLifecycle()
             var readyToShowFirstTimeInfo by rememberSaveable { mutableStateOf(false) }
-            LyricsForPowerAmpTheme(useDarkTheme = useDarkTheme) {
+            LyricsForPowerAmpTheme(
+                useDarkTheme = useDarkTheme,
+                amoled = appTheme == AppTheme.Amoled
+            ) {
                 /* should not ask from here if user disabled notifications from settings*/
                 val shouldAskForNotificationPermission by viewModel.showNotification.collectAsStateWithLifecycle()
                 val permissionState = rememberPermissionState(

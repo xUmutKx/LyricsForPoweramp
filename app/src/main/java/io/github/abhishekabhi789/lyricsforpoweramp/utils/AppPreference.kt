@@ -76,6 +76,11 @@ class AppPreference @Inject constructor(
         preference[FOLDER_URIS]?.map { it.toUri() } ?: emptyList()
     }
 
+    /** Folder picked for the offline lyrics library, null until the user picks one. */
+    val localLyricsFolder = dataStore.data.map { preference ->
+        preference[LOCAL_LYRICS_FOLDER]?.takeIf { it.isNotBlank() }?.toUri()
+    }
+
     val timestampDelta = dataStore.data.map { it[TIMESTAMP_DELTA] ?: 10 }
 
     val editorFontSize = dataStore.data.map { it[EDITOR_FONT_SIZE_SP] }
@@ -181,6 +186,7 @@ class AppPreference @Inject constructor(
         val SAVE_ID_TAGS_IN_FILE = booleanPreferencesKey("save_id_tags_in_file")
         val EMBED_LYRICS_AS_TAG = booleanPreferencesKey("embed_lyrics_as_tag")
         val FOLDER_URIS = stringSetPreferencesKey("folder_uri_list")
+        val LOCAL_LYRICS_FOLDER = stringPreferencesKey("local_lyrics_folder_uri")
         val MARK_INSTRUMENTAL_LYRICS = booleanPreferencesKey("mark_instrumental_lyrics")
         val TIMESTAMP_DELTA = intPreferencesKey("timestamp_delta_in_centi_seconds")
         val CHOSEN_AI_PROVIDER = stringPreferencesKey("chosen_ai_provider_for_rewrite")
@@ -196,7 +202,7 @@ class AppPreference @Inject constructor(
 
         fun getThemes(): List<AppTheme> {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) AppTheme.entries.toList()
-            else listOf(AppTheme.Light, AppTheme.Dark)
+            else listOf(AppTheme.Light, AppTheme.Dark, AppTheme.Amoled)
         }
 
         fun getKeyForModel(provider: AiProvider): Preferences.Key<String> {
